@@ -5,27 +5,186 @@
 
 const STORAGE_KEY = 'tw_anais_weekly_tasks_v1';
 
-// 1. Minimum Dungeon Cutoffs (Thresholds)
-const thresholds = {
-  nobuff: {
-    shinjo:       { name: "신조의 둥지(일반)", mdef: 1200, acc: 1100, elem: 165, eta: 1,  equip: "인퍼널~아퀼루스 셋" },
-    abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", mdef: 1250, acc: 1150, elem: 170, eta: 1,  equip: "아퀼루스 혼합~풀셋" },
-    abyss_hell:   { name: "어비스 헬",         mdef: 1350, acc: 1250, elem: 180, eta: 1,  equip: "아퀼루스 풀셋" },
-    obang_hell:   { name: "오방 헬",           mdef: 1450, acc: 1350, elem: 190, eta: 5,  equip: "아퀼루스 풀~어비스 부위" },
-    rokagos:      { name: "로카고스(이클)",    mdef: 1550, acc: 1450, elem: 200, eta: 15, equip: "어비스 4~5셋 (10~12강)" },
-    eclipse_high: { name: "이클 중상위",       mdef: 1750, acc: 1500, elem: 205, eta: 21, equip: "어비스 한계작 / 이클 로브" },
-    obang_abyss:  { name: "오방 어비스(5각)",   mdef: 1850, acc: 2050, elem: 210, eta: 21, equip: "5각 + 어비스·이클 고스펙" }
+// 1. Character Archetypes & Dungeon Thresholds (6대 계열별 전수 기준치)
+const archetypeConfigs = {
+  magic_def: {
+    id: 'magic_def',
+    name: '마방캐 (비호 아나이스 / 마방 클로에)',
+    shortName: '마방캐',
+    statName: '마법방어력',
+    statCode: 'MR',
+    icon: '🛡️',
+    placeholder: '예: 1520',
+    thresholds: {
+      nobuff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1200, mdef: 1200, acc: 1100, elem: 165, eta: 1,  equip: "인퍼널~아퀼루스 셋" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1250, mdef: 1250, acc: 1150, elem: 170, eta: 1,  equip: "아퀼루스 혼합~풀셋" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 1350, mdef: 1350, acc: 1250, elem: 180, eta: 1,  equip: "아퀼루스 풀셋" },
+        obang_hell:   { name: "오방 헬",           reqMain: 1450, mdef: 1450, acc: 1350, elem: 190, eta: 5,  equip: "아퀼루스 풀~어비스 부위" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 1550, mdef: 1550, acc: 1450, elem: 200, eta: 15, equip: "어비스 4~5셋 (10~12강)" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 1750, mdef: 1750, acc: 1500, elem: 205, eta: 21, equip: "어비스 한계작 / 이클 로브" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 1850, mdef: 1850, acc: 2050, elem: 210, eta: 21, equip: "5각 + 어비스·이클 고스펙" }
+      },
+      buff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1400, mdef: 1400, acc: 1250, elem: 180, eta: 1,  equip: "자버프 + 기본 물약" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1450, mdef: 1450, acc: 1300, elem: 185, eta: 1,  equip: "자버프 + 기본 도핑" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 1550, mdef: 1550, acc: 1400, elem: 195, eta: 1,  equip: "자버프 + 비약/물약" },
+        obang_hell:   { name: "오방 헬",           reqMain: 1700, mdef: 1700, acc: 1500, elem: 205, eta: 5,  equip: "실전 버프 + 노란 장판" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 1800, mdef: 1800, acc: 1600, elem: 210, eta: 15, equip: "실전 풀버프 + 비약·묘약" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 2000, mdef: 2000, acc: 1650, elem: 215, eta: 21, equip: "실전 풀버프 + 어스 프로텍션" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 2100, mdef: 2100, acc: 2250, elem: 220, eta: 21, equip: "실전 풀버프 (막보 명중 2,250)" }
+      }
+    }
   },
-  buff: {
-    shinjo:       { name: "신조의 둥지(일반)", mdef: 1400, acc: 1250, elem: 180, eta: 1,  equip: "자버프 + 기본 물약" },
-    abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", mdef: 1450, acc: 1300, elem: 185, eta: 1,  equip: "자버프 + 기본 도핑" },
-    abyss_hell:   { name: "어비스 헬",         mdef: 1550, acc: 1400, elem: 195, eta: 1,  equip: "자버프 + 비약/물약" },
-    obang_hell:   { name: "오방 헬",           mdef: 1700, acc: 1500, elem: 205, eta: 5,  equip: "실전 버프 + 노란 장판" },
-    rokagos:      { name: "로카고스(이클)",    mdef: 1800, acc: 1600, elem: 210, eta: 15, equip: "실전 풀버프 + 비약·묘약" },
-    eclipse_high: { name: "이클 중상위",       mdef: 2000, acc: 1650, elem: 215, eta: 21, equip: "실전 풀버프 + 어스 프로텍션" },
-    obang_abyss:  { name: "오방 어비스(5각)",   mdef: 2100, acc: 2250, elem: 220, eta: 21, equip: "실전 풀버프 (막보 명중 2,250)" }
+  stab: {
+    id: 'stab',
+    name: '찌르기캐 (루시안 / 이스핀 / 나야 / 시벨린 / 막시민)',
+    shortName: '찌르기캐',
+    statName: '찌르기 공격력',
+    statCode: 'STAB',
+    icon: '🗡️',
+    placeholder: '예: 2293',
+    thresholds: {
+      nobuff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1400, mdef: 1400, acc: 1100, elem: 165, eta: 1,  equip: "인퍼널~아퀼루스 셋" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1600, mdef: 1600, acc: 1150, elem: 170, eta: 1,  equip: "아퀼루스 혼합~풀셋" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 1800, mdef: 1800, acc: 1250, elem: 180, eta: 1,  equip: "아퀼루스 풀셋" },
+        obang_hell:   { name: "오방 헬",           reqMain: 1950, mdef: 1950, acc: 1350, elem: 190, eta: 5,  equip: "아퀼루스 풀~어비스 부위" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 2100, mdef: 2100, acc: 1450, elem: 200, eta: 15, equip: "어비스 4~5셋 (10~12강)" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 2300, mdef: 2300, acc: 1500, elem: 205, eta: 21, equip: "어비스 한계작 / 이클 셋" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 2500, mdef: 2500, acc: 2050, elem: 210, eta: 21, equip: "5각 + 어비스·이클 고스펙" }
+      },
+      buff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1600, mdef: 1600, acc: 1250, elem: 180, eta: 1,  equip: "자버프 + 기본 물약" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1850, mdef: 1850, acc: 1300, elem: 185, eta: 1,  equip: "자버프 + 기본 도핑" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 2050, mdef: 2050, acc: 1400, elem: 195, eta: 1,  equip: "자버프 + 비약/물약" },
+        obang_hell:   { name: "오방 헬",           reqMain: 2200, mdef: 2200, acc: 1500, elem: 205, eta: 5,  equip: "실전 버프 + 공격 도핑" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 2350, mdef: 2350, acc: 1600, elem: 210, eta: 15, equip: "실전 풀버프 + 비약·묘약" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 2550, mdef: 2550, acc: 1650, elem: 215, eta: 21, equip: "실전 풀버프 + 극딜 도핑" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 2800, mdef: 2800, acc: 2250, elem: 220, eta: 21, equip: "실전 풀버프 (막보 명중 2,250)" }
+      }
+    }
+  },
+  hack: {
+    id: 'hack',
+    name: '베기캐 (보리스 / 막시민 / 밀라 / 루시안 / 이스핀)',
+    shortName: '베기캐',
+    statName: '베기 공격력',
+    statCode: 'HACK',
+    icon: '🪓',
+    placeholder: '예: 2350',
+    thresholds: {
+      nobuff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1400, mdef: 1400, acc: 1100, elem: 165, eta: 1,  equip: "인퍼널~아퀼루스 셋" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1600, mdef: 1600, acc: 1150, elem: 170, eta: 1,  equip: "아퀼루스 혼합~풀셋" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 1800, mdef: 1800, acc: 1250, elem: 180, eta: 1,  equip: "아퀼루스 풀셋" },
+        obang_hell:   { name: "오방 헬",           reqMain: 1950, mdef: 1950, acc: 1350, elem: 190, eta: 5,  equip: "아퀼루스 풀~어비스 부위" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 2100, mdef: 2100, acc: 1450, elem: 200, eta: 15, equip: "어비스 4~5셋 (10~12강)" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 2300, mdef: 2300, acc: 1500, elem: 205, eta: 21, equip: "어비스 한계작 / 이클 셋" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 2500, mdef: 2500, acc: 2050, elem: 210, eta: 21, equip: "5각 + 어비스·이클 고스펙" }
+      },
+      buff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1600, mdef: 1600, acc: 1250, elem: 180, eta: 1,  equip: "자버프 + 기본 물약" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1850, mdef: 1850, acc: 1300, elem: 185, eta: 1,  equip: "자버프 + 기본 도핑" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 2050, mdef: 2050, acc: 1400, elem: 195, eta: 1,  equip: "자버프 + 비약/물약" },
+        obang_hell:   { name: "오방 헬",           reqMain: 2200, mdef: 2200, acc: 1500, elem: 205, eta: 5,  equip: "실전 버프 + 공격 도핑" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 2350, mdef: 2350, acc: 1600, elem: 210, eta: 15, equip: "실전 풀버프 + 비약·묘약" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 2550, mdef: 2550, acc: 1650, elem: 215, eta: 21, equip: "실전 풀버프 + 극딜 도핑" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 2800, mdef: 2800, acc: 2250, elem: 220, eta: 21, equip: "실전 풀버프 (막보 명중 2,250)" }
+      }
+    }
+  },
+  magic_atk: {
+    id: 'magic_atk',
+    name: '마공캐 (클로에 / 티치엘 / 란지에 / 로아미니)',
+    shortName: '마공캐',
+    statName: '마법공격력',
+    statCode: 'INT',
+    icon: '🔮',
+    placeholder: '예: 2250',
+    thresholds: {
+      nobuff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1350, mdef: 1350, acc: 1100, elem: 165, eta: 1,  equip: "인퍼널~아퀼루스 셋" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1550, mdef: 1550, acc: 1150, elem: 170, eta: 1,  equip: "아퀼루스 혼합~풀셋" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 1750, mdef: 1750, acc: 1250, elem: 180, eta: 1,  equip: "아퀼루스 풀셋" },
+        obang_hell:   { name: "오방 헬",           reqMain: 1900, mdef: 1900, acc: 1350, elem: 190, eta: 5,  equip: "아퀼루스 풀~어비스 부위" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 2050, mdef: 2050, acc: 1450, elem: 200, eta: 15, equip: "어비스 4~5셋 (10~12강)" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 2250, mdef: 2250, acc: 1500, elem: 205, eta: 21, equip: "어비스 한계작 / 이클 셋" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 2450, mdef: 2450, acc: 2050, elem: 210, eta: 21, equip: "5각 + 어비스·이클 고스펙" }
+      },
+      buff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1550, mdef: 1550, acc: 1250, elem: 180, eta: 1,  equip: "자버프 + 기본 물약" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1750, mdef: 1750, acc: 1300, elem: 185, eta: 1,  equip: "자버프 + 기본 도핑" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 1950, mdef: 1950, acc: 1400, elem: 195, eta: 1,  equip: "자버프 + 비약/물약" },
+        obang_hell:   { name: "오방 헬",           reqMain: 2150, mdef: 2150, acc: 1500, elem: 205, eta: 5,  equip: "실전 버프 + 마공 도핑" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 2300, mdef: 2300, acc: 1600, elem: 210, eta: 15, equip: "실전 풀버프 + 비약·묘약" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 2500, mdef: 2500, acc: 1650, elem: 215, eta: 21, equip: "실전 풀버프 + 극마공 도핑" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 2750, mdef: 2750, acc: 2250, elem: 220, eta: 21, equip: "실전 풀버프 (막보 명중 2,250)" }
+      }
+    }
+  },
+  composite: {
+    id: 'composite',
+    name: '물리복합캐 (보리스 / 루시안 / 이스핀)',
+    shortName: '물리복합캐',
+    statName: '물리복합 공격력 (STAB/HACK)',
+    statCode: 'STAB/HACK',
+    icon: '⚔️',
+    placeholder: '예: 1500',
+    thresholds: {
+      nobuff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1000, mdef: 1000, acc: 1100, elem: 165, eta: 1,  equip: "인퍼널~아퀼루스 셋" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1150, mdef: 1150, acc: 1150, elem: 170, eta: 1,  equip: "아퀼루스 혼합~풀셋" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 1300, mdef: 1300, acc: 1250, elem: 180, eta: 1,  equip: "아퀼루스 풀셋" },
+        obang_hell:   { name: "오방 헬",           reqMain: 1400, mdef: 1400, acc: 1350, elem: 190, eta: 5,  equip: "아퀼루스 풀~어비스 부위" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 1500, mdef: 1500, acc: 1450, elem: 200, eta: 15, equip: "어비스 4~5셋 (10~12강)" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 1650, mdef: 1650, acc: 1500, elem: 205, eta: 21, equip: "어비스 한계작 / 이클 셋" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 1800, mdef: 1800, acc: 2050, elem: 210, eta: 21, equip: "5각 + 어비스·이클 고스펙" }
+      },
+      buff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1150, mdef: 1150, acc: 1250, elem: 180, eta: 1,  equip: "자버프 + 기본 물약" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1300, mdef: 1300, acc: 1300, elem: 185, eta: 1,  equip: "자버프 + 기본 도핑" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 1450, mdef: 1450, acc: 1400, elem: 195, eta: 1,  equip: "자버프 + 비약/물약" },
+        obang_hell:   { name: "오방 헬",           reqMain: 1600, mdef: 1600, acc: 1500, elem: 205, eta: 5,  equip: "실전 버프 + 복합 도핑" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 1750, mdef: 1750, acc: 1600, elem: 210, eta: 15, equip: "실전 풀버프 + 비약·묘약" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 1900, mdef: 1900, acc: 1650, elem: 215, eta: 21, equip: "실전 풀버프 + 극딜 도핑" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 2100, mdef: 2100, acc: 2250, elem: 220, eta: 21, equip: "실전 풀버프 (막보 명중 2,250)" }
+      }
+    }
+  },
+  magic_slash: {
+    id: 'magic_slash',
+    name: '마법베기캐 (티치엘 / 조슈아)',
+    shortName: '마법베기캐',
+    statName: '마법베기 공격력 (HACK/INT)',
+    statCode: 'HACK/INT',
+    icon: '🪄',
+    placeholder: '예: 1450',
+    thresholds: {
+      nobuff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1000, mdef: 1000, acc: 1100, elem: 165, eta: 1,  equip: "인퍼널~아퀼루스 셋" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1150, mdef: 1150, acc: 1150, elem: 170, eta: 1,  equip: "아퀼루스 혼합~풀셋" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 1300, mdef: 1300, acc: 1250, elem: 180, eta: 1,  equip: "아퀼루스 풀셋" },
+        obang_hell:   { name: "오방 헬",           reqMain: 1400, mdef: 1400, acc: 1350, elem: 190, eta: 5,  equip: "아퀼루스 풀~어비스 부위" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 1500, mdef: 1500, acc: 1450, elem: 200, eta: 15, equip: "어비스 4~5셋 (10~12강)" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 1650, mdef: 1650, acc: 1500, elem: 205, eta: 21, equip: "어비스 한계작 / 이클 셋" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 1800, mdef: 1800, acc: 2050, elem: 210, eta: 21, equip: "5각 + 어비스·이클 고스펙" }
+      },
+      buff: {
+        shinjo:       { name: "신조의 둥지(일반)", reqMain: 1150, mdef: 1150, acc: 1250, elem: 180, eta: 1,  equip: "자버프 + 기본 물약" },
+        abyss_normal: { name: "어비스·머큐리얼(일반/어려움)", reqMain: 1300, mdef: 1300, acc: 1300, elem: 185, eta: 1,  equip: "자버프 + 기본 도핑" },
+        abyss_hell:   { name: "어비스 헬",         reqMain: 1450, mdef: 1450, acc: 1400, elem: 195, eta: 1,  equip: "자버프 + 비약/물약" },
+        obang_hell:   { name: "오방 헬",           reqMain: 1600, mdef: 1600, acc: 1500, elem: 205, eta: 5,  equip: "실전 버프 + 마베 도핑" },
+        rokagos:      { name: "로카고스(이클)",    reqMain: 1750, mdef: 1750, acc: 1600, elem: 210, eta: 15, equip: "실전 풀버프 + 비약·묘약" },
+        eclipse_high: { name: "이클 중상위",       reqMain: 1900, mdef: 1900, acc: 1650, elem: 215, eta: 21, equip: "실전 풀버프 + 극딜 도핑" },
+        obang_abyss:  { name: "오방 어비스(5각)",   reqMain: 2100, mdef: 2100, acc: 2250, elem: 220, eta: 21, equip: "실전 풀버프 (막보 명중 2,250)" }
+      }
+    }
   }
 };
+
+// Legacy alias for backward compatibility
+const thresholds = archetypeConfigs.magic_def.thresholds;
 
 // 2. Doping Conflict Rules & Item Names
 const conflictMap = {

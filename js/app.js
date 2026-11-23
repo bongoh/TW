@@ -88,17 +88,51 @@ function toggleAllBuffs(state) {
   evaluateStats();
 }
 
+// ==================== 1-1. CHARACTER ARCHETYPE CONFIGURATION ====================
+let selectedArchetype = 'magic_def';
+
+function getCurrentArchetype() {
+  return (typeof archetypeConfigs !== 'undefined' && archetypeConfigs[selectedArchetype]) || archetypeConfigs.magic_def;
+}
+
+function getDopingBonusForArch(archId, bonus) {
+  if (!bonus) return 0;
+  if (archId === 'magic_def') return bonus.mdef || 0;
+  if (archId === 'stab' || archId === 'hack') return Math.round((bonus.acc || 0) * 0.7);
+  if (archId === 'magic_atk') return Math.round((bonus.mdef || 0) * 0.5);
+  if (archId === 'composite' || archId === 'magic_slash') return Math.round((bonus.acc || 0) * 0.5);
+  return 0;
+}
+
+function onCharArchetypeChange(archId) {
+  selectedArchetype = archId;
+  try {
+    localStorage.setItem('tw_selected_archetype', archId);
+  } catch (e) {}
+
+  const syncTypeSelect = document.getElementById('sync-tab1-type');
+  if (syncTypeSelect) syncTypeSelect.value = archId;
+
+  evaluateStats();
+
+  const autoChk = document.getElementById('coeff-tab1-auto-sync');
+  if (autoChk && autoChk.checked) {
+    applyTab1ToCoeff(false, archId);
+  }
+}
+
 function renderMinSpecTable(effectiveBuffMode) {
-  const data = thresholds[effectiveBuffMode];
+  const currentArch = getCurrentArchetype();
+  const data = currentArch.thresholds[effectiveBuffMode];
   const selectedKey = document.getElementById('target-dungeon').value;
   const tbody = document.getElementById('min-spec-tbody');
   const label = document.getElementById('table-mode-label');
 
   if (effectiveBuffMode === 'buff') {
-    label.textContent = '실전 버프·도핑 적용 기준';
+    label.textContent = `실전 버프·도핑 적용 기준 (${currentArch.shortName})`;
     label.style.color = '#34d399';
   } else {
-    label.textContent = '마을 노버프 기준';
+    label.textContent = `마을 노버프 기준 (${currentArch.shortName})`;
     label.style.color = '#38bdf8';
   }
 
@@ -111,8 +145,8 @@ function renderMinSpecTable(effectiveBuffMode) {
       ${keys.map(k => `<td ${bgStyle(k)}>${data[k].equip}</td>`).join('')}
     </tr>
     <tr>
-      <td><b>🛡️ 마법방어력</b></td>
-      ${keys.map(k => `<td ${bgStyle(k)}><b>${data[k].mdef.toLocaleString()}</b>+</td>`).join('')}
+      <td><b>${currentArch.icon} ${currentArch.statName}</b></td>
+      ${keys.map(k => `<td ${bgStyle(k)}><b>${data[k].reqMain.toLocaleString()}</b>+</td>`).join('')}
     </tr>
     <tr>
       <td><b>🎯 명중률</b></td>
@@ -315,28 +349,40 @@ function getSelectedBuffBonus() {
 
 
 function evaluateStats() {
+  const currentArch = getCurrentArchetype();
   const targetKey = document.getElementById('target-dungeon') ? document.getElementById('target-dungeon').value : 'rokagos';
   const bonus = getSelectedBuffBonus();
 
   // Determine whether we evaluate against 'buff' threshold or 'nobuff' threshold
   const effectiveMode = (inputMode === 'buff' || bonus.count > 0) ? 'buff' : 'nobuff';
-  const req = thresholds[effectiveMode][targetKey];
+  const req = currentArch.thresholds[effectiveMode][targetKey];
   
+  // Update Card 1 UI
+  const cardMainTitle = document.getElementById('card-mainstat-title');
+  if (cardMainTitle) cardMainTitle.textContent = `${currentArch.icon} ${currentArch.statName} (${currentArch.statCode})`;
+  
+  const inMdef = document.getElementById('in-mdef');
+  if (inMdef && inMdef.getAttribute('data-arch') !== currentArch.id) {
+    inMdef.setAttribute('data-arch', currentArch.id);
+    inMdef.placeholder = currentArch.placeholder;
+  }
+
   // Render Minimum Spec Table (최저 수치 정리표 실시간 렌더링)
   renderMinSpecTable(effectiveMode);
 
   // Update target chips (최저 수치 기준 칩 실시간 갱신)
   const modeTag = effectiveMode === 'buff' ? '실전 기준' : '마을 기준';
-  if (document.getElementById('req-mdef')) document.getElementById('req-mdef').textContent = `${modeTag}: ${req.mdef.toLocaleString()}+`;
+  if (document.getElementById('req-mdef')) document.getElementById('req-mdef').textContent = `${modeTag}: ${req.reqMain.toLocaleString()}+`;
   if (document.getElementById('req-acc'))  document.getElementById('req-acc').textContent  = `${modeTag}: ${req.acc.toLocaleString()}+`;
   if (document.getElementById('req-elem')) document.getElementById('req-elem').textContent = `${modeTag}: ${req.elem}+`;
   if (document.getElementById('req-eta'))  document.getElementById('req-eta').textContent  = `기준: ${req.eta}+`;
 
+  const addMain = getDopingBonusForArch(currentArch.id, bonus);
   const fields = [
-    { id: 'mdef', raw: document.getElementById('in-mdef').value, add: bonus.mdef, min: req.mdef, unit: '' },
-    { id: 'acc',  raw: document.getElementById('in-acc').value,  add: bonus.acc,  min: req.acc,  unit: '' },
-    { id: 'elem', raw: document.getElementById('in-elem').value, add: bonus.elem, min: req.elem, unit: '' },
-    { id: 'eta',  raw: document.getElementById('in-eta').value,  add: 0,          min: req.eta,  unit: 'Lv' }
+    { id: 'mdef', raw: document.getElementById('in-mdef').value, add: addMain,   min: req.reqMain, unit: '', name: currentArch.statName },
+    { id: 'acc',  raw: document.getElementById('in-acc').value,  add: bonus.acc, min: req.acc,     unit: '', name: '명중률' },
+    { id: 'elem', raw: document.getElementById('in-elem').value, add: bonus.elem,min: req.elem,    unit: '', name: '속성' },
+    { id: 'eta',  raw: document.getElementById('in-eta').value,  add: 0,         min: req.eta,     unit: 'Lv', name: '에타' }
   ];
 
   let enteredCount = 0;
@@ -376,9 +422,8 @@ function evaluateStats() {
       resEl.innerHTML = `<span>달성 (+${diff.toLocaleString()})</span><span>OK</span>`;
     } else {
       resEl.className = 'result-pill res-fail';
-      const labelName = f.id === 'mdef' ? '마방' : (f.id === 'acc' ? '명중' : (f.id === 'elem' ? '속성' : '에타'));
       resEl.innerHTML = `<span>부족 (${diff.toLocaleString()})</span><span>미달</span>`;
-      missItems.push(`${labelName} ${Math.abs(diff)} 부족`);
+      missItems.push(`${f.name} ${Math.abs(diff)} 부족`);
     }
   });
 
@@ -391,14 +436,14 @@ function evaluateStats() {
     } else if (passCount === 4) {
       ovEl.className = 'overall-banner res-pass';
       ovEl.innerHTML = `
-        <span style="font-size:1.05rem;">🎉 <b>[${req.name}]</b> 진입 스펙 충족 완료! (올힛 / 1인분 클리어 가능)</span>
-        <span style="font-size:0.85rem; color:#a7f3d0; margin-top:2px;">모든 최소 컷(마방·명중·속성·에타)을 안정적으로 통과했습니다.</span>
+        <span style="font-size:1.05rem;">🎉 <b>[${req.name}]</b> [${currentArch.shortName}] 진입 스펙 충족 완료! (올힛 / 1인분 클리어 가능)</span>
+        <span style="font-size:0.85rem; color:#a7f3d0; margin-top:2px;">모든 최소 컷(${currentArch.statName}·명중·속성·에타)을 안정적으로 통과했습니다.</span>
       `;
     } else {
       ovEl.className = 'overall-banner res-fail';
       ovEl.innerHTML = `
-        <span style="font-size:1.05rem;">⚠️ <b>[${req.name}]</b> 진입 주의: <b>${missItems.join(' · ')}</b></span>
-        <span style="font-size:0.85rem; color:#fecaca; margin-top:2px;">명중 부족 시 보스 타격 시 미스가 발생하며, 마방 부족 시 급사 위험이 있습니다. 버프 추가 또는 장비 보강을 권장합니다.</span>
+        <span style="font-size:1.05rem;">⚠️ <b>[${req.name}]</b> [${currentArch.shortName}] 진입 주의: <b>${missItems.join(' · ')}</b></span>
+        <span style="font-size:0.85rem; color:#fecaca; margin-top:2px;">명중 부족 시 보스 타격 시 미스가 발생하며, ${currentArch.statName} 부족 시 공략 시간이 길어지거나 급사 위험이 있습니다.</span>
       `;
     }
   }
@@ -425,6 +470,11 @@ function evaluateStats() {
 function loadSavedStats() {
   try {
     const saved = JSON.parse(localStorage.getItem('tw_anais_stat_sim_v2') || '{}');
+    const savedArch = localStorage.getItem('tw_selected_archetype') || saved.archetype || 'magic_def';
+    selectedArchetype = savedArch;
+    const archSelect = document.getElementById('char-archetype-select');
+    if (archSelect) archSelect.value = savedArch;
+
     if (saved.mdef) document.getElementById('in-mdef').value = saved.mdef;
     if (saved.acc) document.getElementById('in-acc').value = saved.acc;
     if (saved.elem) document.getElementById('in-elem').value = saved.elem;
@@ -819,6 +869,12 @@ function applyProfile(id) {
     chk.checked = !!(p.tasks && p.tasks[tKey]);
   });
 
+  if (p.archetype) {
+    selectedArchetype = p.archetype;
+    const archSelect = document.getElementById('char-archetype-select');
+    if (archSelect) archSelect.value = p.archetype;
+  }
+
   evaluateStats();
   updateWeeklyProgress();
 }
@@ -827,6 +883,7 @@ function saveCurrentStateToProfile() {
   const p = profiles.find(x => x.id === currentProfileId);
   if (!p) return;
 
+  p.archetype = selectedArchetype;
   p.mdef = Number(document.getElementById('in-mdef').value) || 0;
   p.acc  = Number(document.getElementById('in-acc').value)  || 0;
   p.elem = Number(document.getElementById('in-elem').value) || 0;
@@ -954,31 +1011,33 @@ function renderDungeonMatrix(effectiveMode, bonus) {
   const grid = document.getElementById('dungeon-matrix-grid');
   if (!grid) return;
 
-  const rawMdef = Number(document.getElementById('in-mdef').value) || 0;
+  const currentArch = getCurrentArchetype();
+  const rawMain = Number(document.getElementById('in-mdef').value) || 0;
   const rawAcc  = Number(document.getElementById('in-acc').value)  || 0;
   const rawEta  = Number(document.getElementById('in-eta').value)  || 0;
 
-  const curMdef = rawMdef + bonus.mdef;
+  const addMain = getDopingBonusForArch(currentArch.id, bonus);
+  const curMain = rawMain + addMain;
   const curAcc  = rawAcc + bonus.acc;
 
   const dKeys = ['shinjo', 'abyss_normal', 'abyss_hell', 'obang_hell', 'rokagos', 'eclipse_high', 'obang_abyss'];
-  const tSet = thresholds[effectiveMode];
+  const tSet = currentArch.thresholds[effectiveMode];
 
   grid.innerHTML = dKeys.map(k => {
     const req = tSet[k];
     const diffAcc = curAcc - req.acc;
-    const diffMdef = curMdef - req.mdef;
+    const diffMain = curMain - req.reqMain;
     const diffEta = rawEta - req.eta;
 
     let badgeClass = 'badge-pass';
     let badgeText = '🟢 올힛·가능';
 
-    if (diffAcc < -50 || diffMdef < -100 || diffEta < 0) {
+    if (diffAcc < -50 || diffMain < -100 || diffEta < 0) {
       badgeClass = 'badge-fail';
       badgeText = '🔴 미달·미스';
-    } else if (diffAcc < 0 || diffMdef < 0) {
+    } else if (diffAcc < 0 || diffMain < 0) {
       badgeClass = 'badge-warn';
-      badgeText = '🟡 명중 주의';
+      badgeText = '🟡 주의 필요';
     }
 
     return `
@@ -994,9 +1053,9 @@ function renderDungeonMatrix(effectiveMode, bonus) {
           </span>
         </div>
         <div class="matrix-stat-row">
-          <span>요구 마방: <b>${req.mdef.toLocaleString()}</b></span>
-          <span style="color:${diffMdef >= 0 ? '#34d399' : '#f87171'}; font-weight:700;">
-            ${diffMdef >= 0 ? '+' + diffMdef : diffMdef}
+          <span>요구 ${currentArch.statCode}: <b>${req.reqMain.toLocaleString()}</b></span>
+          <span style="color:${diffMain >= 0 ? '#34d399' : '#f87171'}; font-weight:700;">
+            ${diffMain >= 0 ? '+' + diffMain : diffMain}
           </span>
         </div>
         <div class="matrix-stat-row" style="border-top:1px dashed #334155; padding-top:4px; margin-top:5px;">
@@ -1845,10 +1904,11 @@ function updateTab1SyncPreview(effectiveMode, bonus) {
 }
 
 function transferTab1ToCoeff() {
-  const typeSelect = document.getElementById('sync-tab1-type');
+  const typeSelect = document.getElementById('sync-tab1-type') || document.getElementById('char-archetype-select');
   const atkInput   = document.getElementById('sync-tab1-atk');
-  const targetType = typeSelect ? typeSelect.value : null;
-  const targetAtk  = (atkInput && atkInput.value.trim()) ? Number(atkInput.value) : null;
+  const targetType = typeSelect ? typeSelect.value : selectedArchetype;
+  const inMdefVal  = Number(document.getElementById('in-mdef').value) || 0;
+  const targetAtk  = (atkInput && atkInput.value.trim()) ? Number(atkInput.value) : (inMdefVal > 0 ? inMdefVal : null);
 
   applyTab1ToCoeff(true, targetType, targetAtk);
 
@@ -1903,12 +1963,16 @@ function applyTab1ToCoeff(showAlert, forceType, forceAtk) {
     const enfMr  = (prof.overrideEnf && prof.overrideEnf.mr) || 0;
     const dopMr  = curBonus.mdef || 0;
     prof.overrideEquip.mr = Math.max(0, effMdef - baseMr - enfMr - dopMr);
-  }
-
-  // If optional attack stat provided, set main stat in overrideEquip
-  if (forceAtk !== null && forceAtk !== undefined && !isNaN(forceAtk)) {
+  } else if (prof.type !== 'magic_def') {
+    // For Attack classes (STAB / HACK / INT), sync main attack stat
     const mainKey = formula.mainStat.toLowerCase();
-    prof.overrideEquip[mainKey] = Number(forceAtk);
+    const curAtk = (forceAtk !== null && forceAtk !== undefined && !isNaN(forceAtk)) ? Number(forceAtk) : rawMdef;
+    if (curAtk > 0) {
+      const baseMain = (prof.baseStats && prof.baseStats[mainKey]) || 0;
+      const enfMain  = (prof.overrideEnf && prof.overrideEnf[mainKey]) || 0;
+      const dopMain  = getDopingBonusForArch(prof.type, curBonus);
+      prof.overrideEquip[mainKey] = Math.max(0, curAtk - baseMain - enfMain - dopMain);
+    }
   }
 
   saveCoeffProfiles();
@@ -1917,7 +1981,8 @@ function applyTab1ToCoeff(showAlert, forceType, forceAtk) {
   calculateCoefficients();
 
   if (showAlert) {
-    alert(`✅ 1번 스펙이 4번 계산기에 성공적으로 연동되었습니다!\n• 명중률(DEX): ${effAcc.toLocaleString()}\n• 마법방어(MR): ${effMdef.toLocaleString()}\n• 도핑: ${curBonus.count}종 실시간 합산 반영`);
+    const currentArch = getCurrentArchetype();
+    alert(`✅ 1번 [${currentArch.name}] 스펙이 4번 계산기에 성공적으로 연동되었습니다!\n• ${currentArch.statName}: ${(prof.type === 'magic_def' ? effMdef : rawMdef).toLocaleString()}\n• 명중률(DEX): ${effAcc.toLocaleString()}\n• 도핑: ${curBonus.count}종 실시간 합산 반영`);
   }
 }
 
