@@ -47,14 +47,16 @@
       <h2>내 스탯 실시간 판독기 (버프 선택 연동 · 가능 / 미스 판정)</h2>
       <div class="sim-toolbar">
         <div class="sim-select-group">
-          <label for="char-archetype-select">👤 내 캐릭터 계열:</label>
+          <label for="char-select">👤 캐릭터 선택:</label>
+          <select id="char-select" class="target-select" onchange="onCharacterSelectChange(this.value)">
+            <!-- Populated dynamically from TW_CHARACTERS -->
+          </select>
+        </div>
+
+        <div class="sim-select-group">
+          <label for="char-archetype-select">⚔️ 육성 계열 선택:</label>
           <select id="char-archetype-select" class="target-select" onchange="onCharArchetypeChange(this.value)">
-            <option value="magic_def" selected>🛡️ 마방캐 (비호 아나이스 / 마방 클로에)</option>
-            <option value="stab">🗡️ 찌르기캐 (루시안 / 이스핀 / 나야 / 시벨린)</option>
-            <option value="hack">🪓 베기캐 (보리스 / 막시민 / 밀라 / 루시안)</option>
-            <option value="magic_atk">🔮 마공캐 (클로에 / 티치엘 / 란지에 / 로아미니)</option>
-            <option value="composite">⚔️ 물리복합캐 (보리스 / 루시안 / 이스핀)</option>
-            <option value="magic_slash">🪄 마법베기캐 (티치엘 / 조슈아)</option>
+            <!-- Populated dynamically based on character -->
           </select>
         </div>
 

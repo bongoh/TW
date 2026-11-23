@@ -88,20 +88,54 @@ function toggleAllBuffs(state) {
   evaluateStats();
 }
 
-// ==================== 1-1. CHARACTER ARCHETYPE CONFIGURATION ====================
+// ==================== 1-1. CHARACTER & ARCHETYPE CONFIGURATION ====================
+let selectedCharacterId = 'anais';
 let selectedArchetype = 'magic_def';
 
 function getCurrentArchetype() {
   return (typeof archetypeConfigs !== 'undefined' && archetypeConfigs[selectedArchetype]) || archetypeConfigs.magic_def;
 }
 
-function getDopingBonusForArch(archId, bonus) {
-  if (!bonus) return 0;
-  if (archId === 'magic_def') return bonus.mdef || 0;
-  if (archId === 'stab' || archId === 'hack') return Math.round((bonus.acc || 0) * 0.7);
-  if (archId === 'magic_atk') return Math.round((bonus.mdef || 0) * 0.5);
-  if (archId === 'composite' || archId === 'magic_slash') return Math.round((bonus.acc || 0) * 0.5);
-  return 0;
+function initCharacterSelectors() {
+  const charSel = document.getElementById('char-select');
+  if (!charSel || typeof TW_CHARACTERS === 'undefined') return;
+
+  charSel.innerHTML = TW_CHARACTERS.map(c => 
+    `<option value="${c.id}" ${c.id === selectedCharacterId ? 'selected' : ''}>${c.name}</option>`
+  ).join('');
+
+  updateArchetypeDropdownForChar(selectedCharacterId, selectedArchetype);
+}
+
+function updateArchetypeDropdownForChar(charId, preferredArchId) {
+  const charObj = (typeof TW_CHARACTERS !== 'undefined' && TW_CHARACTERS.find(c => c.id === charId)) || (typeof TW_CHARACTERS !== 'undefined' ? TW_CHARACTERS[0] : null);
+  if (!charObj) return;
+  selectedCharacterId = charObj.id;
+
+  const archSel = document.getElementById('char-archetype-select');
+  if (!archSel) return;
+
+  archSel.innerHTML = charObj.types.map(t => 
+    `<option value="${t.id}" ${t.id === preferredArchId ? 'selected' : ''}>${t.name}</option>`
+  ).join('');
+
+  const hasMatch = charObj.types.some(t => t.id === preferredArchId);
+  selectedArchetype = hasMatch ? preferredArchId : charObj.defaultType;
+  archSel.value = selectedArchetype;
+
+  const syncTypeSelect = document.getElementById('sync-tab1-type');
+  if (syncTypeSelect) syncTypeSelect.value = selectedArchetype;
+}
+
+function onCharacterSelectChange(charId) {
+  selectedCharacterId = charId;
+  try {
+    localStorage.setItem('tw_selected_character', charId);
+  } catch (e) {}
+
+  const charObj = TW_CHARACTERS.find(c => c.id === charId) || TW_CHARACTERS[0];
+  updateArchetypeDropdownForChar(charId, charObj.defaultType);
+  onCharArchetypeChange(selectedArchetype);
 }
 
 function onCharArchetypeChange(archId) {
@@ -115,10 +149,52 @@ function onCharArchetypeChange(archId) {
 
   evaluateStats();
 
+  if (typeof TW_CHARACTERS !== 'undefined') {
+    const charObj = TW_CHARACTERS.find(c => c.id === selectedCharacterId);
+    if (charObj) {
+      applyCharacterRecommendedGear(charObj, archId);
+    }
+  }
+
   const autoChk = document.getElementById('coeff-tab1-auto-sync');
   if (autoChk && autoChk.checked) {
     applyTab1ToCoeff(false, archId);
   }
+}
+
+function applyCharacterRecommendedGear(charObj, archId) {
+  const branch = charObj.types.find(t => t.id === archId) || charObj.types[0];
+  if (!branch) return;
+  const prof = getActiveCoeffProfile();
+  if (prof && prof.slots) {
+    if (branch.defaultWeapon && itemBaseDb.weapon.some(w => w.id === branch.defaultWeapon)) {
+      if (!prof.slots.weapon) prof.slots.weapon = {};
+      prof.slots.weapon.baseId = branch.defaultWeapon;
+    }
+    if (branch.defaultArmor && itemBaseDb.armor.some(a => a.id === branch.defaultArmor)) {
+      if (!prof.slots.armor) prof.slots.armor = {};
+      prof.slots.armor.baseId = branch.defaultArmor;
+    }
+    if (prof.type !== archId && typeof coeffFormulas !== 'undefined' && coeffFormulas[archId]) {
+      prof.type = archId;
+      document.querySelectorAll('.coeff-type-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === archId);
+      });
+      if (typeof updateCoeffLabels === 'function') updateCoeffLabels();
+    }
+    saveCoeffProfiles();
+    renderCoeffSlots();
+    calculateCoefficients();
+  }
+}
+
+function getDopingBonusForArch(archId, bonus) {
+  if (!bonus) return 0;
+  if (archId === 'magic_def') return bonus.mdef || 0;
+  if (archId === 'stab' || archId === 'hack') return Math.round((bonus.acc || 0) * 0.7);
+  if (archId === 'magic_atk') return Math.round((bonus.mdef || 0) * 0.5);
+  if (archId === 'composite' || archId === 'magic_slash') return Math.round((bonus.acc || 0) * 0.5);
+  return 0;
 }
 
 function renderMinSpecTable(effectiveBuffMode) {
@@ -470,10 +546,15 @@ function evaluateStats() {
 function loadSavedStats() {
   try {
     const saved = JSON.parse(localStorage.getItem('tw_anais_stat_sim_v2') || '{}');
+    const savedChar = localStorage.getItem('tw_selected_character') || saved.characterId || 'anais';
+    selectedCharacterId = savedChar;
     const savedArch = localStorage.getItem('tw_selected_archetype') || saved.archetype || 'magic_def';
     selectedArchetype = savedArch;
-    const archSelect = document.getElementById('char-archetype-select');
-    if (archSelect) archSelect.value = savedArch;
+
+    initCharacterSelectors();
+    const charSelect = document.getElementById('char-select');
+    if (charSelect) charSelect.value = selectedCharacterId;
+    updateArchetypeDropdownForChar(selectedCharacterId, selectedArchetype);
 
     if (saved.mdef) document.getElementById('in-mdef').value = saved.mdef;
     if (saved.acc) document.getElementById('in-acc').value = saved.acc;
@@ -849,6 +930,24 @@ function applyProfile(id) {
   const p = profiles.find(x => x.id === id);
   if (!p) return;
 
+  if (p.characterId) {
+    selectedCharacterId = p.characterId;
+  } else if (p.job === 'roamini') {
+    selectedCharacterId = 'roamini';
+  } else if (p.job === 'yepnen') {
+    selectedCharacterId = 'yepnen';
+  } else if (p.job === 'tichiel_white') {
+    selectedCharacterId = 'tichiel';
+  } else if (p.job === 'cloe') {
+    selectedCharacterId = 'cloe';
+  } else {
+    selectedCharacterId = 'anais';
+  }
+
+  const charSelect = document.getElementById('char-select');
+  if (charSelect) charSelect.value = selectedCharacterId;
+  updateArchetypeDropdownForChar(selectedCharacterId, p.archetype || 'magic_def');
+
   if (document.getElementById('in-mdef')) document.getElementById('in-mdef').value = p.mdef || '';
   if (document.getElementById('in-acc'))  document.getElementById('in-acc').value  = p.acc  || '';
   if (document.getElementById('in-elem')) document.getElementById('in-elem').value = p.elem || '';
@@ -883,6 +982,7 @@ function saveCurrentStateToProfile() {
   const p = profiles.find(x => x.id === currentProfileId);
   if (!p) return;
 
+  p.characterId = selectedCharacterId;
   p.archetype = selectedArchetype;
   p.mdef = Number(document.getElementById('in-mdef').value) || 0;
   p.acc  = Number(document.getElementById('in-acc').value)  || 0;
@@ -1147,6 +1247,7 @@ updateWeeklyProgress = function() {
 };
 
 function bootCompanion() {
+  initCharacterSelectors();
   initProfiles();
   setInterval(updateThursdayCountdown, 1000);
   updateThursdayCountdown();
