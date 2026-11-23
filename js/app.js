@@ -415,6 +415,11 @@ function evaluateStats() {
   if (typeof saveCurrentStateToProfile === 'function') {
     saveCurrentStateToProfile();
   }
+
+  // Update Tab 1 -> Tab 4 Realtime Sync Preview
+  if (typeof updateTab1SyncPreview === 'function') {
+    updateTab1SyncPreview(effectiveMode, bonus);
+  }
 }
 
 function loadSavedStats() {
@@ -1804,12 +1809,143 @@ function onCoeffProfileSelectChange(id) {
   calculateCoefficients();
 }
 
+// ==================== TAB 1 <-> TAB 4 SPEC REUSE & SYNC LOGIC ====================
+
+function updateTab1SyncPreview(effectiveMode, bonus) {
+  const inAcc = document.getElementById('in-acc');
+  const inMdef = document.getElementById('in-mdef');
+  if (!inAcc || !inMdef) return;
+
+  const rawAcc = Number(inAcc.value) || 0;
+  const rawMdef = Number(inMdef.value) || 0;
+  const curBonus = bonus || getSelectedBuffBonus();
+  const effAcc = inputMode === 'nobuff' ? (rawAcc + (curBonus.acc || 0)) : rawAcc;
+  const effMdef = inputMode === 'nobuff' ? (rawMdef + (curBonus.mdef || 0)) : rawMdef;
+
+  // Update Tab 1 card badges
+  const syncAccEl = document.getElementById('sync-val-acc');
+  const syncMdefEl = document.getElementById('sync-val-mdef');
+  const syncDopEl = document.getElementById('sync-val-dop');
+
+  if (syncAccEl)  syncAccEl.textContent  = effAcc.toLocaleString();
+  if (syncMdefEl) syncMdefEl.textContent = effMdef.toLocaleString();
+  if (syncDopEl)  syncDopEl.textContent  = `${curBonus.count}개`;
+
+  // Update Tab 4 status badge
+  const tab4StatusEl = document.getElementById('coeff-tab1-sync-status');
+  if (tab4StatusEl) {
+    tab4StatusEl.innerHTML = `명중: <b style="color:#facc15;">${effAcc.toLocaleString()}</b> · 마방: <b style="color:#38bdf8;">${effMdef.toLocaleString()}</b> · 도핑: <b style="color:#34d399;">${curBonus.count}개</b>`;
+  }
+
+  // Check if auto sync is enabled
+  const autoChk = document.getElementById('coeff-tab1-auto-sync');
+  if (autoChk && autoChk.checked) {
+    applyTab1ToCoeff(false);
+  }
+}
+
+function transferTab1ToCoeff() {
+  const typeSelect = document.getElementById('sync-tab1-type');
+  const atkInput   = document.getElementById('sync-tab1-atk');
+  const targetType = typeSelect ? typeSelect.value : null;
+  const targetAtk  = (atkInput && atkInput.value.trim()) ? Number(atkInput.value) : null;
+
+  applyTab1ToCoeff(true, targetType, targetAtk);
+
+  // Switch to Tab 4
+  const coeffTabBtn = document.querySelector('[data-tab="tab-coeff"]');
+  if (coeffTabBtn) {
+    switchTab('tab-coeff', coeffTabBtn);
+  }
+}
+
+function importFromTab1ToCoeff() {
+  applyTab1ToCoeff(true);
+}
+
+function applyTab1ToCoeff(showAlert, forceType, forceAtk) {
+  const inAcc = document.getElementById('in-acc');
+  const inMdef = document.getElementById('in-mdef');
+  if (!inAcc || !inMdef) return;
+
+  const rawAcc = Number(inAcc.value) || 0;
+  const rawMdef = Number(inMdef.value) || 0;
+  const curBonus = getSelectedBuffBonus();
+  const effAcc = inputMode === 'nobuff' ? (rawAcc + (curBonus.acc || 0)) : rawAcc;
+  const effMdef = inputMode === 'nobuff' ? (rawMdef + (curBonus.mdef || 0)) : rawMdef;
+
+  const prof = getActiveCoeffProfile();
+  if (!prof) return;
+
+  if (forceType) {
+    prof.type = forceType;
+  }
+
+  // Always link Tab 1 doping
+  prof.dopingPreset = 'tab1_link';
+  prof.applyDoping = true;
+
+  const formula = coeffFormulas[prof.type] || coeffFormulas.stab;
+  const baseDex = (prof.baseStats && prof.baseStats.dex) || 0;
+  const dopDex  = curBonus.acc || 0;
+
+  // Set DEX in override mode
+  if (!prof.overrideEquip) prof.overrideEquip = {};
+  if (!prof.overrideEnf) prof.overrideEnf = {};
+
+  if (effAcc > 0) {
+    prof.overrideEquip.dex = Math.max(0, effAcc - baseDex - dopDex);
+  }
+
+  // If Magic Defense class, sync MDEF -> MR
+  if (prof.type === 'magic_def' && effMdef > 0) {
+    const baseMr = (prof.baseStats && prof.baseStats.mr) || 0;
+    const enfMr  = (prof.overrideEnf && prof.overrideEnf.mr) || 0;
+    const dopMr  = curBonus.mdef || 0;
+    prof.overrideEquip.mr = Math.max(0, effMdef - baseMr - enfMr - dopMr);
+  }
+
+  // If optional attack stat provided, set main stat in overrideEquip
+  if (forceAtk !== null && forceAtk !== undefined && !isNaN(forceAtk)) {
+    const mainKey = formula.mainStat.toLowerCase();
+    prof.overrideEquip[mainKey] = Number(forceAtk);
+  }
+
+  saveCoeffProfiles();
+  syncCoeffInputsFromProfile();
+  renderCoeffSlots();
+  calculateCoefficients();
+
+  if (showAlert) {
+    alert(`✅ 1번 스펙이 4번 계산기에 성공적으로 연동되었습니다!\n• 명중률(DEX): ${effAcc.toLocaleString()}\n• 마법방어(MR): ${effMdef.toLocaleString()}\n• 도핑: ${curBonus.count}종 실시간 합산 반영`);
+  }
+}
+
+function toggleTab1AutoSync(checked) {
+  try {
+    localStorage.setItem('tw_coeff_tab1_auto_sync', checked ? 'true' : 'false');
+  } catch (e) {}
+
+  if (checked) {
+    applyTab1ToCoeff(false);
+  }
+}
+
+function initTab1AutoSyncPref() {
+  try {
+    const isAuto = localStorage.getItem('tw_coeff_tab1_auto_sync') === 'true';
+    const chk = document.getElementById('coeff-tab1-auto-sync');
+    if (chk) chk.checked = isAuto;
+  } catch (e) {}
+}
+
 function initCoeffCalculator() {
   loadCoeffProfiles();
   renderCoeffPresetSelect();
   renderCoeffSlots();
   syncCoeffInputsFromProfile();
   calculateCoefficients();
+  initTab1AutoSyncPref();
 }
 
 

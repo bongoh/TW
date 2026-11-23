@@ -1519,6 +1519,37 @@
         <span>📋 종합 진단 결과: 위 칸에 내 스탯을 입력하고 버프를 선택하면 진입 가능 여부를 판정해 드립니다.</span>
       </div>
 
+      <!-- Tab 1 -> Tab 4 Spec Reuse Card -->
+      <div class="spec-to-coeff-card">
+        <div class="spec-to-coeff-header">
+          <span class="spec-to-coeff-title">🧮 1번 스펙 ➡️ 4번 계수 & 명중 계산기 원클릭 연동</span>
+          <span class="tag tag-ready">스펙 재사용</span>
+        </div>
+        <div class="spec-to-coeff-desc">
+          1번에서 입력하신 <b>명중률(<span id="sync-val-acc" style="color:#facc15; font-weight:700;">0</span>)</b>, <b>마법방어(<span id="sync-val-mdef" style="color:#38bdf8; font-weight:700;">0</span>)</b>, <b>도핑(<span id="sync-val-dop" style="color:#34d399; font-weight:700;">0개</span>)</b> 수치를 4번 계산기로 그대로 가져가 계수와 상위 보스 적정성을 바로 계산합니다.
+        </div>
+        <div class="spec-to-coeff-controls">
+          <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; color:#cbd5e1;">
+            <span>내 공격 계열:</span>
+            <select id="sync-tab1-type" class="coeff-slot-select" style="width:auto; margin:0; padding:0.25rem 0.5rem;">
+              <option value="stab">찌르기 (STAB)</option>
+              <option value="hack">베기 (HACK)</option>
+              <option value="magic_def">마법방어 (MR / 비호)</option>
+              <option value="magic_atk">마법공격 (INT)</option>
+              <option value="composite">물리복합 (STAB+HACK)</option>
+              <option value="magic_slash">마법베기 (HACK+INT)</option>
+            </select>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; color:#cbd5e1;">
+            <span>주 공격스탯(선택):</span>
+            <input type="number" id="sync-tab1-atk" class="coeff-slot-input-sm" style="width:75px;" placeholder="예: 1400" title="미입력 시 기본 세팅값 유지">
+          </div>
+          <button type="button" class="spec-to-coeff-btn" onclick="transferTab1ToCoeff()">
+            🚀 4번 계산기로 전송하고 이동
+          </button>
+        </div>
+      </div>
+
       <!-- Multi-Dungeon Real-time Readiness Matrix -->
       <div class="matrix-section">
         <div class="matrix-header">
@@ -3044,6 +3075,23 @@
           <button class="coeff-type-btn" data-type="magic_atk" onclick="switchCoeffType('magic_atk')">마법공격</button>
           <button class="coeff-type-btn" data-type="magic_slash" onclick="switchCoeffType('magic_slash')">마법베기</button>
           <button class="coeff-type-btn" data-type="magic_def" onclick="switchCoeffType('magic_def')">마법방어</button>
+        </div>
+
+        <!-- Tab 1 Integration & Sync Bar -->
+        <div class="coeff-tab1-sync-bar">
+          <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+            <span style="font-weight:700; color:#38bdf8; font-size:0.82rem;">🔗 1번 스펙 연동 현황:</span>
+            <span id="coeff-tab1-sync-status" style="font-size:0.78rem; color:#cbd5e1;">명중: <b style="color:#facc15;">0</b> · 마방: <b style="color:#38bdf8;">0</b> · 도핑: <b style="color:#34d399;">0개</b></span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.6rem; margin-left:auto; flex-wrap:wrap;">
+            <label style="font-size:0.76rem; color:#93c5fd; display:flex; align-items:center; gap:0.35rem; cursor:pointer;">
+              <input type="checkbox" id="coeff-tab1-auto-sync" onchange="toggleTab1AutoSync(this.checked)">
+              1번 스펙 실시간 자동 동기화
+            </label>
+            <button type="button" class="coeff-sync-action-btn" onclick="importFromTab1ToCoeff()">
+              🔄 1번 스펙 지금 불러오기
+            </button>
+          </div>
         </div>
 
         <!-- Main Grid -->
