@@ -3066,6 +3066,7 @@
                 <label for="coeff-apply-doping-chk" style="font-size:0.82rem; color:#cbd5e1; cursor:pointer;">스탯에 도핑 합산 반영</label>
               </div>
               <div id="coeff-doping-status-text" style="font-size:0.75rem; color:#94a3b8; margin-top:0.4rem;">도핑 미적용 (순수 스탯)</div>
+              <button type="button" class="coeff-quick-btn doping-quick" onclick="activateTab1BasicDoping()">⚡ Tab 1 필수 도핑 8종 즉시 활성화</button>
               <div style="font-size:0.72rem; color:#64748b; margin-top:0.4rem; line-height:1.4;">
                 ※ 프리셋을 선택하거나 Tab 1에서 체크한 도핑 물약 목록을 실시간 합산하여 스탯에 가산합니다.
               </div>
@@ -3076,26 +3077,27 @@
               <div class="coeff-card-title">
                 <span>👤 기본 스탯</span>
               </div>
-              <div class="coeff-stat-row">
-                <span class="coeff-stat-label">STAB</span>
+              <div class="coeff-stat-row" id="coeff-base-row-stab">
+                <span class="coeff-stat-label">STAB <span id="coeff-base-badge-stab" class="coeff-subtag">⭐ 주스탯</span></span>
                 <input type="number" id="coeff-base-stab" class="coeff-stat-input" value="658" onchange="onBaseStatChange('stab', this.value)">
               </div>
-              <div class="coeff-stat-row">
-                <span class="coeff-stat-label">HACK</span>
+              <div class="coeff-stat-row" id="coeff-base-row-hack">
+                <span class="coeff-stat-label">HACK <span id="coeff-base-badge-hack" class="coeff-subtag">🔹 보조스탯</span></span>
                 <input type="number" id="coeff-base-hack" class="coeff-stat-input" value="66" onchange="onBaseStatChange('hack', this.value)">
               </div>
-              <div class="coeff-stat-row">
-                <span class="coeff-stat-label">INT</span>
+              <div class="coeff-stat-row" id="coeff-base-row-int">
+                <span class="coeff-stat-label">INT <span id="coeff-base-badge-int" class="coeff-subtag" style="display:none;"></span></span>
                 <input type="number" id="coeff-base-int" class="coeff-stat-input" value="0" onchange="onBaseStatChange('int', this.value)">
               </div>
-              <div class="coeff-stat-row">
-                <span class="coeff-stat-label">MR</span>
+              <div class="coeff-stat-row" id="coeff-base-row-mr">
+                <span class="coeff-stat-label">MR <span id="coeff-base-badge-mr" class="coeff-subtag" style="display:none;"></span></span>
                 <input type="number" id="coeff-base-mr" class="coeff-stat-input" value="0" onchange="onBaseStatChange('mr', this.value)">
               </div>
               <div class="coeff-stat-row">
-                <span class="coeff-stat-label highlight">DEX</span>
+                <span class="coeff-stat-label highlight">DEX (명중)</span>
                 <input type="number" id="coeff-base-dex" class="coeff-stat-input" style="color:#facc15;" value="708" onchange="onBaseStatChange('dex', this.value)">
               </div>
+              <button type="button" class="coeff-quick-btn" onclick="fillStandardStatsForType()">⚡ 현재 계열 표준 스탯 자동 채우기</button>
             </div>
 
             <!-- Additional Bonus Card -->
@@ -3136,36 +3138,39 @@
                 <span>⚙️ 장비/강화 수동 총합 (옵션)</span>
               </div>
               <div style="font-size:0.73rem; color:#94a3b8; margin-bottom:0.5rem; line-height:1.4;">
-                상단 <b>'수동 총합 고정 모드'</b> 활성화 시 아래 총합으로 고정 연산됩니다 (스크린샷 수치 재현용).
+                상단 <b>'수동 총합 고정 모드'</b> 활성화 시 아래 총합으로 고정 연산됩니다 (계열별 자동 대응).
               </div>
               <div class="coeff-stat-row">
-                <span class="coeff-stat-label">장비 STAB</span>
-                <input type="number" id="coeff-ov-equip-stab" class="coeff-stat-input" value="1400" onchange="onOverrideChange('equip', 'stab', this.value)">
+                <span class="coeff-stat-label" id="coeff-ov-equip-main-lbl">장비 STAB (주)</span>
+                <input type="number" id="coeff-ov-equip-main" class="coeff-stat-input" value="1400" onchange="onOverrideDynamicChange('equip', 'main', this.value)">
               </div>
               <div class="coeff-stat-row">
-                <span class="coeff-stat-label">장비 HACK</span>
-                <input type="number" id="coeff-ov-equip-hack" class="coeff-stat-input" value="770" onchange="onOverrideChange('equip', 'hack', this.value)">
+                <span class="coeff-stat-label" id="coeff-ov-equip-sub-lbl">장비 HACK (부)</span>
+                <input type="number" id="coeff-ov-equip-sub" class="coeff-stat-input" value="770" onchange="onOverrideDynamicChange('equip', 'sub', this.value)">
               </div>
               <div class="coeff-stat-row">
-                <span class="coeff-stat-label highlight">장비 DEX</span>
-                <input type="number" id="coeff-ov-equip-dex" class="coeff-stat-input" style="color:#facc15;" value="891" onchange="onOverrideChange('equip', 'dex', this.value)">
+                <span class="coeff-stat-label highlight">장비 DEX (명중)</span>
+                <input type="number" id="coeff-ov-equip-dex" class="coeff-stat-input" style="color:#facc15;" value="891" onchange="onOverrideDynamicChange('equip', 'dex', this.value)">
               </div>
               <div class="coeff-stat-row">
-                <span class="coeff-stat-label">강화 STAB</span>
-                <input type="number" id="coeff-ov-enf-stab" class="coeff-stat-input" value="235" onchange="onOverrideChange('enf', 'stab', this.value)">
+                <span class="coeff-stat-label" id="coeff-ov-enf-main-lbl">강화 STAB (주)</span>
+                <input type="number" id="coeff-ov-enf-main" class="coeff-stat-input" value="235" onchange="onOverrideDynamicChange('enf', 'main', this.value)">
               </div>
               <div class="coeff-stat-row">
-                <span class="coeff-stat-label">강화 HACK</span>
-                <input type="number" id="coeff-ov-enf-hack" class="coeff-stat-input" value="0" onchange="onOverrideChange('enf', 'hack', this.value)">
+                <span class="coeff-stat-label" id="coeff-ov-enf-sub-lbl">강화 HACK (부)</span>
+                <input type="number" id="coeff-ov-enf-sub" class="coeff-stat-input" value="0" onchange="onOverrideDynamicChange('enf', 'sub', this.value)">
               </div>
             </div>
           </div>
 
           <!-- Right Column: Equipment Slots Grid -->
           <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
               <h4 style="margin:0; font-size:1.02rem; color:#f8fafc; font-weight:700;">🛡️ 부위별 장비 베이스 & 강화 · 어빌리티 세팅 (12슬롯)</h4>
-              <span style="font-size:0.76rem; color:#94a3b8;">아이템 선택 시 베이스 스탯 자동 로드</span>
+              <div style="display:flex; align-items:center; gap:0.6rem;">
+                <span class="coeff-legend-pill">💡 <b>[주]</b> = 계열 주스탯 · <b>[부]</b> = 보조스탯 · <b>DEX</b> = 명중</span>
+                <span style="font-size:0.76rem; color:#94a3b8;">아이템 선택 시 베이스 스탯 자동 로드</span>
+              </div>
             </div>
             <div id="coeff-equip-grid" class="coeff-equip-grid">
               <!-- Populated dynamically by renderCoeffSlots() -->

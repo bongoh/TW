@@ -288,141 +288,135 @@ const coeffFormulas = {
 
 const itemBaseDb = {
   helm: [
-    { id: 'abyss_helm', name: '어비스 헬름', stab: 102, hack: 102, int: 102, mr: 102, dex: 92 },
-    { id: 'eclipse_helm', name: '이클립스 헬름', stab: 112, hack: 112, int: 112, mr: 112, dex: 105 },
-    { id: 'aquilus_helm', name: '아퀼루스 헬름', stab: 85, hack: 85, int: 85, mr: 81, dex: 75 },
-    { id: 'infernal_helm', name: '인퍼널 헬름', stab: 70, hack: 70, int: 70, mr: 65, dex: 60 },
-    { id: 'custom_helm', name: '직접 입력', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "abyss_helm", name: "어비스 헬름 (마방 134/물리 102)", stab: 102, hack: 102, int: 102, mr: 134, dex: 92 },
+    { id: "eclipse_helm", name: "이클립스 헬름 (112)", stab: 112, hack: 112, int: 112, mr: 112, dex: 105 },
+    { id: "aquilus_helm", name: "아퀼루스 헬름", stab: 85, hack: 85, int: 85, mr: 81, dex: 75 },
+    { id: "infernal_helm", name: "인퍼널 헬름", stab: 70, hack: 70, int: 70, mr: 65, dex: 60 },
+    { id: "custom_helm", name: "직접 입력", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   armor: [
-    { id: 'anomarad_mail', name: '매서운 아노마라드 왕국의 메일', stab: 50, hack: 0, int: 0, mr: 0, dex: 80 },
-    { id: 'anomarad_robe', name: '총명한 아노마라드 왕국의 로브', stab: 0, hack: 0, int: 50, mr: 50, dex: 80 },
-    { id: 'nenyaple_mail', name: '예리한 네냐플 학원의 메일', stab: 50, hack: 50, int: 0, mr: 0, dex: 70 },
-    { id: 'eclipse_robe', name: '이클립스 로브', stab: 0, hack: 0, int: 140, mr: 447, dex: 110 },
-    { id: 'abyss_armor', name: '어비스 아머', stab: 120, hack: 120, int: 120, mr: 120, dex: 95 },
-    { id: 'aquilus_armor', name: '아퀼루스 아머', stab: 95, hack: 95, int: 95, mr: 95, dex: 80 },
-    { id: 'custom_armor', name: '직접 입력', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "anomarad_mail", name: "매서운 아노마라드 메일 (찌르기 50)", stab: 50, hack: 0, int: 0, mr: 0, dex: 80 },
+    { id: "anomarad_robe", name: "총명한 아노마라드 로브 (마공 50)", stab: 0, hack: 0, int: 50, mr: 50, dex: 80 },
+    { id: "nenyaple_mail", name: "예리한 네냐플 학원 메일 (베기 50)", stab: 50, hack: 50, int: 0, mr: 0, dex: 70 },
+    { id: "eclipse_robe", name: "이클립스 로브 (마방 447)", stab: 0, hack: 0, int: 140, mr: 447, dex: 110 },
+    { id: "abyss_armor", name: "어비스 아머 (120)", stab: 120, hack: 120, int: 120, mr: 120, dex: 95 },
+    { id: "aquilus_armor", name: "아퀼루스 아머 (95)", stab: 95, hack: 95, int: 95, mr: 95, dex: 80 },
+    { id: "custom_armor", name: "직접 입력", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   weapon: [
-    { id: 'fairy_rapier', name: '페어리 피타 레이피어', stab: 280, hack: 0, int: 0, mr: 0, dex: 25 },
-    { id: 'abyss_rapier', name: '어비스 레이피어', stab: 374, hack: 130, int: 0, mr: 0, dex: 35 },
-    { id: 'eclipse_sword', name: '이클립스 소드셰이프', stab: 474, hack: 170, int: 0, mr: 0, dex: 50 },
-    { id: 'fairy_staff', name: '페어리 피타 스태프', stab: 0, hack: 0, int: 309, mr: 0, dex: 25 },
-    { id: 'abyss_bell', name: '어비스 핸드벨', stab: 0, hack: 0, int: 130, mr: 354, dex: 35 },
-    { id: 'eclipse_wand', name: '이클립스 완드', stab: 0, hack: 0, int: 474, mr: 170, dex: 50 },
-    { id: 'custom_weapon', name: '직접 입력', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "fairy_rapier", name: "페어리 피타 레이피어 (찌르기 280)", stab: 280, hack: 0, int: 0, mr: 0, dex: 25 },
+    { id: "abyss_rapier", name: "어비스 레이피어 (찌르기 374)", stab: 374, hack: 130, int: 0, mr: 0, dex: 35 },
+    { id: "eclipse_sword", name: "이클립스 소드셰이프 (베기 474)", stab: 170, hack: 474, int: 0, mr: 0, dex: 50 },
+    { id: "fairy_staff", name: "페어리 피타 스태프 (마공 309)", stab: 0, hack: 0, int: 309, mr: 0, dex: 25 },
+    { id: "abyss_bell", name: "어비스 핸드벨 (마방 354 / 마공 130)", stab: 0, hack: 0, int: 130, mr: 354, dex: 35 },
+    { id: "eclipse_wand", name: "이클립스 완드 (마공 474)", stab: 0, hack: 0, int: 474, mr: 170, dex: 50 },
+    { id: "custom_weapon", name: "직접 입력", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   wrist: [
-    { id: 'abyss_wrist', name: '어비스 리스트', stab: 150, hack: 150, int: 150, mr: 150, dex: 65 },
-    { id: 'aquilus_wrist', name: '아퀼루스 암릿', stab: 130, hack: 119, int: 119, mr: 130, dex: 55 },
-    { id: 'eclipse_wrist', name: '이클립스 리스트', stab: 250, hack: 250, int: 250, mr: 250, dex: 85 },
-    { id: 'abyss_armlet', name: '어비스 암릿 (마방/마공)', stab: 0, hack: 0, int: 155, mr: 163, dex: 65 },
-    { id: 'custom_wrist', name: '직접 입력', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "abyss_wrist", name: "어비스 리스트 (물리 150)", stab: 150, hack: 150, int: 0, mr: 0, dex: 65 },
+    { id: "abyss_armlet", name: "어비스 암릿 (마방 163 / 마공 155)", stab: 0, hack: 0, int: 155, mr: 163, dex: 65 },
+    { id: "aquilus_wrist", name: "아퀼루스 암릿 (130)", stab: 130, hack: 119, int: 119, mr: 130, dex: 55 },
+    { id: "eclipse_wrist", name: "이클립스 리스트 (250)", stab: 250, hack: 250, int: 250, mr: 250, dex: 85 },
+    { id: "custom_wrist", name: "직접 입력", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   head: [
-    { id: 'abyss_amulet', name: '어비스 아뮬렛', stab: 102, hack: 102, int: 102, mr: 102, dex: 92 },
-    { id: 'aquilus_amulet', name: '아퀼루스 아뮬렛', stab: 83, hack: 94, int: 94, mr: 94, dex: 75 },
-    { id: 'eclipse_amulet', name: '이클립스 아뮬렛', stab: 112, hack: 112, int: 112, mr: 112, dex: 105 },
-    { id: 'custom_head', name: '직접 입력', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "abyss_amulet", name: "어비스 아뮬렛 (102)", stab: 102, hack: 102, int: 102, mr: 102, dex: 92 },
+    { id: "eclipse_amulet", name: "이클립스 아뮬렛 (112)", stab: 112, hack: 112, int: 112, mr: 112, dex: 105 },
+    { id: "aquilus_amulet", name: "아퀼루스 아뮬렛 (83)", stab: 83, hack: 94, int: 94, mr: 94, dex: 75 },
+    { id: "custom_head", name: "직접 입력", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   wings: [
-    { id: 'abyss_wings', name: '어비스 윙', stab: 124, hack: 124, int: 124, mr: 124, dex: 92 },
-    { id: 'aquilus_wings', name: '아퀼루스 윙', stab: 86, hack: 88, int: 88, mr: 88, dex: 75 },
-    { id: 'eclipse_wings', name: '이클립스 윙', stab: 220, hack: 220, int: 220, mr: 220, dex: 115 },
-    { id: 'custom_wings', name: '직접 입력', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "abyss_wings", name: "어비스 윙 (마방 92 / 물리 124)", stab: 124, hack: 124, int: 124, mr: 92, dex: 92 },
+    { id: "eclipse_wings", name: "이클립스 윙 (220)", stab: 220, hack: 220, int: 220, mr: 220, dex: 115 },
+    { id: "aquilus_wings", name: "아퀼루스 윙 (86)", stab: 86, hack: 88, int: 88, mr: 88, dex: 75 },
+    { id: "custom_wings", name: "직접 입력", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   hands: [
-    { id: 'abyss_gauntlets', name: '어비스 건틀렛', stab: 114, hack: 102, int: 102, mr: 102, dex: 92 },
-    { id: 'aquilus_gauntlets', name: '아퀼루스 건틀렛', stab: 92, hack: 82, int: 82, mr: 82, dex: 75 },
-    { id: 'eclipse_gauntlets', name: '이클립스 건틀렛', stab: 124, hack: 112, int: 112, mr: 112, dex: 105 },
-    { id: 'custom_hands', name: '직접 입력', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "abyss_gauntlets", name: "어비스 건틀렛 (114)", stab: 114, hack: 102, int: 102, mr: 114, dex: 92 },
+    { id: "eclipse_gauntlets", name: "이클립스 건틀렛 (124)", stab: 124, hack: 112, int: 112, mr: 124, dex: 105 },
+    { id: "aquilus_gauntlets", name: "아퀼루스 건틀렛 (92)", stab: 92, hack: 82, int: 82, mr: 82, dex: 75 },
+    { id: "custom_hands", name: "직접 입력", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   boots: [
-    { id: 'abyss_boots', name: '어비스 부츠', stab: 102, hack: 102, int: 102, mr: 102, dex: 92 },
-    { id: 'aquilus_boots', name: '아퀼루스 부츠', stab: 82, hack: 82, int: 82, mr: 82, dex: 75 },
-    { id: 'eclipse_boots', name: '이클립스 부츠', stab: 112, hack: 112, int: 112, mr: 112, dex: 105 },
-    { id: 'custom_boots', name: '직접 입력', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "abyss_boots", name: "어비스 부츠 (102)", stab: 102, hack: 102, int: 102, mr: 102, dex: 92 },
+    { id: "eclipse_boots", name: "이클립스 부츠 (112)", stab: 112, hack: 112, int: 112, mr: 112, dex: 105 },
+    { id: "aquilus_boots", name: "아퀼루스 부츠 (82)", stab: 82, hack: 82, int: 82, mr: 82, dex: 75 },
+    { id: "custom_boots", name: "직접 입력", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   cuff: [
-    { id: 'raido_cuff', name: '라이도 심볼릭 커프', stab: 140, hack: 140, int: 140, mr: 140, dex: 140 },
-    { id: 'berka_cuff', name: '베르카 심볼릭 커프', stab: 110, hack: 110, int: 110, mr: 110, dex: 110 },
-    { id: 'none_cuff', name: '미착용 (0)', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "raido_cuff", name: "라이도 심볼릭 커프 (올스탯 140)", stab: 140, hack: 140, int: 140, mr: 140, dex: 140 },
+    { id: "berka_cuff", name: "베르카 심볼릭 커프 (올스탯 110)", stab: 110, hack: 110, int: 110, mr: 110, dex: 110 },
+    { id: "none_cuff", name: "미착용 (0)", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   effect: [
-    { id: 'zodiac_green', name: '조디악 사인 - 그린', stab: 30, hack: 5, int: 0, mr: 0, dex: 30 },
-    { id: 'beast_cerberus', name: '환수 케르베로스', stab: 20, hack: 5, int: 0, mr: 0, dex: 20 },
-    { id: 'beast_unicorn', name: '환수 유니콘', stab: 0, hack: 0, int: 5, mr: 20, dex: 20 },
-    { id: 'beast_leviathan', name: '환수 리바이어던', stab: 0, hack: 0, int: 20, mr: 5, dex: 20 },
-    { id: 'none_effect', name: '미착용 (0)', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "zodiac_green", name: "조디악 사인 - 그린", stab: 30, hack: 5, int: 0, mr: 0, dex: 30 },
+    { id: "beast_cerberus", name: "환수 케르베로스", stab: 20, hack: 5, int: 0, mr: 0, dex: 20 },
+    { id: "beast_unicorn", name: "환수 유니콘 (마방 20)", stab: 0, hack: 0, int: 5, mr: 20, dex: 20 },
+    { id: "beast_leviathan", name: "환수 리바이어던 (마공 20)", stab: 0, hack: 0, int: 20, mr: 5, dex: 20 },
+    { id: "none_effect", name: "미착용 (0)", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   artifact: [
-    { id: 'akron_defensio', name: '아크론의 자력 디펜시오', stab: 130, hack: 30, int: 0, mr: 0, dex: 45 },
-    { id: 'eclipse_defensio', name: '이클립스의 참력 디펜시오', stab: 190, hack: 30, int: 0, mr: 0, dex: 60 },
-    { id: 'akron_divine', name: '아크론의 신성 디펜시오', stab: 0, hack: 0, int: 30, mr: 130, dex: 45 },
-    { id: 'akron_magic', name: '아크론의 마력', stab: 0, hack: 0, int: 120, mr: 20, dex: 45 },
-    { id: 'none_artifact', name: '미착용 (0)', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "akron_defensio", name: "아크론의 자력 디펜시오", stab: 130, hack: 30, int: 0, mr: 0, dex: 45 },
+    { id: "eclipse_defensio", name: "이클립스의 참력 디펜시오", stab: 190, hack: 30, int: 0, mr: 0, dex: 60 },
+    { id: "akron_divine", name: "아크론의 신성 디펜시오 (마방 130)", stab: 0, hack: 0, int: 30, mr: 130, dex: 45 },
+    { id: "akron_magic", name: "아크론의 마력 (마공 120)", stab: 0, hack: 0, int: 120, mr: 20, dex: 45 },
+    { id: "none_artifact", name: "미착용 (0)", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],
   relic: [
-    { id: 'shinjo_relic', name: '신조의 펜던트, 브레이슬릿', stab: 50, hack: 50, int: 50, mr: 50, dex: 50 },
-    { id: 'lunaria_relic', name: '루나리아 펜던트, 브레이슬릿', stab: 200, hack: 200, int: 200, mr: 200, dex: 200 },
-    { id: 'sun_relic', name: '태양의 펜던트, 브레이슬릿', stab: 17, hack: 17, int: 17, mr: 17, dex: 17 },
-    { id: 'none_relic', name: '미착용 (0)', stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
+    { id: "shinjo_relic", name: "신조의 펜던트, 브레이슬릿", stab: 50, hack: 50, int: 50, mr: 50, dex: 50 },
+    { id: "lunaria_relic", name: "루나리아 펜던트, 브레이슬릿", stab: 200, hack: 200, int: 200, mr: 200, dex: 200 },
+    { id: "sun_relic", name: "태양의 펜던트, 브레이슬릿", stab: 17, hack: 17, int: 17, mr: 17, dex: 17 },
+    { id: "none_relic", name: "미착용 (0)", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ]
 };
 
 // 10대 주요 콘텐츠 및 보스별 계수 & 명중 컷 (DC Inside 216109 & 텔쥐 계수계산기 종합)
 const bossContentGuide = [
-  { id: 'final_battle', name: '최후의 결전', reqCoeff: 95000, reqDex: 2500, desc: '엔드 극딜·초고난도 (DEX 2,500 미만 시 MISS 발생)' },
-  { id: 'golgotha_leader', name: '골고다 선봉대 부대장', reqCoeff: 90000, reqDex: 2450, desc: '골고다 협곡 정예 부대장 (DEX 2,450 컷)' },
-  { id: 'apetiria_hard', name: '아페테리아 (어려움/EX)', reqCoeff: 85000, reqDex: 2400, desc: '아페 어려움·채굴장·색을 잃은 땅 (DEX 2,400 컷)' },
-  { id: 'golgotha_mob', name: '골고다 잡몹 / 오를리 지옥', reqCoeff: 78000, reqDex: 2200, desc: '골고다 잡몹군 및 오를리 방어전 지옥 난이도' },
-  { id: 'vestige', name: '베스티지 (Vestige)', reqCoeff: 75000, reqDex: 1800, desc: '주간 베스티지 전용 레이드 토벌' },
-  { id: 'eclipse_6boss', name: '이클립스 6보스 토벌전', reqCoeff: 70000, reqDex: 1650, desc: '로카고스·에토스·체리아·마티아 등 6종 보스전' },
-  { id: 'odin_war', name: '오딘 전면전', reqCoeff: 65000, reqDex: 1550, desc: '오딘 요새 전면전 및 대규모 공방' },
-  { id: 'abyss_hell', name: '어비스 지옥 (Hell)', reqCoeff: 55000, reqDex: 1350, desc: '심연 3층 어비스 헬 토벌전' },
-  { id: 'shinjo_hard', name: '신조의 둥지 (어려움)', reqCoeff: 50000, reqDex: 1300, desc: '신조 하드 파티 레이드' },
-  { id: 'mercurial_norm', name: '머큐리얼 / 신조·어비스 일반', reqCoeff: 35000, reqDex: 800, desc: '루미너스·신조일반·어비스 1~2층 일반 난이도' }
+  { id: "final_battle", name: "최후의 결전", reqCoeff: 95000, reqDex: 2500, desc: "엔드 극딜·초고난도 (DEX 2,500 미만 시 MISS 발생)" },
+  { id: "golgotha_leader", name: "골고다 선봉대 부대장", reqCoeff: 90000, reqDex: 2450, desc: "골고다 협곡 정예 부대장 (DEX 2,450 컷)" },
+  { id: "apetiria_hard", name: "아페테리아 (어려움/EX)", reqCoeff: 85000, reqDex: 2400, desc: "아페 어려움·채굴장·색을 잃은 땅 (DEX 2,400 컷)" },
+  { id: "golgotha_mob", name: "골고다 잡몹 / 오를리 지옥", reqCoeff: 78000, reqDex: 2200, desc: "골고다 잡몹군 및 오를리 방어전 지옥 난이도" },
+  { id: "vestige", name: "베스티지 (Vestige)", reqCoeff: 75000, reqDex: 1800, desc: "주간 베스티지 전용 레이드 토벌" },
+  { id: "eclipse_6boss", name: "이클립스 6보스 토벌전", reqCoeff: 70000, reqDex: 1650, desc: "로카고스·에토스·체리아·마티아 등 6종 보스전" },
+  { id: "odin_war", name: "오딘 전면전", reqCoeff: 65000, reqDex: 1550, desc: "오딘 요새 전면전 및 대규모 공방" },
+  { id: "abyss_hell", name: "어비스 지옥 (Hell)", reqCoeff: 55000, reqDex: 1350, desc: "심연 3층 어비스 헬 토벌전" },
+  { id: "shinjo_hard", name: "신조의 둥지 (어려움)", reqCoeff: 50000, reqDex: 1300, desc: "신조 하드 파티 레이드" },
+  { id: "mercurial_norm", name: "머큐리얼 / 신조·어비스 일반", reqCoeff: 35000, reqDex: 800, desc: "루미너스·신조일반·어비스 1~2층 일반 난이도" }
 ];
 
 // 도핑 프리셋 정의 (계수 및 명중 계산기 연동용)
 const coeffDopingPresets = {
   none: {
-    name: '도핑 없음',
+    name: "도핑 없음",
     stab: 0, hack: 0, int: 0, mr: 0, dex: 0,
-    desc: '순수 노도핑 상태의 기본 능력치'
+    desc: "순수 노도핑 상태의 기본 능력치"
   },
   basic: {
-    name: '기본 도핑 (스펙 가이드 표준 8종)',
+    name: "기본 도핑 (스펙 가이드 표준 8종)",
     stab: 25, hack: 25, int: 25, mr: 25, dex: 35,
-    desc: '눈사람+改각성+改신뢰+이자벨 고정/비율/대미지+정제앰플+신속포션'
+    desc: "눈사람+改각성+改신뢰+이자벨 고정/비율/대미지+정제앰플+신속포션"
   },
   full: {
-    name: '상급 레이드 풀도핑 (이자벨 특선/비약/Type P)',
+    name: "상급 레이드 풀도핑 (이자벨 특선/비약/Type P)",
     stab: 85, hack: 85, int: 85, mr: 85, dex: 110,
-    desc: '이자벨 특선 3종+비약 3종+사미선령+괴력햄+클럽Type P+소울링크'
+    desc: "이자벨 특선 3종+비약 3종+사미선령+괴력햄+클럽Type P+소울링크"
   },
   tab1_link: {
-    name: 'Tab 1 버프 시뮬레이터 실시간 연동',
+    name: "Tab 1 버프 시뮬레이터 실시간 연동",
     stab: 0, hack: 0, int: 0, mr: 0, dex: 0,
-    desc: 'Tab 1에서 현재 체크된 도핑 항목들의 스탯을 실시간 자동 합산'
+    desc: "Tab 1에서 현재 체크된 도핑 항목들의 스탯을 실시간 자동 합산"
   }
 };
 
-// 계산기 기본 프리셋 (스크린샷 기반)
+// 6개 계열별 정석 검증 프리셋 (구글 시트 & 스크린샷 원본)
 const defaultCoeffProfiles = [
   {
-    id: 'preset_screenshot',
-    name: '펄스핀 이클 6보스 원활',
-    type: 'stab',
-    dopingPreset: 'none',
+    id: "preset_screenshot",
+    name: "① [찌르기] 펄스핀 이클 6보스 원활 (스크린샷 세팅)",
+    type: "stab",
+    dopingPreset: "none",
     applyDoping: false,
-    baseStats: {
-      stab: 658,
-      hack: 66,
-      int: 0,
-      mr: 0,
-      dex: 708
-    },
+    baseStats: { stab: 658, hack: 66, int: 0, mr: 0, dex: 708 },
     bonusStats: {
       avatar: { stab: 10, hack: 10, dex: 10, int: 0, mr: 0 },
       title: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 },
@@ -430,29 +424,170 @@ const defaultCoeffProfiles = [
     },
     core: 0,
     slots: {
-      helm:    { baseId: 'abyss_helm',     enfVal: 20, enfStat: 'HACK', abilMain: 0,  abilSub: 0,  abilDex: 0 },
-      armor:   { baseId: 'anomarad_mail',  enfVal: 0,  enfStat: 'STAB', abilMain: 0,  abilSub: 0,  abilDex: 0 },
-      weapon:  { baseId: 'fairy_rapier',   enfVal: 61, enfStat: 'HACK', abilMain: 21, abilSub: 0,  abilDex: 17 },
-      wrist:   { baseId: 'abyss_wrist',    enfVal: 40, enfStat: 'HACK', abilMain: 0,  abilSub: 0,  abilDex: 0 },
-      head:    { baseId: 'abyss_amulet',   enfVal: 20, enfStat: 'HACK', abilMain: 0,  abilSub: 0,  abilDex: 0 },
-      wings:   { baseId: 'abyss_wings',    enfVal: 30, enfStat: 'HACK', abilMain: 0,  abilSub: 0,  abilDex: 0 },
-      hands:   { baseId: 'abyss_gauntlets',enfVal: 20, enfStat: 'HACK', abilMain: 0,  abilSub: 0,  abilDex: 0 },
-      boots:   { baseId: 'abyss_boots',    enfVal: 20, enfStat: 'HACK', abilMain: 0,  abilSub: 0,  abilDex: 0 },
-      cuff:    { baseId: 'none_cuff',      enfVal: 0,  enfStat: 'STAB', abilMain: 0,  abilSub: 0,  abilDex: 0 },
-      effect:  { baseId: 'none_effect',    enfVal: 0,  enfStat: 'STAB', abilMain: 0,  abilSub: 0,  abilDex: 0 },
-      artifact:{ baseId: 'none_artifact',  enfVal: 0,  enfStat: 'STAB', abilMain: 0,  abilSub: 0,  abilDex: 0 },
-      relic:   { baseId: 'none_relic',     enfVal: 0,  enfStat: 'STAB', abilMain: 0,  abilSub: 0,  abilDex: 0 }
+      helm:    { baseId: "abyss_helm",     enfVal: 20, enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 },
+      armor:   { baseId: "anomarad_mail",  enfVal: 0,  enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 },
+      weapon:  { baseId: "fairy_rapier",   enfVal: 61, enfStat: "STAB", abilMain: 21, abilSub: 0,  abilDex: 17 },
+      wrist:   { baseId: "abyss_wrist",    enfVal: 40, enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 },
+      head:    { baseId: "abyss_amulet",   enfVal: 20, enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 },
+      wings:   { baseId: "abyss_wings",    enfVal: 30, enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 },
+      hands:   { baseId: "abyss_gauntlets",enfVal: 20, enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 },
+      boots:   { baseId: "abyss_boots",    enfVal: 20, enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 },
+      cuff:    { baseId: "none_cuff",      enfVal: 0,  enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 },
+      effect:  { baseId: "none_effect",    enfVal: 0,  enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 },
+      artifact:{ baseId: "none_artifact",  enfVal: 0,  enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 },
+      relic:   { baseId: "none_relic",     enfVal: 0,  enfStat: "STAB", abilMain: 0,  abilSub: 0,  abilDex: 0 }
     },
-    // 사전 수동 합산 오버라이드 지원(장비/어빌 총합)
-    overrideEquip: {
-      stab: 1400,
-      hack: 770,
-      dex: 891
+    overrideEquip: { stab: 1400, hack: 770, dex: 891, int: 0, mr: 0 },
+    overrideEnf: { stab: 235, hack: 0, int: 0, mr: 0 }
+  },
+  {
+    id: "preset_mdef_biho",
+    name: "② [마법방어] 비호/클로에 종결 어비스·이클 (구글 시트 7.5만)",
+    type: "magic_def",
+    dopingPreset: "none",
+    applyDoping: false,
+    baseStats: { stab: 0, hack: 0, int: 550, mr: 850, dex: 850 },
+    bonusStats: {
+      avatar: { stab: 0, hack: 0, dex: 15, int: 0, mr: 15 },
+      title: { stab: 0, hack: 0, dex: 80, int: 80, mr: 80 },
+      card: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 }
     },
-    overrideEnf: {
-      stab: 235,
-      hack: 0
-    }
+    core: 210,
+    slots: {
+      helm:    { baseId: "abyss_helm",     enfVal: 30, enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      armor:   { baseId: "eclipse_robe",   enfVal: 140, enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      weapon:  { baseId: "abyss_bell",     enfVal: 90, enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      wrist:   { baseId: "abyss_armlet",   enfVal: 40, enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      head:    { baseId: "eclipse_amulet", enfVal: 60, enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      wings:   { baseId: "abyss_wings",    enfVal: 20, enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      hands:   { baseId: "abyss_gauntlets",enfVal: 20, enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      boots:   { baseId: "abyss_boots",    enfVal: 20, enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      cuff:    { baseId: "raido_cuff",     enfVal: 0,  enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      effect:  { baseId: "beast_unicorn",  enfVal: 235, enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      artifact:{ baseId: "akron_divine",   enfVal: 30, enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 },
+      relic:   { baseId: "shinjo_relic",   enfVal: 0,  enfStat: "MR", abilMain: 0, abilSub: 0, abilDex: 0 }
+    },
+    overrideEquip: { stab: 0, hack: 0, int: 1037, mr: 1953, dex: 920 },
+    overrideEnf: { stab: 0, hack: 0, int: 0, mr: 945 }
+  },
+  {
+    id: "preset_hack_end",
+    name: "③ [베기] 이클립스 엔드 세팅 (구글 시트 12.8만)",
+    type: "hack",
+    dopingPreset: "none",
+    applyDoping: false,
+    baseStats: { stab: 550, hack: 850, int: 0, mr: 0, dex: 850 },
+    bonusStats: {
+      avatar: { stab: 15, hack: 15, dex: 15, int: 0, mr: 0 },
+      title: { stab: 80, hack: 80, dex: 80, int: 0, mr: 0 },
+      card: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 }
+    },
+    core: 480,
+    slots: {
+      helm:    { baseId: "eclipse_helm",     enfVal: 60, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      armor:   { baseId: "nenyaple_mail",    enfVal: 90, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      weapon:  { baseId: "eclipse_sword",    enfVal: 170, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      wrist:   { baseId: "eclipse_wrist",    enfVal: 140, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      head:    { baseId: "eclipse_amulet",   enfVal: 60, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      wings:   { baseId: "eclipse_wings",    enfVal: 100, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      hands:   { baseId: "eclipse_gauntlets",enfVal: 60, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      boots:   { baseId: "eclipse_boots",    enfVal: 60, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      cuff:    { baseId: "raido_cuff",       enfVal: 0,  enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      effect:  { baseId: "zodiac_green",     enfVal: 570, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      artifact:{ baseId: "eclipse_defensio", enfVal: 30, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      relic:   { baseId: "lunaria_relic",    enfVal: 0,  enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 }
+    },
+    overrideEquip: { stab: 1438, hack: 2109, dex: 980, int: 0, mr: 0 },
+    overrideEnf: { stab: 530, hack: 1870, int: 0, mr: 0 }
+  },
+  {
+    id: "preset_matk",
+    name: "④ [마법공격] 아퀼·어비스 혼합 세팅 (구글 시트 4.5만)",
+    type: "magic_atk",
+    dopingPreset: "none",
+    applyDoping: false,
+    baseStats: { stab: 0, hack: 0, int: 850, mr: 550, dex: 800 },
+    bonusStats: {
+      avatar: { stab: 0, hack: 0, dex: 15, int: 15, mr: 15 },
+      title: { stab: 0, hack: 0, dex: 60, int: 60, mr: 60 },
+      card: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 }
+    },
+    core: 30,
+    slots: {
+      helm:    { baseId: "aquilus_helm",   enfVal: 30, enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      armor:   { baseId: "anomarad_robe",  enfVal: 0,  enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      weapon:  { baseId: "fairy_staff",    enfVal: 61, enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      wrist:   { baseId: "aquilus_wrist",  enfVal: 30, enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      head:    { baseId: "aquilus_amulet", enfVal: 30, enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      wings:   { baseId: "aquilus_wings",  enfVal: 30, enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      hands:   { baseId: "aquilus_gauntlets", enfVal: 30, enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      boots:   { baseId: "aquilus_boots",  enfVal: 30, enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      cuff:    { baseId: "raido_cuff",     enfVal: 0,  enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      effect:  { baseId: "beast_leviathan",enfVal: 30, enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      artifact:{ baseId: "akron_magic",    enfVal: 20, enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 },
+      relic:   { baseId: "sun_relic",      enfVal: 0,  enfStat: "INT", abilMain: 0, abilSub: 0, abilDex: 0 }
+    },
+    overrideEquip: { stab: 0, hack: 0, int: 1289, mr: 723, dex: 850 },
+    overrideEnf: { stab: 0, hack: 0, int: 321, mr: 0 }
+  },
+  {
+    id: "preset_composite",
+    name: "⑤ [물리복합] 보리스/루시안 세팅 (구글 시트 7.1만)",
+    type: "composite",
+    dopingPreset: "none",
+    applyDoping: false,
+    baseStats: { stab: 700, hack: 700, int: 0, mr: 0, dex: 800 },
+    bonusStats: {
+      avatar: { stab: 15, hack: 15, dex: 15, int: 0, mr: 0 },
+      title: { stab: 80, hack: 80, dex: 80, int: 0, mr: 0 },
+      card: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 }
+    },
+    core: 210,
+    slots: {
+      helm:    { baseId: "abyss_helm",     enfVal: 20, enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      armor:   { baseId: "anomarad_mail",  enfVal: 70, enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      weapon:  { baseId: "abyss_rapier",   enfVal: 70, enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      wrist:   { baseId: "abyss_wrist",    enfVal: 40, enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      head:    { baseId: "eclipse_amulet", enfVal: 60, enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      wings:   { baseId: "abyss_wings",    enfVal: 30, enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      hands:   { baseId: "abyss_gauntlets",enfVal: 20, enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      boots:   { baseId: "abyss_boots",    enfVal: 20, enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      cuff:    { baseId: "raido_cuff",     enfVal: 0,  enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      effect:  { baseId: "beast_cerberus", enfVal: 235, enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      artifact:{ baseId: "akron_defensio", enfVal: 30, enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 },
+      relic:   { baseId: "shinjo_relic",   enfVal: 0,  enfStat: "STAB", abilMain: 0, abilSub: 0, abilDex: 0 }
+    },
+    overrideEquip: { stab: 1533, hack: 1132, dex: 890, int: 0, mr: 0 },
+    overrideEnf: { stab: 855, hack: 210, int: 0, mr: 0 }
+  },
+  {
+    id: "preset_mslash",
+    name: "⑥ [마법베기] 티치엘/조슈아 세팅 (구글 시트 5.2만)",
+    type: "magic_slash",
+    dopingPreset: "none",
+    applyDoping: false,
+    baseStats: { stab: 0, hack: 800, int: 700, mr: 0, dex: 850 },
+    bonusStats: {
+      avatar: { stab: 0, hack: 15, dex: 15, int: 15, mr: 0 },
+      title: { stab: 0, hack: 80, dex: 80, int: 80, mr: 0 },
+      card: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 }
+    },
+    core: 210,
+    slots: {
+      helm:    { baseId: "abyss_helm",     enfVal: 30, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      armor:   { baseId: "anomarad_mail",  enfVal: 60, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      weapon:  { baseId: "eclipse_sword",  enfVal: 120, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      wrist:   { baseId: "abyss_wrist",    enfVal: 40, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      head:    { baseId: "eclipse_amulet", enfVal: 60, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      wings:   { baseId: "abyss_wings",    enfVal: 30, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      hands:   { baseId: "abyss_gauntlets",enfVal: 20, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      boots:   { baseId: "abyss_boots",    enfVal: 20, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      cuff:    { baseId: "raido_cuff",     enfVal: 0,  enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      effect:  { baseId: "beast_cerberus", enfVal: 235, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      artifact:{ baseId: "akron_magic",    enfVal: 30, enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 },
+      relic:   { baseId: "shinjo_relic",   enfVal: 0,  enfStat: "HACK", abilMain: 0, abilSub: 0, abilDex: 0 }
+    },
+    overrideEquip: { stab: 0, hack: 1650, dex: 920, int: 1100, mr: 0 },
+    overrideEnf: { stab: 0, hack: 1200, int: 350, mr: 0 }
   }
 ];
-

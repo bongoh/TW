@@ -1096,7 +1096,7 @@ function bootCompanion() {
 
 // ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
 // 출처: 구글 스프레드시트(텔쥐 계수계산기) & 디시인사이드 144536, 216109
-const COEFF_STORAGE_KEY = 'tw_coeff_calculator_profiles_v2';
+const COEFF_STORAGE_KEY = 'tw_coeff_calculator_profiles_v3';
 let coeffProfiles = [];
 let activeCoeffProfileId = 'preset_screenshot';
 let coeffEquipMode = 'override'; // 'override' = matches user screenshot 1400/770/891, 'slots' = dynamic sum
@@ -1146,36 +1146,84 @@ function renderCoeffPresetSelect() {
   });
 }
 
+function getSlotPreview(slotKey, baseId, typeKey) {
+  const formula = coeffFormulas[typeKey] || coeffFormulas.stab;
+  const dbList = itemBaseDb[slotKey] || [];
+  const currItem = dbList.find(i => i.id === baseId) || dbList[0] || {};
+  const mainVal = currItem[formula.mainStat.toLowerCase()] || 0;
+  const subVal = currItem[formula.subStat.toLowerCase()] || 0;
+  const dexVal = currItem.dex || 0;
+  return `[주] ${formula.mainStat} ${mainVal} / [부] ${formula.subStat} ${subVal} (DEX ${dexVal})`;
+}
+
 function switchCoeffType(typeKey) {
   const prof = getActiveCoeffProfile();
   prof.type = typeKey;
   saveCoeffProfiles();
 
   document.querySelectorAll('.coeff-type-btn').forEach(btn => {
-    if (btn.dataset.type === typeKey) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
+    btn.classList.toggle('active', btn.dataset.type === typeKey);
   });
 
   updateCoeffLabels();
+  renderCoeffSlots();
+  syncCoeffInputsFromProfile();
   calculateCoefficients();
 }
 
 function updateCoeffLabels() {
   const prof = getActiveCoeffProfile();
   const formula = coeffFormulas[prof.type] || coeffFormulas.stab;
+  
+  // Update bonus table headers
   const labelMain = document.getElementById('coeff-label-main');
   const labelSub  = document.getElementById('coeff-label-sub');
   if (labelMain) labelMain.textContent = formula.mainStat;
   if (labelSub)  labelSub.textContent  = formula.subStat;
+
+  // Highlight and badge base stat rows
+  ['stab', 'hack', 'int', 'mr'].forEach(st => {
+    const row = document.getElementById(`coeff-base-row-${st}`);
+    const badge = document.getElementById(`coeff-base-badge-${st}`);
+    if (st === formula.mainStat.toLowerCase()) {
+      if (row) row.classList.add('main-stat-highlight');
+      if (badge) {
+        badge.textContent = '⭐ 주스탯';
+        badge.style.display = 'inline-block';
+        badge.style.color = '#38bdf8';
+      }
+    } else if (st === formula.subStat.toLowerCase()) {
+      if (row) row.classList.remove('main-stat-highlight');
+      if (badge) {
+        badge.textContent = '🔹 보조스탯';
+        badge.style.display = 'inline-block';
+        badge.style.color = '#a78bfa';
+      }
+    } else {
+      if (row) row.classList.remove('main-stat-highlight');
+      if (badge) {
+        badge.style.display = 'none';
+      }
+    }
+  });
+
+  // Dynamic Override Labels
+  const ovEquipMainLbl = document.getElementById('coeff-ov-equip-main-lbl');
+  const ovEquipSubLbl  = document.getElementById('coeff-ov-equip-sub-lbl');
+  const ovEnfMainLbl   = document.getElementById('coeff-ov-enf-main-lbl');
+  const ovEnfSubLbl    = document.getElementById('coeff-ov-enf-sub-lbl');
+
+  if (ovEquipMainLbl) ovEquipMainLbl.textContent = `장비 ${formula.mainStat} (주)`;
+  if (ovEquipSubLbl)  ovEquipSubLbl.textContent  = `장비 ${formula.subStat} (부)`;
+  if (ovEnfMainLbl)   ovEnfMainLbl.textContent   = `강화 ${formula.mainStat} (주)`;
+  if (ovEnfSubLbl)    ovEnfSubLbl.textContent    = `강화 ${formula.subStat} (부)`;
 }
 
 function renderCoeffSlots() {
   const container = document.getElementById('coeff-equip-grid');
   if (!container) return;
   const prof = getActiveCoeffProfile();
+  const formula = coeffFormulas[prof.type] || coeffFormulas.stab;
 
   const slotMeta = [
     { key: 'helm',     name: '투구' },
@@ -1194,10 +1242,10 @@ function renderCoeffSlots() {
 
   let html = '';
   slotMeta.forEach(s => {
-    const slotData = (prof.slots && prof.slots[s.key]) || { baseId: '', enfVal: 0, enfStat: 'HACK', abilMain: 0, abilSub: 0, abilDex: 0 };
+    const slotData = (prof.slots && prof.slots[s.key]) || { baseId: '', enfVal: 0, enfStat: formula.mainStat, abilMain: 0, abilSub: 0, abilDex: 0 };
+    if (!slotData.enfStat) slotData.enfStat = formula.mainStat;
     const dbList = itemBaseDb[s.key] || [];
-    const currItem = dbList.find(i => i.id === slotData.baseId) || dbList[0] || {};
-    const preview = `M:${currItem.mr || currItem.int || 0} / S:${currItem.stab || currItem.hack || 0} (D:${currItem.dex || 0})`;
+    const preview = getSlotPreview(s.key, slotData.baseId, prof.type);
 
     html += `
       <div class="coeff-slot-card" data-slot="${s.key}">
@@ -1210,17 +1258,19 @@ function renderCoeffSlots() {
         </select>
         <div class="coeff-slot-row">
           <span class="coeff-slot-tag">강화</span>
-          <input type="number" class="coeff-slot-input-sm" value="${slotData.enfVal || 0}" onchange="onSlotEnfChange('${s.key}', this.value)" min="0" max="100">
+          <input type="number" class="coeff-slot-input-sm" value="${slotData.enfVal || 0}" onchange="onSlotEnfChange('${s.key}', this.value)" min="0" max="1000">
           <select class="coeff-slot-select" style="width: auto; margin-bottom: 0; padding: 0.2rem 0.4rem;" onchange="onSlotEnfStatChange('${s.key}', this.value)">
-            <option value="HACK" ${slotData.enfStat === 'HACK' ? 'selected' : ''}>HACK</option>
-            <option value="STAB" ${slotData.enfStat === 'STAB' ? 'selected' : ''}>STAB</option>
-            <option value="INT"  ${slotData.enfStat === 'INT'  ? 'selected' : ''}>INT</option>
-            <option value="MR"   ${slotData.enfStat === 'MR'   ? 'selected' : ''}>MR</option>
+            <option value="${formula.mainStat}" ${slotData.enfStat === formula.mainStat ? 'selected' : ''}>${formula.mainStat} (주)</option>
+            <option value="${formula.subStat}"  ${slotData.enfStat === formula.subStat ? 'selected' : ''}>${formula.subStat} (부)</option>
+            <option value="STAB" ${slotData.enfStat === 'STAB' && slotData.enfStat !== formula.mainStat && slotData.enfStat !== formula.subStat ? 'selected' : ''}>STAB</option>
+            <option value="HACK" ${slotData.enfStat === 'HACK' && slotData.enfStat !== formula.mainStat && slotData.enfStat !== formula.subStat ? 'selected' : ''}>HACK</option>
+            <option value="INT"  ${slotData.enfStat === 'INT'  && slotData.enfStat !== formula.mainStat && slotData.enfStat !== formula.subStat ? 'selected' : ''}>INT</option>
+            <option value="MR"   ${slotData.enfStat === 'MR'   && slotData.enfStat !== formula.mainStat && slotData.enfStat !== formula.subStat ? 'selected' : ''}>MR</option>
           </select>
         </div>
         <div class="coeff-slot-row">
           <span class="coeff-slot-tag">어빌</span>
-          <input type="number" class="coeff-slot-input-sm" placeholder="주" value="${slotData.abilMain || 0}" onchange="onSlotAbilChange('${s.key}', 'abilMain', this.value)" title="주스탯 어빌">
+          <input type="number" class="coeff-slot-input-sm" placeholder="${formula.mainStat}" value="${slotData.abilMain || 0}" onchange="onSlotAbilChange('${s.key}', 'abilMain', this.value)" title="${formula.mainStat} 어빌">
           <input type="number" class="coeff-slot-input-sm" placeholder="DEX" value="${slotData.abilDex || 0}" onchange="onSlotAbilChange('${s.key}', 'abilDex', this.value)" title="DEX 어빌">
         </div>
       </div>
@@ -1232,6 +1282,7 @@ function renderCoeffSlots() {
 
 function syncCoeffInputsFromProfile() {
   const prof = getActiveCoeffProfile();
+  const formula = coeffFormulas[prof.type] || coeffFormulas.stab;
   
   // Type tabs
   document.querySelectorAll('.coeff-type-btn').forEach(btn => {
@@ -1252,36 +1303,39 @@ function syncCoeffInputsFromProfile() {
   const statMr   = document.getElementById('coeff-base-mr');
   const statDex  = document.getElementById('coeff-base-dex');
 
-  if (statStab) statStab.value = prof.baseStats.stab || 0;
-  if (statHack) statHack.value = prof.baseStats.hack || 0;
-  if (statInt)  statInt.value  = prof.baseStats.int  || 0;
-  if (statMr)   statMr.value   = prof.baseStats.mr   || 0;
-  if (statDex)  statDex.value  = prof.baseStats.dex  || 0;
+  if (statStab) statStab.value = (prof.baseStats && prof.baseStats.stab) || 0;
+  if (statHack) statHack.value = (prof.baseStats && prof.baseStats.hack) || 0;
+  if (statInt)  statInt.value  = (prof.baseStats && prof.baseStats.int)  || 0;
+  if (statMr)   statMr.value   = (prof.baseStats && prof.baseStats.mr)   || 0;
+  if (statDex)  statDex.value  = (prof.baseStats && prof.baseStats.dex)  || 0;
 
   // Avatar bonus
   const avStab = document.getElementById('coeff-avatar-stab');
   const avHack = document.getElementById('coeff-avatar-hack');
   const avDex  = document.getElementById('coeff-avatar-dex');
-  if (avStab) avStab.value = (prof.bonusStats.avatar && prof.bonusStats.avatar.stab) || 10;
-  if (avHack) avHack.value = (prof.bonusStats.avatar && prof.bonusStats.avatar.hack) || 10;
-  if (avDex)  avDex.value  = (prof.bonusStats.avatar && prof.bonusStats.avatar.dex)  || 10;
+  if (avStab) avStab.value = (prof.bonusStats && prof.bonusStats.avatar && prof.bonusStats.avatar.stab) || 10;
+  if (avHack) avHack.value = (prof.bonusStats && prof.bonusStats.avatar && prof.bonusStats.avatar.hack) || 10;
+  if (avDex)  avDex.value  = (prof.bonusStats && prof.bonusStats.avatar && prof.bonusStats.avatar.dex)  || 10;
 
   // Core
   const coreInput = document.getElementById('coeff-core-input');
   if (coreInput) coreInput.value = prof.core || 0;
 
-  // Override fields
-  const ovEquipStab = document.getElementById('coeff-ov-equip-stab');
-  const ovEquipHack = document.getElementById('coeff-ov-equip-hack');
-  const ovEquipDex  = document.getElementById('coeff-ov-equip-dex');
-  const ovEnfStab   = document.getElementById('coeff-ov-enf-stab');
-  const ovEnfHack   = document.getElementById('coeff-ov-enf-hack');
+  // Dynamic Override fields based on active formula
+  const mainKey = formula.mainStat.toLowerCase();
+  const subKey  = formula.subStat.toLowerCase();
 
-  if (ovEquipStab) ovEquipStab.value = (prof.overrideEquip && prof.overrideEquip.stab) || 1400;
-  if (ovEquipHack) ovEquipHack.value = (prof.overrideEquip && prof.overrideEquip.hack) || 770;
-  if (ovEquipDex)  ovEquipDex.value  = (prof.overrideEquip && prof.overrideEquip.dex)  || 891;
-  if (ovEnfStab)   ovEnfStab.value   = (prof.overrideEnf && prof.overrideEnf.stab) || 235;
-  if (ovEnfHack)   ovEnfHack.value   = (prof.overrideEnf && prof.overrideEnf.hack) || 0;
+  const ovEquipMainInput = document.getElementById('coeff-ov-equip-main');
+  const ovEquipSubInput  = document.getElementById('coeff-ov-equip-sub');
+  const ovEquipDexInput  = document.getElementById('coeff-ov-equip-dex');
+  const ovEnfMainInput   = document.getElementById('coeff-ov-enf-main');
+  const ovEnfSubInput    = document.getElementById('coeff-ov-enf-sub');
+
+  if (ovEquipMainInput) ovEquipMainInput.value = (prof.overrideEquip && prof.overrideEquip[mainKey]) || 0;
+  if (ovEquipSubInput)  ovEquipSubInput.value  = (prof.overrideEquip && prof.overrideEquip[subKey]) || 0;
+  if (ovEquipDexInput)  ovEquipDexInput.value  = (prof.overrideEquip && prof.overrideEquip.dex) || 0;
+  if (ovEnfMainInput)   ovEnfMainInput.value   = (prof.overrideEnf && prof.overrideEnf[mainKey]) || 0;
+  if (ovEnfSubInput)    ovEnfSubInput.value    = (prof.overrideEnf && prof.overrideEnf[subKey]) || 0;
 
   // Mode badge
   const modeBtn = document.getElementById('coeff-mode-toggle-btn');
@@ -1290,16 +1344,95 @@ function syncCoeffInputsFromProfile() {
   }
 }
 
+function onOverrideDynamicChange(cat, role, val) {
+  const prof = getActiveCoeffProfile();
+  const formula = coeffFormulas[prof.type] || coeffFormulas.stab;
+  const mainKey = formula.mainStat.toLowerCase();
+  const subKey  = formula.subStat.toLowerCase();
+  const num = Number(val) || 0;
+
+  if (cat === 'equip') {
+    if (!prof.overrideEquip) prof.overrideEquip = {};
+    if (role === 'main') prof.overrideEquip[mainKey] = num;
+    else if (role === 'sub') prof.overrideEquip[subKey] = num;
+    else if (role === 'dex') prof.overrideEquip.dex = num;
+  } else if (cat === 'enf') {
+    if (!prof.overrideEnf) prof.overrideEnf = {};
+    if (role === 'main') prof.overrideEnf[mainKey] = num;
+    else if (role === 'sub') prof.overrideEnf[subKey] = num;
+  }
+
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function fillStandardStatsForType() {
+  const prof = getActiveCoeffProfile();
+  const formula = coeffFormulas[prof.type] || coeffFormulas.stab;
+  const archetype = defaultCoeffProfiles.find(p => p.type === prof.type) || defaultCoeffProfiles[0];
+
+  prof.baseStats = JSON.parse(JSON.stringify(archetype.baseStats));
+  prof.bonusStats = JSON.parse(JSON.stringify(archetype.bonusStats));
+  prof.core = archetype.core;
+  prof.overrideEquip = JSON.parse(JSON.stringify(archetype.overrideEquip));
+  prof.overrideEnf = JSON.parse(JSON.stringify(archetype.overrideEnf));
+  if (archetype.slots) {
+    prof.slots = JSON.parse(JSON.stringify(archetype.slots));
+  }
+
+  saveCoeffProfiles();
+  syncCoeffInputsFromProfile();
+  renderCoeffSlots();
+  calculateCoefficients();
+  alert(`✅ [${formula.name}] 구글 스프레드시트 표준 스탯과 장비 세팅이 자동 반영되었습니다!`);
+}
+
+function activateTab1BasicDoping() {
+  const basicBuffKeys = [
+    'awakening_potion',
+    'trust_potion',
+    'isabelle_fixed',
+    'isabelle_percent',
+    'isabelle_damage',
+    'purified_ampoule',
+    'haste_potion'
+  ];
+
+  basicBuffKeys.forEach(k => {
+    const chk = document.querySelector(`.buff-chk[data-key="${k}"]`);
+    if (chk) chk.checked = true;
+  });
+
+  inputMode = 'nobuff';
+  const btnNoBuff = document.getElementById('btn-nobuff');
+  const btnBuff = document.getElementById('btn-buff');
+  if (btnNoBuff) btnNoBuff.className = 'toggle-btn active';
+  if (btnBuff)   btnBuff.className = 'toggle-btn';
+
+  evaluateStats();
+
+  const prof = getActiveCoeffProfile();
+  prof.dopingPreset = 'tab1_link';
+  prof.applyDoping = true;
+  saveCoeffProfiles();
+
+  const dopSelect = document.getElementById('coeff-doping-select');
+  if (dopSelect) dopSelect.value = 'tab1_link';
+  const dopChk = document.getElementById('coeff-apply-doping-chk');
+  if (dopChk) dopChk.checked = true;
+
+  calculateCoefficients();
+}
+
 function onSlotBaseChange(slotKey, baseId) {
   const prof = getActiveCoeffProfile();
+  if (!prof.slots) prof.slots = {};
   if (!prof.slots[slotKey]) prof.slots[slotKey] = {};
   prof.slots[slotKey].baseId = baseId;
 
-  const dbList = itemBaseDb[slotKey] || [];
-  const item = dbList.find(i => i.id === baseId) || {};
   const previewEl = document.getElementById(`slot-preview-${slotKey}`);
   if (previewEl) {
-    previewEl.textContent = `M:${item.mr || item.int || 0} / S:${item.stab || item.hack || 0} (D:${item.dex || 0})`;
+    previewEl.textContent = getSlotPreview(slotKey, baseId, prof.type);
   }
   saveCoeffProfiles();
   calculateCoefficients();
@@ -1307,6 +1440,7 @@ function onSlotBaseChange(slotKey, baseId) {
 
 function onSlotEnfChange(slotKey, val) {
   const prof = getActiveCoeffProfile();
+  if (!prof.slots) prof.slots = {};
   if (!prof.slots[slotKey]) prof.slots[slotKey] = {};
   prof.slots[slotKey].enfVal = Number(val) || 0;
   saveCoeffProfiles();
@@ -1315,6 +1449,7 @@ function onSlotEnfChange(slotKey, val) {
 
 function onSlotEnfStatChange(slotKey, val) {
   const prof = getActiveCoeffProfile();
+  if (!prof.slots) prof.slots = {};
   if (!prof.slots[slotKey]) prof.slots[slotKey] = {};
   prof.slots[slotKey].enfStat = val;
   saveCoeffProfiles();
@@ -1323,6 +1458,7 @@ function onSlotEnfStatChange(slotKey, val) {
 
 function onSlotAbilChange(slotKey, field, val) {
   const prof = getActiveCoeffProfile();
+  if (!prof.slots) prof.slots = {};
   if (!prof.slots[slotKey]) prof.slots[slotKey] = {};
   prof.slots[slotKey][field] = Number(val) || 0;
   saveCoeffProfiles();
@@ -1331,6 +1467,7 @@ function onSlotAbilChange(slotKey, field, val) {
 
 function onBaseStatChange(statKey, val) {
   const prof = getActiveCoeffProfile();
+  if (!prof.baseStats) prof.baseStats = {};
   prof.baseStats[statKey] = Number(val) || 0;
   saveCoeffProfiles();
   calculateCoefficients();
@@ -1338,6 +1475,7 @@ function onBaseStatChange(statKey, val) {
 
 function onBonusStatChange(cat, statKey, val) {
   const prof = getActiveCoeffProfile();
+  if (!prof.bonusStats) prof.bonusStats = {};
   if (!prof.bonusStats[cat]) prof.bonusStats[cat] = {};
   prof.bonusStats[cat][statKey] = Number(val) || 0;
   saveCoeffProfiles();
@@ -1384,6 +1522,13 @@ function toggleCoeffDopingApply(checked) {
   const prof = getActiveCoeffProfile();
   prof.applyDoping = !!checked;
   saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function onCoeffProfileSelectChange(id) {
+  activeCoeffProfileId = id;
+  renderCoeffSlots();
+  syncCoeffInputsFromProfile();
   calculateCoefficients();
 }
 
@@ -1461,11 +1606,15 @@ function calculateCoefficients() {
       const dbList = itemBaseDb[slotKey] || [];
       const item = dbList.find(i => i.id === slot.baseId) || dbList[0] || {};
 
-      equipSum.stab += (item.stab || 0) + (Number(slot.abilMain) || 0);
-      equipSum.hack += (item.hack || 0) + (Number(slot.abilSub) || 0);
+      equipSum.stab += (item.stab || 0);
+      equipSum.hack += (item.hack || 0);
       equipSum.int  += (item.int  || 0);
       equipSum.mr   += (item.mr   || 0);
       equipSum.dex  += (item.dex  || 0) + (Number(slot.abilDex) || 0);
+
+      // Abil main added to active mainStat
+      const currentMainKey = (coeffFormulas[prof.type] || coeffFormulas.stab).mainStat.toLowerCase();
+      equipSum[currentMainKey] += (Number(slot.abilMain) || 0);
 
       const enfVal = Number(slot.enfVal) || 0;
       if (slot.enfStat === 'STAB') enfSum.stab += enfVal;
