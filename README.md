@@ -20,8 +20,11 @@ talesweaver_guide/
 │       ├── rokagos_pattern_1.png
 │       └── rokagos_pattern_2.png
 ├── .gitignore               # 불필요한 시스템 파일 제외
+├── DEV_NOTES.md             # v0.001부터의 버전별 상세 개발 노트 (ChangeLog)
 └── README.md                # 프로젝트 설명 및 GitHub Pages 배포 가이드
 ```
+
+> 📖 **버전별 상세 개발 이력은 [DEV_NOTES.md](file:///Users/bokim/.gemini/antigravity/scratch/talesweaver_guide/DEV_NOTES.md)에서 확인하실 수 있습니다.**
 
 ---
 
