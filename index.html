@@ -1615,12 +1615,13 @@
       </p>
 
       <div class="boss-sub-nav">
-        <button class="boss-sub-btn active" onclick="switchBossPanel('bp-rokagos', this)">🔥 이클립스: 로카고스</button>
-        <button class="boss-sub-btn" onclick="switchBossPanel('bp-eclipse-others', this)">🌑 이클립스: 기타 보스 (에토스 등)</button>
+        <button class="boss-sub-btn active" onclick="switchBossPanel('bp-rokagos', this)">🔥 이클립스 1: 로카고스</button>
+        <button class="boss-sub-btn" onclick="switchBossPanel('bp-eclipse-ethos-lycos', this)">🐺 이클립스 2: 에토스 & 라이코스</button>
+        <button class="boss-sub-btn" onclick="switchBossPanel('bp-eclipse-cheria-mathia', this)">💣 이클립스 3: 체리아 & 마티아</button>
+        <button class="boss-sub-btn" onclick="switchBossPanel('bp-eclipse-tyroros-apetiria', this)">🗿 이클립스 4: 티로로스 & 아페티리아</button>
         <button class="boss-sub-btn" onclick="switchBossPanel('bp-shin-abyss', this)">🦅 신조 · 어비스헬 · 오방헬</button>
-        <button class="boss-sub-btn" onclick="switchBossPanel('bp-siokan-obang', this)">❄️ 시오칸 · 오방 어비스 (5각)</button>
+        <button class="boss-sub-btn" onclick="switchBossPanel('bp-abendon-special', this)">🪙 어벤던로드 & 특화 던전 (타이탄·베스티지 등)</button>
         <button class="boss-sub-btn" onclick="switchBossPanel('bp-daily-eclipse', this)">⚡ 보급품 탈환 · 별동대</button>
-        <button class="boss-sub-btn" onclick="switchBossPanel('bp-abendon-special', this)">🪙 어벤던로드 & 특화 던전 (타이탄·수르트·닉스 등)</button>
       </div>
 
       <!-- PANEL 1: ROKAGOS -->
@@ -1713,10 +1714,12 @@
       </div>
 
       <!-- PANEL 2: ECLIPSE OTHER BOSSES -->
-      <div id="bp-eclipse-others" class="boss-panel">
+      
+      <!-- bp-eclipse-ethos-lycos: 에토스 & 라이코스 상세 공략 -->
+      <div id="bp-eclipse-ethos-lycos" class="boss-panel">
         <div class="pattern-card">
           <div class="pattern-header">
-            <span class="pattern-title">① 에토스 (이클립스 중상위 보스)</span>
+            <span class="pattern-title">① 에토스 (이클립스 2보스)</span>
             <span class="tag tag-critical">에타 21+ · 마방 2,000+</span>
           </div>
           <ul>
@@ -1769,19 +1772,239 @@
             <div class="svg-legend-item"><div class="svg-legend-color" style="background:#3b82f6;"></div><span>TWChatOverlay 실시간 화살표 연동</span></div>
           </div>
         </div>
-
         </div>
+
         <div class="pattern-card">
           <div class="pattern-header">
-            <span class="pattern-title">② 라이코스 · 티르카 · 아칸 등 기타 토벌 보스 공통 수칙</span>
-            <span class="tag tag-qte">주간 20회 통합</span>
+            <span class="pattern-title">② 라이코스 (수색대의 군영 - 거대 사냥개)</span>
+            <span class="tag tag-move">후방 포지셔닝 필수</span>
           </div>
           <ul>
-            <li><b>바닥 경고 장판 우선 이탈:</b> 이클립스 보스들은 즉사급/고대미지 장판 패턴을 보유하고 있으므로 <b>대자연의 기운</b> 이동속도 버프를 상시 유지합니다.</li>
-            <li><b>감전·빙결·기절 등 디버프 케어:</b> 파티원 피격 시 즉시 장판 위치를 재정비하여 딜로스를 최소화합니다.</li>
+            <li><b>전방 공격 집중 & 후방/측면 절대 안전지대:</b> 보스의 '입맛 다시기(부채꼴 할퀴기)'와 '맹렬히 짖기(직선 돌진)'는 모두 전방 180도로만 발동합니다. <b>보스의 후방(엉덩이)이나 측면에 자리를 잡고 딜링</b>하면 피격되지 않고 안전하게 공략할 수 있습니다.</li>
+            <li><b>'씩씩거린다' 기믹 (정사각형 장판):</b> 맵에 생성되는 사각 장판을 밟거나 방치하면 군견 쫄이 소환되어 라이코스에게 공/방 버프를 줍니다. 장판을 밟지 말고 소환된 쫄은 로키 광역기로 빠르게 정리합니다.</li>
+            <li><b>광폭화 대처:</b> 체력이 깎이면 공속이 폭증하므로 비호정령의 어스 프로텍션과 생명의 빛 위에서 SP 쉴드를 켜고 맞딜로 신속히 마무리합니다.</li>
+          </ul>
+          
+        <div class="svg-diagram-card" style="margin-top: 1rem;">
+          <h4 style="color:#f87171; margin-bottom:0.75rem; font-size:1.02rem;">
+            🐺 라이코스 공격 방향 & 후방/측면 절대 안전지대 전술도
+          </h4>
+          <svg viewBox="0 0 760 260" style="max-width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+            <rect width="760" height="260" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+            
+            <!-- Danger Front Zone -->
+            <path d="M 380 130 L 620 40 A 260 260 0 0 1 620 220 Z" fill="rgba(239, 68, 68, 0.25)" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 3"/>
+            <text x="520" y="105" fill="#fca5a5" font-size="13" font-weight="bold" text-anchor="middle">⚠️ 전방 180도 위험 구역</text>
+            <text x="520" y="130" fill="#f87171" font-size="11" text-anchor="middle">입맛 다시기 (부채꼴 할퀴기)</text>
+            <text x="520" y="150" fill="#f87171" font-size="11" text-anchor="middle">맹렬히 짖기 (직선 돌진)</text>
+
+            <!-- Safe Back Zone -->
+            <path d="M 380 130 L 140 40 A 260 260 0 0 0 140 220 Z" fill="rgba(16, 185, 129, 0.25)" stroke="#10b981" stroke-width="2"/>
+            <text x="240" y="110" fill="#34d399" font-size="14" font-weight="bold" text-anchor="middle">🟢 후방 절대 안전지대</text>
+            <text x="240" y="135" fill="#a7f3d0" font-size="12" text-anchor="middle">비호 힐 장판 (생명의 빛)</text>
+            <text x="240" y="155" fill="#6ee7b7" font-size="11" text-anchor="middle">딜러 후방 집중 딜링</text>
+
+            <!-- Center Boss Lycos -->
+            <circle cx="380" cy="130" r="36" fill="#450a0a" stroke="#ef4444" stroke-width="3"/>
+            <text x="380" y="134" fill="#fee2e2" font-size="12" font-weight="bold" text-anchor="middle">라이코스</text>
+            <!-- Eyes/Nose pointing right -->
+            <polygon points="410,130 425,124 425,136" fill="#ef4444"/>
+
+            <!-- Square Minion Warning (Bottom Corner) -->
+            <rect x="30" y="195" width="200" height="48" rx="6" fill="#1e1b4b" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="130" y="215" fill="#c084fc" font-size="11" font-weight="bold" text-anchor="middle">■ 씩씩거린다 (정사각 장판)</text>
+            <text x="130" y="233" fill="#e0e7ff" font-size="10" text-anchor="middle">밟지 말고 소환 즉시 쫄 점사!</text>
+          </svg>
+          <div class="svg-legend">
+            <div class="svg-legend-item"><div class="svg-legend-color" style="background:#ef4444;"></div><span>전방 위험 구역 (부채꼴/직선 공격)</span></div>
+            <div class="svg-legend-item"><div class="svg-legend-color" style="background:#10b981;"></div><span>후방 절대 안전지대 (딜러/비호 위치)</span></div>
+            <div class="svg-legend-item"><div class="svg-legend-color" style="background:#818cf8;"></div><span>정사각 장판 (쫄 소환 방지)</span></div>
+          </div>
+        </div>
+
+        </div>
+      </div>
+
+
+      <!-- bp-eclipse-cheria-mathia: 체리아 & 마티아 상세 공략 -->
+      <div id="bp-eclipse-cheria-mathia" class="boss-panel">
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">① 체리아 (지원부대의 군영 - 폭발 전문 자매)</span>
+            <span class="tag tag-critical">⚠️ 안티포션 사용 & 사망 금지</span>
+          </div>
+          <div style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.6rem;">
+            체리아는 이클립스 6보스 중 가장 까다로운 보스 중 하나입니다. 지뢰/폭탄 살포와 함께 포션 기믹 및 사망 페널티를 숙지해야 합니다.
+          </div>
+          <ul>
+            <li><b>🧪 강화 포션 vs 안티 포션 메커니즘:</b>
+              <br>• <b>강화 포션:</b> 바닥에 떨어지는 포션을 획득하면 플레이어의 공격력 증가 및 피격 대미지 감소 버프가 누적됩니다.
+              <br>• <b>안티 포션 (핵심!):</b> 획득 후 <b>체리아(보스)에게 '더블클릭'하여 사용하면 체리아의 강화 버프를 강제로 삭제</b>시킬 수 있습니다!
+            </li>
+            <li><b>⚠️ 사망 페널티 [압수] 디버프:</b> 플레이어가 전투 불능이 되면 장비 스탯이 -30% 이상 감소하는 <b>[압수]</b> 디버프가 부여되고 몬스터가 급격히 강해지므로 <b>절대 죽지 않는 것이 최우선</b>입니다.</li>
+            <li><b>광폭화 대처:</b> 플레이어의 강화 포션 섭취량에 비례해 체리아도 함께 광폭화하므로, 안티포션으로 버프를 지우거나 비호의 가드 블레스 / 부활의 향수로 버티며 딜찍누합니다.</li>
+          </ul>
+          
+        <div class="svg-diagram-card" style="margin-top: 1rem;">
+          <h4 style="color:#fbbf24; margin-bottom:0.75rem; font-size:1.02rem;">
+            💣 체리아 포션 메커니즘 & 안티포션 더블클릭 파훼 전술도
+          </h4>
+          <svg viewBox="0 0 760 230" style="max-width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+            <rect width="760" height="230" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+            
+            <!-- Box 1: Buff Potion -->
+            <rect x="30" y="35" width="215" height="160" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="137" y="65" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">① 바닥 드랍: 강화 포션</text>
+            <circle cx="137" cy="105" r="24" fill="#172554" stroke="#38bdf8" stroke-width="2"/>
+            <text x="137" y="111" fill="#93c5fd" font-size="16" text-anchor="middle">🧪</text>
+            <text x="137" y="150" fill="#93c5fd" font-size="11" font-weight="bold" text-anchor="middle">플레이어 공격력 UP</text>
+            <text x="137" y="168" fill="#94a3b8" font-size="10" text-anchor="middle">피격 대미지 감소 중첩</text>
+
+            <!-- Box 2: Anti Potion -->
+            <rect x="272" y="35" width="215" height="160" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+            <text x="379" y="65" fill="#34d399" font-size="13" font-weight="bold" text-anchor="middle">② 핵심: 안티 포션 활용</text>
+            <circle cx="379" cy="105" r="24" fill="#064e3b" stroke="#10b981" stroke-width="2"/>
+            <text x="379" y="111" fill="#a7f3d0" font-size="16" text-anchor="middle">🧪</text>
+            <text x="379" y="148" fill="#a7f3d0" font-size="11" font-weight="bold" text-anchor="middle">보스에게 더블클릭!</text>
+            <text x="379" y="168" fill="#6ee7b7" font-size="10" text-anchor="middle">체리아 강화 버프 강제 해제</text>
+
+            <!-- Box 3: Penalty Warning -->
+            <rect x="515" y="35" width="215" height="160" rx="8" fill="#450a0a" stroke="#ef4444" stroke-width="2"/>
+            <text x="622" y="65" fill="#f87171" font-size="13" font-weight="bold" text-anchor="middle">③ ⚠️ 사망 시 [압수] 디버프</text>
+            <circle cx="622" cy="105" r="24" fill="#7f1d1d" stroke="#ef4444" stroke-width="2"/>
+            <text x="622" y="111" fill="#fee2e2" font-size="15" text-anchor="middle">💀</text>
+            <text x="622" y="148" fill="#fca5a5" font-size="11" font-weight="bold" text-anchor="middle">장비 스탯 대폭 감소</text>
+            <text x="622" y="168" fill="#fecaca" font-size="10" text-anchor="middle">체리아 폭주 (절대 생존 최우선)</text>
+          </svg>
+        </div>
+
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">② 마티아 (마법부대의 군영 - 서클릿 사제)</span>
+            <span class="tag tag-qte">배리어 피신 & 장판 틈새</span>
+          </div>
+          <ul>
+            <li><b>⚠️ [멸망의 기원] (회피 불가 광폭화 광역기):</b> 마티아가 시전하는 전멸기는 맵 어디에 있어도 피할 수 없습니다. <b>오직 생성된 [배리어 돔 내부]로 쏙 들어가야만 대미지를 대폭 감소시켜 생존</b>할 수 있습니다! (※ 배리어 파괴 시 마티아 체력이 일부 회복되므로 비호는 오버 페이스로 파티 딜링 지원)</li>
+            <li><b>3초 원형 폭발 & 빈 틈새 안착:</b> 타격 위치 표시 후 3초 뒤 폭발하는 원형 장판은 <b>원과 원 사이의 빈 틈새 공간</b>에 안착하면 피격되지 않습니다.</li>
+            <li><b>화염 용오름 연막:</b> 맵 전체를 도는 화염 연막은 닿으면 다단히트 피해를 입으므로 시계 방향으로 돌며 외곽에서 무빙 회피합니다.</li>
+          </ul>
+          
+        <div class="svg-diagram-card" style="margin-top: 1rem;">
+          <h4 style="color:#f97316; margin-bottom:0.75rem; font-size:1.02rem;">
+            🔥 마티아 [멸망의 기원] 배리어 피신 & 장판 틈새 회피 전술도
+          </h4>
+          <svg viewBox="0 0 760 240" style="max-width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+            <rect width="760" height="240" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+            
+            <!-- Left Side: Barrier Evacuation -->
+            <rect x="35" y="35" width="330" height="170" rx="10" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="200" y="65" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">① [멸망의 기원] 회피 불가 광역기</text>
+            <!-- Barrier Dome -->
+            <ellipse cx="200" cy="135" rx="55" ry="40" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 2"/>
+            <circle cx="200" cy="135" r="16" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1.5"/>
+            <text x="200" y="140" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">파티원</text>
+            <text x="200" y="195" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle">반드시 [배리어 돔 내부]로 쏙 진입!</text>
+
+            <!-- Arrow -->
+            <path d="M 380 120 L 405 120" stroke="#f59e0b" stroke-width="3" fill="none"/>
+
+            <!-- Right Side: Circular Gap Evacuation -->
+            <rect x="420" y="35" width="305" height="170" rx="10" fill="#1e293b" stroke="#f97316" stroke-width="1.5"/>
+            <text x="572" y="65" fill="#fdba74" font-size="13" font-weight="bold" text-anchor="middle">② 3초 원형 폭발 & 화염 연막 회피</text>
+            <!-- Overlapping Red Circles -->
+            <circle cx="530" cy="125" r="34" fill="rgba(239, 68, 68, 0.25)" stroke="#ef4444" stroke-width="1.5"/>
+            <circle cx="615" cy="125" r="34" fill="rgba(239, 68, 68, 0.25)" stroke="#ef4444" stroke-width="1.5"/>
+            <!-- Safe Gap Dot -->
+            <circle cx="572" cy="125" r="8" fill="#10b981" stroke="#34d399" stroke-width="2"/>
+            <text x="572" y="175" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle">원과 원 사이 [빈 틈새] 안착</text>
+            <text x="572" y="193" fill="#fdba74" font-size="10" text-anchor="middle">회전 용오름: 시계 방향 무빙 회피</text>
+          </svg>
+        </div>
+
+        </div>
+      </div>
+
+
+      <!-- bp-eclipse-tyroros-apetiria: 티로로스 & 아페티리아 일반 상세 공략 -->
+      <div id="bp-eclipse-tyroros-apetiria" class="boss-panel">
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">① 티로로스 (메달의 사제)</span>
+            <span class="tag tag-critical">⚠️ 2번 회오리 석상 1순위 파괴!</span>
+          </div>
+          <div style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.6rem;">
+            티로로스전은 <b>"진짜 보스는 보스가 아니라 쫄과 석상이다"</b>라는 말이 있을 정도로 석상 우선순위와 쫄 정리가 클리어의 핵심입니다.
+          </div>
+          <ul>
+            <li><b>★ [1순위 최우선 격파] 위쪽 2번째 '이계의 회오리 석상':</b>
+              <br>6개 석상 구역 중 위쪽 2번째에 위치한 <b>'이계의 회오리 석상'</b>은 캐릭터의 <b>공격력과 명중률을 무려 50%나 반토막</b> 냅니다! 이 석상을 먼저 부수지 않으면 모든 딜이 미스 나므로 <b>입장 즉시 1순위로 점사 파괴</b>해야 합니다.</li>
+            <li><b>나머지 석상 및 쫄 몰이 소탕:</b> 티로로스와 함께 소환되는 정예 쫄들의 화력이 매우 치명적입니다. 비호정령의 <b>로키(광역 도발) + 생명의 빛 + 오버 페이스</b>를 깔고 쫄 무리를 한곳으로 몰아 일괄 소탕합니다.</li>
+          </ul>
+          
+        <div class="svg-diagram-card" style="margin-top: 1rem;">
+          <h4 style="color:#c084fc; margin-bottom:0.75rem; font-size:1.02rem;">
+            🗿 티로로스 6대 석상 배치도 & 1순위 [이계의 회오리] 파괴 전술도
+          </h4>
+          <svg viewBox="0 0 760 250" style="max-width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+            <rect width="760" height="250" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+            
+            <!-- Map Boundaries -->
+            <rect x="30" y="35" width="700" height="180" rx="10" fill="#1e1b4b" stroke="#4338ca" stroke-width="1.5"/>
+            <text x="380" y="58" fill="#c7d2fe" font-size="12" font-weight="bold" text-anchor="middle">티로로스 사원 6개 석상 구역 맵 조감도</text>
+
+            <!-- Statues Top Row -->
+            <rect x="80" y="75" width="160" height="55" rx="6" fill="#312e81" stroke="#6366f1" stroke-width="1"/>
+            <text x="160" y="98" fill="#e0e7ff" font-size="11" text-anchor="middle">1번: 북서 석상</text>
+            <text x="160" y="118" fill="#94a3b8" font-size="10" text-anchor="middle">통상 파괴</text>
+
+            <!-- TARGET: Top 2nd Statue (RED HIGHLIGHT) -->
+            <rect x="300" y="70" width="160" height="65" rx="6" fill="#7f1d1d" stroke="#ef4444" stroke-width="2.5"/>
+            <text x="380" y="92" fill="#fecaca" font-size="12" font-weight="bold" text-anchor="middle">★ 2번: 이계의 회오리</text>
+            <text x="380" y="110" fill="#fca5a5" font-size="10" font-weight="bold" text-anchor="middle">⚠️ [공격·명중 -50% 반토막!]</text>
+            <text x="380" y="125" fill="#fef08a" font-size="10" font-weight="bold" text-anchor="middle">👉 1순위 최우선 격파!</text>
+
+            <rect x="520" y="75" width="160" height="55" rx="6" fill="#312e81" stroke="#6366f1" stroke-width="1"/>
+            <text x="600" y="98" fill="#e0e7ff" font-size="11" text-anchor="middle">3번: 북동 석상</text>
+            <text x="600" y="118" fill="#94a3b8" font-size="10" text-anchor="middle">통상 파괴</text>
+
+            <!-- Bottom Row: Minions & Boss -->
+            <rect x="80" y="145" width="160" height="55" rx="6" fill="#312e81" stroke="#6366f1" stroke-width="1"/>
+            <text x="160" y="168" fill="#e0e7ff" font-size="11" text-anchor="middle">4번: 남서 석상</text>
+            <text x="160" y="188" fill="#94a3b8" font-size="10" text-anchor="middle">통상 파괴</text>
+
+            <!-- Boss & Minions Center -->
+            <circle cx="380" cy="172" r="24" fill="#3730a3" stroke="#818cf8" stroke-width="2"/>
+            <text x="380" y="176" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">티로로스</text>
+            <text x="380" y="205" fill="#a5b4fc" font-size="10" text-anchor="middle">쫄 몰이 후 로키 도발/오버페이스 일괄 소탕</text>
+
+            <rect x="520" y="145" width="160" height="55" rx="6" fill="#312e81" stroke="#6366f1" stroke-width="1"/>
+            <text x="600" y="168" fill="#e0e7ff" font-size="11" text-anchor="middle">6번: 남동 석상</text>
+            <text x="600" y="188" fill="#94a3b8" font-size="10" text-anchor="middle">통상 파괴</text>
+          </svg>
+        </div>
+
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">② 아페티리아 일반 (상실의 섬 엔드 사제 레이드)</span>
+            <span class="tag tag-move">3대 사제 순차 공략 · 맞딜 금지</span>
+          </div>
+          <ul>
+            <li><b>진행 구조:</b> 상실의 섬 선행 퀘스트 완료 후 진입하는 복합 엔드 레이드로, 3대 사제 보스가 구간별로 순차 등장합니다.</li>
+            <li><b>3대 사제 핵심 패턴 파훼:</b>
+              <br>• <b>셀리니아코스 (검의 사제):</b> 전방 부채꼴 검기와 십자 가르기를 피하며 보스 후방에서 공략.
+              <br>• <b>고이티아 (지팡이의 사제):</b> 바닥 마법 장판을 빠르게 이탈하고 소환되는 에너지 구슬을 요격.
+              <br>• <b>프로에드로스 (궤의 사제):</b> 상자 오브젝트를 신속 파괴하여 광역 전멸기를 차단.
+            </li>
+            <li><b>비호정령 서포팅 핵심:</b> 피격 대미지가 극도로 높으므로 무작정 맞딜은 전멸의 지름길입니다. 비호정령이 <b>생명의 빛 + 어스 프로텍션</b>을 안전 구역에 미리 전개하여 파티원의 생존을 케어하는 전술이 절대적입니다.</li>
           </ul>
         </div>
       </div>
+
+
 
       <!-- PANEL 3: SHINJO / ABYSS HELL / OBANG HELL -->
       <div id="bp-shin-abyss" class="boss-panel">
@@ -2456,7 +2679,19 @@
               <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>어비스 풀셋 / 마을 마방 1,750+ / 명중 1,550+ / 속성 160+ / 에타 25+</span></div>
               <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>이클립스 장비 재료, 이클립스 코어 상자, 대량 시드 (약 8,000만 Seed)</span></div>
               <div class="task-row-info"><span class="pill-use">보상 활용</span><span>종결 이클립스 장비 제작 및 거래소 판매 (초고수익)</span></div>
-              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>로카고스 디버프 4스택 시 원 밖 이탈 교대 / 에토스 4방향 돌진 회피</span></div>
+              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>로카고스 4스택 교대 / 에토스 돌진 / 체리아 안티포션 / 마티아 배리어 / 티로로스 2번 석상</span></div>
+            </div>
+            <button type="button" class="pattern-toggle-btn" onclick="toggleTaskPattern(event, 'pat_w_eclipse')">📖 이클립스 6종 보스 핵심 기믹 펼치기 ▾</button>
+            <div id="pat_w_eclipse" class="inline-pattern-box" onclick="event.stopPropagation()">
+              <h4><span>⚔️ 이클립스 6대 보스 핵심 파훼 요약 (정뺘 공략 가이드 기반)</span><span style="font-size:0.75rem; color:var(--muted);">다시 누르면 접힘</span></h4>
+              <ul style="font-size:0.84rem; line-height:1.6; color:#e2e8f0;">
+                <li><b>① 로카고스:</b> 피해 감소 4스택 누적 시 원 밖으로 이탈하여 디버프 초기화 후 교대. ABCD 폭격 구역 이탈 및 QTE 성공 시 스택 -3 감소.</li>
+                <li><b>② 에토스:</b> TWChatOverlay 4방향(NE/NW/SE/SW) 알림 발생 시 즉시 반대 대각선 사각지대로 회피. 딜러는 힐 장판 유지하며 극딜.</li>
+                <li><b>③ 체리아 (폭탄 자매):</b> 바닥의 <b>'안티 포션'</b>을 주워 <b>체리아(보스)에게 더블클릭하여 사용하면 체리아의 강화 버프 강제 해제</b>! 사망 시 장비 스탯 -30% [압수] 디버프 걸리므로 절대 생존.</li>
+                <li><b>④ 마티아 (서클릿 사제):</b> 회피 불가 전멸기 <b>[멸망의 기원]</b> 시전 시 <b>반드시 생성된 배리어 돔 내부로 피신</b>! 원형 폭발은 원과 원 사이 빈 틈새로 회피.</li>
+                <li><b>⑤ 티로로스 (석상 사제):</b> 6개 석상 중 위쪽 2번째 <b>'이계의 회오리 석상' 1순위 일점사 파괴</b> (명중/공격 -50% 반토막 방지!). 쫄은 로키 도발 후 일괄 소탕.</li>
+                <li><b>⑥ 라이코스 (수색대 군영):</b> 전방 180도 부채꼴/직선 돌진 집중 ➔ <b>보스 후방(엉덩이) 및 측면이 100% 안전지대</b>! 사각 장판(씩씩거린다) 밟지 말고 쫄 즉시 컷.</li>
+              </ul>
             </div>
           </div>
         </label>
@@ -2607,7 +2842,27 @@
           <li><b>이클립스 코어 가성비 세팅 (+30작):</b> 코어 상자에서 얻은 조각을 먼저 <b>1단계까지 기본 강화</b>한 뒤, 거래소의 저렴한 <b>이클립스 코어 진화권</b>을 사용하면 적은 비용으로 3부위 +10강(총 +30, 마방 +32 및 대미지 대폭 상승)을 맞출 수 있습니다.</li>
           <li><b>어벤던로드 마정석 환전:</b> 드랍되는 마정석은 가방에 쌓아두지 말고 매주 켈티카 왕성가 '아크레아'에게 환전하여 고정 주간 시드를 확보하세요.</li>
         </ul>
-      </div>
+      
+        <div class="pattern-card" style="border-left: 4px solid #38bdf8;">
+          <div class="pattern-header">
+            <span class="pattern-title">🧸 베스티지 (일일/주간 성장 던전 - 곰돌이 레이드)</span>
+            <span class="tag tag-critical">⚠️ 4단계 물약 사용 전면 금지!</span>
+          </div>
+          <div style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.6rem;">
+            5차 각성 후 자주 거쳐 가는 던전으로 4단계로 구성되어 있으며, <b>마지막 보스전의 물약 금지 기믹</b>을 모르면 전멸하기 쉽습니다.
+          </div>
+          <ul>
+            <li><b>1단계 (잡몹 소탕):</b> 제한 시간 내 필드의 모든 몬스터와 상자를 파괴합니다.</li>
+            <li><b>2단계 (오뚜기 파편 수집):</b> 오뚜기 몬스터를 잡아 파티원 합산 <b>파편 50개</b>를 모아 게이트를 개방합니다.</li>
+            <li><b>3단계 (미니 곰돌이 & 부적 봉인):</b> 미니 곰돌이를 처치하여 드랍된 '부적'을 주워 특정 봉인진에 사용하여 잠급니다. (블랙홀 스킬에 부적이 겹치지 않도록 주의)</li>
+            <li><b>4단계 거대 곰돌이 보스전 (⚠️ 초특급 주의):</b>
+              <br>• <b>보스방 진입 즉시 모든 물약 사용이 전면 금지</b>됩니다!
+              <br>• <b>3단계 종료 직전 파티원 전원 HP/MP/SP를 100% 가득 채우고 필수 버프를 리필</b>한 뒤 4단계 포탈을 타야 합니다.
+              <br>• 보스전 중에는 비호정령의 <b>생명의 빛(힐 장판)</b>만이 유일한 생존 수단이므로 장판 위에서 절대 벗어나지 마세요!
+            </li>
+          </ul>
+        </div>
+</div>
     </section>
   </div>
 
