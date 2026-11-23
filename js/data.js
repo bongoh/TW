@@ -5,26 +5,41 @@
 
 const STORAGE_KEY = 'tw_anais_weekly_tasks_v1';
 
-// 0. TalesWeaver Playable Characters & Growth Types (18종 캐릭터 & 육성 가능 계열)
+// 0. TalesWeaver Playable Characters & Growth Types (19종 캐릭터 & 육성 가능 계열 전수 등록)
 const TW_CHARACTERS = [
   {
     id: "anais",
     name: "아나이스 델 카릴",
     types: [
-      { id: "magic_def", name: "🛡️ 비호정령 (마방 핸드벨)", defaultWeapon: "abyss_bell", defaultArmor: "eclipse_robe", desc: "레이드 필수 서포터/장판 버퍼" },
-      { id: "magic_atk", name: "🔮 파괴정령 (마공 완드)", defaultWeapon: "eclipse_wand", defaultArmor: "anomarad_robe", desc: "장판 지속형 원거리 마법 딜러" }
+      { branchId: "anais_biho", id: "magic_def", archId: "magic_def", name: "🛡️ 비호정령 (마방 핸드벨)", defaultWeapon: "abyss_bell", defaultArmor: "anomarad_robe", desc: "레이드 필수 서포터/버퍼 (핸드벨·로브)" },
+      { branchId: "anais_bear", id: "composite", archId: "composite", name: "🧸 마법인형·곰나이스 (물복/마베 셉터)", defaultWeapon: "abyss_scepter", defaultArmor: "anomarad_robe", desc: "곰 미카베라·루시베어 소환 공격 딜러" },
+      { branchId: "anais_destroyer", id: "magic_atk", archId: "magic_atk", name: "🔮 파괴정령 (마공 완드)", defaultWeapon: "eclipse_wand", defaultArmor: "anomarad_robe", desc: "원소 장판 지속형 원거리 마법 딜러" }
     ],
+    defaultBranch: "anais_biho",
     defaultType: "magic_def",
-    desc: "비호정령(마방) / 파괴정령(마공)"
+    desc: "비호(마방) / 곰나이스(물복) / 파괴(마공)"
+  },
+  {
+    id: "naya",
+    name: "나야트레이",
+    types: [
+      { branchId: "naya_comp", id: "composite", archId: "composite", name: "⚔️ 물리복합 (단도/손도끼 - 물복 나야)", defaultWeapon: "abyss_dagger", defaultArmor: "anomarad_mail", desc: "심·인술 폭·백스탭 극딜 물리복합" },
+      { branchId: "naya_stab", id: "stab", archId: "stab", name: "🗡️ 찌르기 (단도)", defaultWeapon: "abyss_dagger", defaultArmor: "anomarad_mail", desc: "심 28타 초고속 연타 찌르기" },
+      { branchId: "naya_hack", id: "hack", archId: "hack", name: "🪓 베기 (손도끼/단검)", defaultWeapon: "abyss_axe", defaultArmor: "nenyaple_mail", desc: "인술 분신·수리검 투척 물리 베기" }
+    ],
+    defaultBranch: "naya_comp",
+    defaultType: "composite",
+    desc: "물리복합(단도/도끼) / 찌르기(단도) / 베기(도끼)"
   },
   {
     id: "lucian",
     name: "루시안 칼츠",
     types: [
-      { id: "stab", name: "🗡️ 찌르기 (레이피어)", defaultWeapon: "abyss_rapier", defaultArmor: "anomarad_mail", desc: "원월드·찬솔 쾌속 찌르기" },
-      { id: "hack", name: "🪓 베기 (세이버)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "비연파 고화력 물리 베기" },
-      { id: "composite", name: "⚔️ 물리복합 (장검)", defaultWeapon: "abyss_rapier", defaultArmor: "anomarad_mail", desc: "밸런스형 전천후 물리복합" }
+      { branchId: "lucian_stab", id: "stab", archId: "stab", name: "🗡️ 찌르기 (레이피어)", defaultWeapon: "abyss_rapier", defaultArmor: "anomarad_mail", desc: "원월드·찬솔 쾌속 찌르기" },
+      { branchId: "lucian_hack", id: "hack", archId: "hack", name: "🪓 베기 (세이버)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "비연파 고화력 물리 베기" },
+      { branchId: "lucian_comp", id: "composite", archId: "composite", name: "⚔️ 물리복합 (장검/평도)", defaultWeapon: "abyss_rapier", defaultArmor: "anomarad_mail", desc: "연·실피드 전천후 물리복합" }
     ],
+    defaultBranch: "lucian_stab",
     defaultType: "stab",
     desc: "찌르기(레이피어) / 베기(세이버) / 물복(장검)"
   },
@@ -32,10 +47,11 @@ const TW_CHARACTERS = [
     id: "boris",
     name: "보리스 진네만",
     types: [
-      { id: "hack", name: "🪓 베기 (대검/평도)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "핫샷·연 연타 물리 베기 종결" },
-      { id: "composite", name: "⚔️ 물리복합 (대검)", defaultWeapon: "eclipse_sword", defaultArmor: "abyss_armor", desc: "묵직한 한 방 광역 물리복합" },
-      { id: "magic_slash", name: "🪄 마법베기 (빙한 평도)", defaultWeapon: "eclipse_sword", defaultArmor: "anomarad_mail", desc: "빙격참·프로즌 브레이크 마법베기" }
+      { branchId: "boris_hack", id: "hack", archId: "hack", name: "🪓 베기 (대검/평도)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "핫샷·연 연타 물리 베기 종결" },
+      { branchId: "boris_comp", id: "composite", archId: "composite", name: "⚔️ 물리복합 (대검/평도)", defaultWeapon: "eclipse_sword", defaultArmor: "abyss_armor", desc: "스매시·연 묵직한 광역 물리복합" },
+      { branchId: "boris_magic", id: "magic_slash", archId: "magic_slash", name: "🪄 마법베기 (빙한 마검)", defaultWeapon: "eclipse_sword", defaultArmor: "anomarad_mail", desc: "빙격참·프로즌 브레이크 마법베기" }
     ],
+    defaultBranch: "boris_hack",
     defaultType: "hack",
     desc: "베기(대검) / 물복(대검) / 마베(평도)"
   },
@@ -43,72 +59,71 @@ const TW_CHARACTERS = [
     id: "ispin",
     name: "이스핀 샤를",
     types: [
-      { id: "stab", name: "🗡️ 찌르기 (레이피어)", defaultWeapon: "fairy_rapier", defaultArmor: "anomarad_mail", desc: "펄스핀 24타 극딜 찌르기" },
-      { id: "hack", name: "🪓 베기 (세이버)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "샤프 샤벨 고속 베기" },
-      { id: "composite", name: "⚔️ 물리복합 (장검)", defaultWeapon: "abyss_rapier", defaultArmor: "anomarad_mail", desc: "공방일체 물리복합" }
+      { branchId: "ispin_stab", id: "stab", archId: "stab", name: "🗡️ 찌르기 (레이피어)", defaultWeapon: "fairy_rapier", defaultArmor: "anomarad_mail", desc: "펄스핀 24타 극딜 찌르기" },
+      { branchId: "ispin_hack", id: "hack", archId: "hack", name: "🪓 베기 (세이버)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "샤프 샤벨 고속 베기" },
+      { branchId: "ispin_comp", id: "composite", archId: "composite", name: "⚔️ 물리복합 (장검)", defaultWeapon: "abyss_rapier", defaultArmor: "anomarad_mail", desc: "공방일체 전천후 물리복합" },
+      { branchId: "ispin_magic", id: "magic_slash", archId: "magic_slash", name: "🪄 마법베기 (화속성 마검)", defaultWeapon: "eclipse_sword", defaultArmor: "anomarad_robe", desc: "오리플람 화속성 마법베기" }
     ],
+    defaultBranch: "ispin_stab",
     defaultType: "stab",
-    desc: "찌르기(펄스핀) / 베기(세이버) / 물복(장검)"
+    desc: "찌르기(펄스핀) / 베기(세이버) / 물복(장검) / 마베"
   },
   {
     id: "maximin",
     name: "막시민 리프크네",
     types: [
-      { id: "hack", name: "🪓 베기 (평도/세이버)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "오화월광참 호쾌한 물리 베기" },
-      { id: "composite", name: "⚔️ 물리복합 (대검)", defaultWeapon: "eclipse_sword", defaultArmor: "abyss_armor", desc: "풍속성 광역 대검 물리복합" },
-      { id: "magic_slash", name: "🪄 마법베기 (바람 평도)", defaultWeapon: "eclipse_sword", defaultArmor: "anomarad_mail", desc: "폭풍 마법 결합 하이브리드" }
+      { branchId: "maximin_hack", id: "hack", archId: "hack", name: "🪓 베기 (평도/세이버)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "오화월광참 호쾌한 물리 베기" },
+      { branchId: "maximin_comp", id: "composite", archId: "composite", name: "⚔️ 물리복합 (대검/장검)", defaultWeapon: "eclipse_sword", defaultArmor: "abyss_armor", desc: "롤링 크래시 대검 물리복합" },
+      { branchId: "maximin_magic", id: "magic_slash", archId: "magic_slash", name: "🪄 마법베기 (바람 마검)", defaultWeapon: "eclipse_sword", defaultArmor: "anomarad_mail", desc: "실피드 랜스·윈드 슬라이서 마베" }
     ],
+    defaultBranch: "maximin_hack",
     defaultType: "hack",
-    desc: "베기(평도) / 물복(대검) / 마베(평도)"
+    desc: "베기(평도) / 물복(대검) / 마베(마검)"
   },
   {
     id: "siblyn",
     name: "시벨린 우",
     types: [
-      { id: "stab", name: "🗡️ 찌르기 (창)", defaultWeapon: "abyss_spear", defaultArmor: "anomarad_mail", desc: "투룡 투창 초고화력 단타 찌르기" },
-      { id: "composite", name: "⚔️ 물리복합 (봉)", defaultWeapon: "abyss_spear", defaultArmor: "abyss_armor", desc: "홍원단 광역 타격 물리복합" }
+      { branchId: "siblyn_spear", id: "stab", archId: "stab", name: "🗡️ 찌르기 (창)", defaultWeapon: "abyss_spear", defaultArmor: "anomarad_mail", desc: "투룡 투창 초고화력 단타 찌르기" },
+      { branchId: "siblyn_pole", id: "composite", archId: "composite", name: "⚔️ 물리복합 (봉)", defaultWeapon: "abyss_spear", defaultArmor: "abyss_armor", desc: "홍원단 광역 타격 물리복합" },
+      { branchId: "siblyn_hack", id: "hack", archId: "hack", name: "🪓 베기 (봉 베기)", defaultWeapon: "abyss_spear", defaultArmor: "nenyaple_mail", desc: "하드히트 연타 물리 베기" }
     ],
+    defaultBranch: "siblyn_spear",
     defaultType: "stab",
-    desc: "찌르기(창) / 물리복합(봉)"
-  },
-  {
-    id: "naya",
-    name: "나야트레이",
-    types: [
-      { id: "stab", name: "🗡️ 찌르기 (단도)", defaultWeapon: "abyss_dagger", defaultArmor: "anomarad_mail", desc: "심 28타 초고속 연타 찌르기" },
-      { id: "hack", name: "🪓 베기 (단검)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "인술 분신·수리검 베기" }
-    ],
-    defaultType: "stab",
-    desc: "찌르기(단도) / 베기(단검)"
+    desc: "찌르기(창) / 물복(봉) / 베기(봉)"
   },
   {
     id: "tichiel",
     name: "티치엘 쥬스피앙",
     types: [
-      { id: "magic_atk", name: "🔮 마법공격 (스태프)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "원소 화·수·뇌 마법 폭딜러" },
-      { id: "magic_def", name: "🛡️ 백법/서포터 (메이스)", defaultWeapon: "abyss_mace", defaultArmor: "eclipse_robe", desc: "힐·버프·배리어 전문 서포터" },
-      { id: "magic_slash", name: "🪄 마법베기 (타격스태프)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "물리 타격과 신성 마법 결합" }
+      { branchId: "tichiel_white", id: "magic_def", archId: "magic_def", name: "🛡️ 백법·서포터 (메이스)", defaultWeapon: "abyss_mace", defaultArmor: "anomarad_robe", desc: "힐·배리어·와이드 블레싱 전문 서포터" },
+      { branchId: "tichiel_black", id: "magic_atk", archId: "magic_atk", name: "🔮 흑법·마법공격 (스태프)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "원소 화·수·뇌 마법 폭딜러" },
+      { branchId: "tichiel_strike", id: "magic_slash", archId: "magic_slash", name: "🪄 타법·타격 (메이스/스태프)", defaultWeapon: "abyss_mace", defaultArmor: "anomarad_robe", desc: "퓨어 스트라이크 타격 마법베기" }
     ],
-    defaultType: "magic_atk",
-    desc: "마공(스태프) / 백법(메이스) / 마베"
+    defaultBranch: "tichiel_white",
+    defaultType: "magic_def",
+    desc: "백법(메이스) / 마공(스태프) / 타법(타격)"
   },
   {
     id: "milla",
     name: "밀라 네브라스카",
     types: [
-      { id: "hack", name: "🪓 베기 (채찍)", defaultWeapon: "abyss_whip", defaultArmor: "nenyaple_mail", desc: "카드스프레이 크리티컬 채찍 베기" },
-      { id: "composite", name: "⚔️ 물리복합 (플레일)", defaultWeapon: "abyss_whip", defaultArmor: "anomarad_mail", desc: "해적 기질 물리복합 파이터" }
+      { branchId: "milla_hack", id: "hack", archId: "hack", name: "🪓 베기 (채찍)", defaultWeapon: "abyss_whip", defaultArmor: "nenyaple_mail", desc: "카드스프레이 크리티컬 채찍 베기" },
+      { branchId: "milla_comp", id: "composite", archId: "composite", name: "⚔️ 물리복합 (플레일)", defaultWeapon: "abyss_whip", defaultArmor: "anomarad_mail", desc: "스위핑 해머 해적 물리복합" },
+      { branchId: "milla_stab", id: "stab", archId: "stab", name: "🗡️ 찌르기 (채찍 관통)", defaultWeapon: "abyss_whip", defaultArmor: "anomarad_mail", desc: "급소 찌르기 채찍 변형" }
     ],
+    defaultBranch: "milla_hack",
     defaultType: "hack",
-    desc: "베기(채찍) / 물리복합(플레일)"
+    desc: "베기(채찍) / 물복(플레일) / 찌르기"
   },
   {
     id: "cloe",
     name: "클로에 다 폰티나",
     types: [
-      { id: "magic_atk", name: "🔮 마법공격 (스태프)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "피닉스·메테오 최상위 광역 마공" },
-      { id: "magic_def", name: "🛡️ 마법방어 (마나월 방어)", defaultWeapon: "fairy_staff", defaultArmor: "eclipse_robe", desc: "마나월 기반 금강불괴 마방" }
+      { branchId: "cloe_magic", id: "magic_atk", archId: "magic_atk", name: "🔮 마법공격 (스태프/완드)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "피닉스·메테오 최상위 광역 마공" },
+      { branchId: "cloe_def", id: "magic_def", archId: "magic_def", name: "🛡️ 마법방어 (마나월 방어)", defaultWeapon: "fairy_staff", defaultArmor: "eclipse_robe", desc: "마나월 기반 금강불괴 마방 세팅" }
     ],
+    defaultBranch: "cloe_magic",
     defaultType: "magic_atk",
     desc: "마공(스태프) / 마방(마나월)"
   },
@@ -116,80 +131,103 @@ const TW_CHARACTERS = [
     id: "joshua",
     name: "조슈아 폰 아르님",
     types: [
-      { id: "magic_slash", name: "🪄 마법베기 (마법검)", defaultWeapon: "eclipse_sword", defaultArmor: "anomarad_robe", desc: "유령 스탠스 팬텀 스타일 마베" },
-      { id: "magic_atk", name: "🔮 마법공격 (방출)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "버프·디버프 복합 마법 방출" },
-      { id: "stab", name: "🗡️ 찌르기 (스몰소드)", defaultWeapon: "fairy_rapier", defaultArmor: "anomarad_mail", desc: "귀족 펜싱 쾌속 찌르기" }
+      { branchId: "joshua_change", id: "magic_slash", archId: "magic_slash", name: "🪄 변화계·마법베기 (마법검)", defaultWeapon: "eclipse_sword", defaultArmor: "anomarad_robe", desc: "팬텀 스타일 고스트 마법베기" },
+      { branchId: "joshua_emit", id: "magic_atk", archId: "magic_atk", name: "🔮 방출계·마법공격 (완드)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "원거리 버프·디버프 복합 마법 방출" },
+      { branchId: "joshua_reinforce", id: "stab", archId: "stab", name: "🗡️ 강화계·찌르기 (스몰소드)", defaultWeapon: "fairy_rapier", defaultArmor: "anomarad_mail", desc: "귀족 펜싱 쾌속 찌르기" }
     ],
+    defaultBranch: "joshua_change",
     defaultType: "magic_slash",
-    desc: "마베(마법검) / 마공 / 찌르기"
+    desc: "마베(변화계) / 마공(방출계) / 찌르기(강화계)"
   },
   {
     id: "ranzie",
     name: "란지에 로젠크란츠",
     types: [
-      { id: "magic_atk", name: "🔮 마법공격 (마총)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "미스트랄 블레이즈 원거리 마총" },
-      { id: "stab", name: "🗡️ 찌르기 (물리총)", defaultWeapon: "abyss_rapier", defaultArmor: "anomarad_mail", desc: "블러디드 샷 물리 피어싱" }
+      { branchId: "ranzie_magic", id: "magic_atk", archId: "magic_atk", name: "🔮 마법계·마법공격 (마총)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "미스트랄 블레이즈 원거리 마총" },
+      { branchId: "ranzie_stab", id: "stab", archId: "stab", name: "🗡️ 물리계·찌르기 (물리총)", defaultWeapon: "abyss_rapier", defaultArmor: "anomarad_mail", desc: "블러디드 샷 물리 피어싱" }
     ],
+    defaultBranch: "ranzie_magic",
     defaultType: "magic_atk",
-    desc: "마공(마총) / 찌르기(물리총)"
+    desc: "마공(마총) / 찌르기(물총)"
   },
   {
     id: "isaac",
     name: "이자크 듀카스텔",
     types: [
-      { id: "stab", name: "🗡️ 찌르기 (클로)", defaultWeapon: "abyss_rapier", defaultArmor: "anomarad_mail", desc: "슬램·크래셔 격투 찌르기" },
-      { id: "composite", name: "⚔️ 물리복합 (톤파)", defaultWeapon: "abyss_rapier", defaultArmor: "abyss_armor", desc: "묵직한 톤파 콤보 물리복합" }
+      { branchId: "isaac_stab", id: "stab", archId: "stab", name: "🗡️ 찌르기 (클로)", defaultWeapon: "abyss_rapier", defaultArmor: "anomarad_mail", desc: "슬램·크래셔 격투 찌르기" },
+      { branchId: "isaac_comp", id: "composite", archId: "composite", name: "⚔️ 물리복합 (톤파)", defaultWeapon: "abyss_tonfa", defaultArmor: "abyss_armor", desc: "묵직한 톤파 콤보 물리복합" },
+      { branchId: "isaac_hack", id: "hack", archId: "hack", name: "🪓 베기 (톤파/클로)", defaultWeapon: "abyss_tonfa", defaultArmor: "nenyaple_mail", desc: "파이널 포커스 물리 베기" }
     ],
+    defaultBranch: "isaac_stab",
     defaultType: "stab",
-    desc: "찌르기(클로) / 물리복합(톤파)"
+    desc: "찌르기(클로) / 물복(톤파) / 베기(톤파)"
   },
   {
-    id: "roamini",
-    name: "로아미니",
+    id: "isolet",
+    name: "이솔렛",
     types: [
-      { id: "magic_atk", name: "🔮 마법공격 (토템)", defaultWeapon: "abyss_totem", defaultArmor: "anomarad_robe", desc: "포이즌 디버프 및 지속 암흑 마공" }
+      { branchId: "isolet_tiella", id: "composite", archId: "composite", name: "⚔️ 티엘라 (쌍검 물리복합)", defaultWeapon: "abyss_tiella", defaultArmor: "anomarad_mail", desc: "듀얼 블레이드 윈드 슬라이스 연타 물복" },
+      { branchId: "isolet_tiella_ms", id: "magic_slash", archId: "magic_slash", name: "🪄 티엘라 (쌍검 마법베기)", defaultWeapon: "abyss_tiella", defaultArmor: "anomarad_robe", desc: "신성 마법과 칼날 결합 마법베기" },
+      { branchId: "isolet_chant", id: "magic_atk", archId: "magic_atk", name: "🔮 찬트 (신성 찬트 홀/서포터)", defaultWeapon: "abyss_chant", defaultArmor: "eclipse_robe", desc: "그라비티·홀리 실드 신성 마공 및 힐링" }
     ],
-    defaultType: "magic_atk",
-    desc: "마법공격(토템 디버퍼)"
+    defaultBranch: "isolet_tiella",
+    defaultType: "composite",
+    desc: "티엘라(쌍검 물복/마베) / 찬트(신성 마공/서포터)"
   },
   {
     id: "benya",
     name: "벤야",
     types: [
-      { id: "magic_slash", name: "🪄 마법베기 (사이드 낫)", defaultWeapon: "abyss_scythe", defaultArmor: "anomarad_robe", desc: "헬게이트 광역 사신 낫 마베" },
-      { id: "magic_atk", name: "🔮 마법공격 (홀)", defaultWeapon: "fairy_staff", defaultArmor: "eclipse_robe", desc: "샤이닝 컷 홀 원거리 마공" }
+      { branchId: "benya_scythe", id: "hack", archId: "hack", name: "🪓 낫벤·영혼계 (사이드 낫/베기)", defaultWeapon: "abyss_scythe", defaultArmor: "anomarad_robe", desc: "헬게이트·소울 스틸 고화력 베기 종결" },
+      { branchId: "benya_hammer", id: "magic_def", archId: "magic_def", name: "🛡️ 햄벤·해머 (마방 해머 타격)", defaultWeapon: "abyss_hammer", defaultArmor: "eclipse_robe", desc: "카운터 해머·어스퀘이크 단단한 마방 타격" },
+      { branchId: "benya_holy", id: "magic_atk", archId: "magic_atk", name: "🔮 유령계·마법공격 (홀/성속성)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "샤이닝 컷 홀 원거리 성속성 마공" }
     ],
-    defaultType: "magic_slash",
-    desc: "마베(사이드) / 마공(홀)"
+    defaultBranch: "benya_scythe",
+    defaultType: "hack",
+    desc: "낫벤(베기) / 햄벤(해머 마방) / 마공(홀)"
+  },
+  {
+    id: "roamini",
+    name: "로아미니",
+    types: [
+      { branchId: "roamini_magic", id: "magic_atk", archId: "magic_atk", name: "🔮 마법공격 (토템 디버퍼)", defaultWeapon: "abyss_totem", defaultArmor: "anomarad_robe", desc: "포이즌 디버프 및 지속 암흑 마공" }
+    ],
+    defaultBranch: "roamini_magic",
+    defaultType: "magic_atk",
+    desc: "마법공격(토템 암흑 디버퍼)"
   },
   {
     id: "nocturne",
     name: "녹턴 드 블랑쉬",
     types: [
-      { id: "magic_atk", name: "🔮 마법공격 (샷건)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "일렉트릭 샷건 화력 마공" }
+      { branchId: "nocturne_magic", id: "magic_atk", archId: "magic_atk", name: "🔮 마법공격 (샷건 화력)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "일렉트릭 샷건 화력 마공" }
     ],
+    defaultBranch: "nocturne_magic",
     defaultType: "magic_atk",
-    desc: "마법공격(샷건)"
+    desc: "마법공격(샷건 전격 마공)"
   },
   {
     id: "liche",
     name: "리체 아브릴",
     types: [
-      { id: "magic_atk", name: "🔮 마법공격 (펜듈럼)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "피네 멜로디 마법 딜링" },
-      { id: "hack", name: "🪓 베기 (아밍소드)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "악의 무구 폭발적 물리 베기" }
+      { branchId: "liche_fine", id: "magic_atk", archId: "magic_atk", name: "🔮 피네계·마법공격 (펜듈럼)", defaultWeapon: "fairy_staff", defaultArmor: "anomarad_robe", desc: "피네 멜로디 광역 마법 딜링" },
+      { branchId: "liche_cor", id: "hack", archId: "hack", name: "🪓 코르계·베기 (아밍소드)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "악의 무구 폭발적 물리 베기" }
     ],
+    defaultBranch: "liche_fine",
     defaultType: "magic_atk",
-    desc: "마공(펜듈럼) / 베기(아밍소드)"
+    desc: "마공(피네 펜듈럼) / 베기(코르 아밍소드)"
   },
   {
     id: "yepnen",
     name: "예프넨 진네만",
     types: [
-      { id: "hack", name: "🪓 베기 (소드/액스)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "5종 무기 형태 변환 물리 베기" },
-      { id: "stab", name: "🗡️ 찌르기 (스피어/보우)", defaultWeapon: "abyss_spear", defaultArmor: "anomarad_mail", desc: "장거리 활 및 리치 관통 찌르기" }
+      { branchId: "yepnen_hack", id: "hack", archId: "hack", name: "🪓 베기 (소드/액스/우르미)", defaultWeapon: "eclipse_sword", defaultArmor: "nenyaple_mail", desc: "5종 무기 스위칭 폭발적 물리 베기" },
+      { branchId: "yepnen_stab", id: "stab", archId: "stab", name: "🗡️ 찌르기 (스피어/파이크/보우)", defaultWeapon: "abyss_spear", defaultArmor: "anomarad_mail", desc: "장거리 파이크·활 관통 찌르기" },
+      { branchId: "yepnen_comp", id: "composite", archId: "composite", name: "⚔️ 물리복합 (우르미/치즐 변형)", defaultWeapon: "eclipse_sword", defaultArmor: "abyss_armor", desc: "샤드 와이어·흡혈 채널링 연타 물복" }
     ],
+    defaultBranch: "yepnen_hack",
     defaultType: "hack",
-    desc: "베기(검/도끼) / 찌르기(창/활)"
+    desc: "베기(소드/액스) / 찌르기(창/활) / 물복(우르미)"
   }
 ];
 
@@ -515,6 +553,7 @@ const defaultProfiles = [
     id: 'char_1',
     name: '비호정령 (본캐)',
     characterId: 'anais',
+    branchId: 'anais_biho',
     archetype: 'magic_def',
     job: 'anais_biho',
     memo: '어비스 4셋 목표, 에타 21 달성',
@@ -531,6 +570,7 @@ const defaultProfiles = [
     id: 'char_2',
     name: '로아미니 (부캐)',
     characterId: 'roamini',
+    branchId: 'roamini_magic',
     archetype: 'magic_atk',
     job: 'roamini',
     memo: '신어헬 파밍 중, 디버퍼',
@@ -659,13 +699,19 @@ const itemBaseDb = {
     { id: "abyss_rapier", name: "어비스 레이피어 (찌르기 374)", stab: 374, hack: 130, int: 0, mr: 0, dex: 35 },
     { id: "abyss_spear", name: "어비스 스피어 (창 - 찌르기 410 / 베기 120)", stab: 410, hack: 120, int: 0, mr: 0, dex: 35 },
     { id: "abyss_dagger", name: "어비스 대거 (단도 - 찌르기 360 / 베기 150)", stab: 360, hack: 150, int: 0, mr: 0, dex: 40 },
+    { id: "abyss_axe", name: "어비스 액스 (손도끼 - 베기 390 / 찌르기 180)", stab: 180, hack: 390, int: 0, mr: 0, dex: 35 },
     { id: "eclipse_sword", name: "이클립스 소드셰이프 (베기 474)", stab: 170, hack: 474, int: 0, mr: 0, dex: 50 },
     { id: "abyss_whip", name: "어비스 휩 (채찍 - 베기 395 / 찌르기 160)", stab: 160, hack: 395, int: 0, mr: 0, dex: 45 },
     { id: "abyss_scythe", name: "어비스 사이드 (낫 - 베기 410 / 마공 280)", stab: 0, hack: 410, int: 280, mr: 0, dex: 45 },
+    { id: "abyss_hammer", name: "어비스 해머 (해머/햄벤 - 마방 360 / 베기 210)", stab: 0, hack: 210, int: 0, mr: 360, dex: 35 },
     { id: "fairy_staff", name: "페어리 피타 스태프 (마공 309)", stab: 0, hack: 0, int: 309, mr: 0, dex: 25 },
     { id: "abyss_bell", name: "어비스 핸드벨 (마방 354 / 마공 130)", stab: 0, hack: 0, int: 130, mr: 354, dex: 35 },
+    { id: "abyss_scepter", name: "어비스 셉터 (곰나이스/아나이스 - 마공 375 / 베기 180)", stab: 0, hack: 180, int: 375, mr: 150, dex: 35 },
     { id: "abyss_mace", name: "어비스 메이스 (메이스 - 마방 345 / 마공 190)", stab: 0, hack: 0, int: 190, mr: 345, dex: 35 },
     { id: "abyss_totem", name: "어비스 토템 (토템 - 마공 385 / 마방 140)", stab: 0, hack: 0, int: 385, mr: 140, dex: 35 },
+    { id: "abyss_tiella", name: "어비스 티엘라 (쌍검/이솔렛 - 베기 320 / 찌르기 320)", stab: 320, hack: 320, int: 260, mr: 0, dex: 45 },
+    { id: "abyss_chant", name: "어비스 찬트 (홀/이솔렛 - 마공 370 / 마방 330)", stab: 0, hack: 0, int: 370, mr: 330, dex: 35 },
+    { id: "abyss_tonfa", name: "어비스 톤파 (톤파/이자크 - 베기 290 / 찌르기 290)", stab: 290, hack: 290, int: 0, mr: 0, dex: 35 },
     { id: "eclipse_wand", name: "이클립스 완드 (마공 474)", stab: 0, hack: 0, int: 474, mr: 170, dex: 50 },
     { id: "custom_weapon", name: "직접 입력", stab: 0, hack: 0, int: 0, mr: 0, dex: 0 }
   ],

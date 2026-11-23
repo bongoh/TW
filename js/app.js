@@ -90,6 +90,7 @@ function toggleAllBuffs(state) {
 
 // ==================== 1-1. CHARACTER & ARCHETYPE CONFIGURATION ====================
 let selectedCharacterId = 'anais';
+let selectedBranchId = 'anais_biho';
 let selectedArchetype = 'magic_def';
 
 function getCurrentArchetype() {
@@ -104,10 +105,10 @@ function initCharacterSelectors() {
     `<option value="${c.id}" ${c.id === selectedCharacterId ? 'selected' : ''}>${c.name}</option>`
   ).join('');
 
-  updateArchetypeDropdownForChar(selectedCharacterId, selectedArchetype);
+  updateArchetypeDropdownForChar(selectedCharacterId, selectedBranchId || selectedArchetype);
 }
 
-function updateArchetypeDropdownForChar(charId, preferredArchId) {
+function updateArchetypeDropdownForChar(charId, preferredBranchOrArch) {
   const charObj = (typeof TW_CHARACTERS !== 'undefined' && TW_CHARACTERS.find(c => c.id === charId)) || (typeof TW_CHARACTERS !== 'undefined' ? TW_CHARACTERS[0] : null);
   if (!charObj) return;
   selectedCharacterId = charObj.id;
@@ -115,13 +116,19 @@ function updateArchetypeDropdownForChar(charId, preferredArchId) {
   const archSel = document.getElementById('char-archetype-select');
   if (!archSel) return;
 
-  archSel.innerHTML = charObj.types.map(t => 
-    `<option value="${t.id}" ${t.id === preferredArchId ? 'selected' : ''}>${t.name}</option>`
-  ).join('');
+  archSel.innerHTML = charObj.types.map(t => {
+    const isSelected = (t.branchId === preferredBranchOrArch) || (t.id === preferredBranchOrArch) || (t.archId === preferredBranchOrArch);
+    return `<option value="${t.branchId}" data-arch="${t.archId || t.id}" ${isSelected ? 'selected' : ''}>${t.name}</option>`;
+  }).join('');
 
-  const hasMatch = charObj.types.some(t => t.id === preferredArchId);
-  selectedArchetype = hasMatch ? preferredArchId : charObj.defaultType;
-  archSel.value = selectedArchetype;
+  let matched = charObj.types.find(t => (t.branchId === preferredBranchOrArch) || (t.id === preferredBranchOrArch) || (t.archId === preferredBranchOrArch));
+  if (!matched) {
+    matched = charObj.types.find(t => t.branchId === charObj.defaultBranch) || charObj.types[0];
+  }
+
+  selectedBranchId = matched.branchId;
+  selectedArchetype = matched.archId || matched.id;
+  archSel.value = selectedBranchId;
 
   const syncTypeSelect = document.getElementById('sync-tab1-type');
   if (syncTypeSelect) syncTypeSelect.value = selectedArchetype;
@@ -134,36 +141,59 @@ function onCharacterSelectChange(charId) {
   } catch (e) {}
 
   const charObj = TW_CHARACTERS.find(c => c.id === charId) || TW_CHARACTERS[0];
-  updateArchetypeDropdownForChar(charId, charObj.defaultType);
-  onCharArchetypeChange(selectedArchetype);
+  const defBranch = charObj.defaultBranch || (charObj.types[0] && charObj.types[0].branchId);
+  updateArchetypeDropdownForChar(charId, defBranch);
+  onCharArchetypeChange(selectedBranchId);
 }
 
-function onCharArchetypeChange(archId) {
-  selectedArchetype = archId;
+function onCharArchetypeChange(branchOrArchId) {
+  const charObj = (typeof TW_CHARACTERS !== 'undefined' && TW_CHARACTERS.find(c => c.id === selectedCharacterId)) || (typeof TW_CHARACTERS !== 'undefined' ? TW_CHARACTERS[0] : null);
+  let branch = null;
+  if (charObj) {
+    branch = charObj.types.find(t => t.branchId === branchOrArchId || t.id === branchOrArchId || t.archId === branchOrArchId) || charObj.types[0];
+  }
+
+  if (branch) {
+    selectedBranchId = branch.branchId;
+    selectedArchetype = branch.archId || branch.id;
+  } else {
+    selectedArchetype = branchOrArchId || 'magic_def';
+  }
+
   try {
-    localStorage.setItem('tw_selected_archetype', archId);
+    localStorage.setItem('tw_selected_branch', selectedBranchId);
+    localStorage.setItem('tw_selected_archetype', selectedArchetype);
   } catch (e) {}
 
   const syncTypeSelect = document.getElementById('sync-tab1-type');
-  if (syncTypeSelect) syncTypeSelect.value = archId;
+  if (syncTypeSelect) syncTypeSelect.value = selectedArchetype;
+
+  const titleEl = document.getElementById('card-mainstat-title');
+  if (titleEl) {
+    const statLabels = {
+      magic_def: '1. 노도핑 MR (마법방어)',
+      stab: '1. 노도핑 STAB (찌르기)',
+      hack: '1. 노도핑 HACK (베기)',
+      magic_atk: '1. 노도핑 INT (마법공격)',
+      composite: '1. 노도핑 STAB / HACK (물리복합)',
+      magic_slash: '1. 노도핑 HACK / INT (마법베기)'
+    };
+    titleEl.textContent = statLabels[selectedArchetype] || '1. 노도핑 MR (마법방어)';
+  }
 
   evaluateStats();
 
-  if (typeof TW_CHARACTERS !== 'undefined') {
-    const charObj = TW_CHARACTERS.find(c => c.id === selectedCharacterId);
-    if (charObj) {
-      applyCharacterRecommendedGear(charObj, archId);
-    }
+  if (charObj && branch) {
+    applyCharacterRecommendedGear(charObj, branch);
   }
 
   const autoChk = document.getElementById('coeff-tab1-auto-sync');
   if (autoChk && autoChk.checked) {
-    applyTab1ToCoeff(false, archId);
+    applyTab1ToCoeff(false, selectedArchetype);
   }
 }
 
-function applyCharacterRecommendedGear(charObj, archId) {
-  const branch = charObj.types.find(t => t.id === archId) || charObj.types[0];
+function applyCharacterRecommendedGear(charObj, branch) {
   if (!branch) return;
   const prof = getActiveCoeffProfile();
   if (prof && prof.slots) {
@@ -175,10 +205,11 @@ function applyCharacterRecommendedGear(charObj, archId) {
       if (!prof.slots.armor) prof.slots.armor = {};
       prof.slots.armor.baseId = branch.defaultArmor;
     }
-    if (prof.type !== archId && typeof coeffFormulas !== 'undefined' && coeffFormulas[archId]) {
-      prof.type = archId;
+    const targetType = branch.archId || branch.id || 'stab';
+    if (prof.type !== targetType && typeof coeffFormulas !== 'undefined' && coeffFormulas[targetType]) {
+      prof.type = targetType;
       document.querySelectorAll('.coeff-type-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.type === archId);
+        btn.classList.toggle('active', btn.dataset.type === targetType);
       });
       if (typeof updateCoeffLabels === 'function') updateCoeffLabels();
     }
@@ -548,13 +579,14 @@ function loadSavedStats() {
     const saved = JSON.parse(localStorage.getItem('tw_anais_stat_sim_v2') || '{}');
     const savedChar = localStorage.getItem('tw_selected_character') || saved.characterId || 'anais';
     selectedCharacterId = savedChar;
+    const savedBranch = localStorage.getItem('tw_selected_branch') || saved.branchId || '';
     const savedArch = localStorage.getItem('tw_selected_archetype') || saved.archetype || 'magic_def';
     selectedArchetype = savedArch;
 
     initCharacterSelectors();
     const charSelect = document.getElementById('char-select');
     if (charSelect) charSelect.value = selectedCharacterId;
-    updateArchetypeDropdownForChar(selectedCharacterId, selectedArchetype);
+    updateArchetypeDropdownForChar(selectedCharacterId, savedBranch || savedArch);
 
     if (saved.mdef) document.getElementById('in-mdef').value = saved.mdef;
     if (saved.acc) document.getElementById('in-acc').value = saved.acc;
@@ -908,10 +940,17 @@ function renderProfileSelect() {
   if (badgeEl && cur) {
     const jobNames = {
       anais_biho: '비호정령(마방)',
+      anais_bear: '곰나이스(물복)',
       roamini: '로아미니(디버퍼)',
       yepnen: '예프넨(딜러)',
       tichiel_white: '백법(서포터)',
       cloe: '클로에(마딜)',
+      naya: '나야(물복/찌르기)',
+      benya: '벤야(햄벤/낫벤)',
+      isolet: '이솔렛(티엘라/찬트)',
+      lucian: '루시안(찌르기/베기)',
+      boris: '보리스(베기/대검물복)',
+      siblyn: '시벨린(창/봉물복)',
       other: '기타'
     };
     badgeEl.textContent = jobNames[cur.job] || cur.job;
@@ -940,13 +979,28 @@ function applyProfile(id) {
     selectedCharacterId = 'tichiel';
   } else if (p.job === 'cloe') {
     selectedCharacterId = 'cloe';
+  } else if (p.job === 'naya') {
+    selectedCharacterId = 'naya';
+  } else if (p.job === 'benya') {
+    selectedCharacterId = 'benya';
+  } else if (p.job === 'isolet') {
+    selectedCharacterId = 'isolet';
+  } else if (p.job === 'lucian') {
+    selectedCharacterId = 'lucian';
+  } else if (p.job === 'boris') {
+    selectedCharacterId = 'boris';
+  } else if (p.job === 'siblyn') {
+    selectedCharacterId = 'siblyn';
+  } else if (p.job === 'anais_bear') {
+    selectedCharacterId = 'anais';
+    if (!p.branchId) p.branchId = 'anais_bear';
   } else {
     selectedCharacterId = 'anais';
   }
 
   const charSelect = document.getElementById('char-select');
   if (charSelect) charSelect.value = selectedCharacterId;
-  updateArchetypeDropdownForChar(selectedCharacterId, p.archetype || 'magic_def');
+  updateArchetypeDropdownForChar(selectedCharacterId, p.branchId || p.archetype || 'magic_def');
 
   if (document.getElementById('in-mdef')) document.getElementById('in-mdef').value = p.mdef || '';
   if (document.getElementById('in-acc'))  document.getElementById('in-acc').value  = p.acc  || '';
@@ -971,7 +1025,7 @@ function applyProfile(id) {
   if (p.archetype) {
     selectedArchetype = p.archetype;
     const archSelect = document.getElementById('char-archetype-select');
-    if (archSelect) archSelect.value = p.archetype;
+    if (archSelect) archSelect.value = p.branchId || p.archetype;
   }
 
   evaluateStats();
@@ -983,6 +1037,7 @@ function saveCurrentStateToProfile() {
   if (!p) return;
 
   p.characterId = selectedCharacterId;
+  p.branchId = selectedBranchId;
   p.archetype = selectedArchetype;
   p.mdef = Number(document.getElementById('in-mdef').value) || 0;
   p.acc  = Number(document.getElementById('in-acc').value)  || 0;
@@ -1041,12 +1096,32 @@ function saveProfileFromModal() {
   const job = document.getElementById('modal-char-job').value;
   const memo = document.getElementById('modal-char-memo').value.trim();
 
+  const jobMap = {
+    anais_biho: { charId: 'anais', branchId: 'anais_biho', arch: 'magic_def' },
+    anais_bear: { charId: 'anais', branchId: 'anais_bear', arch: 'composite' },
+    roamini:    { charId: 'roamini', branchId: 'roamini_magic', arch: 'magic_atk' },
+    yepnen:     { charId: 'yepnen', branchId: 'yepnen_hack', arch: 'hack' },
+    tichiel_white: { charId: 'tichiel', branchId: 'tichiel_white', arch: 'magic_def' },
+    cloe:       { charId: 'cloe', branchId: 'cloe_magic', arch: 'magic_atk' },
+    naya:       { charId: 'naya', branchId: 'naya_comp', arch: 'composite' },
+    benya:      { charId: 'benya', branchId: 'benya_scythe', arch: 'hack' },
+    isolet:     { charId: 'isolet', branchId: 'isolet_tiella', arch: 'composite' },
+    lucian:     { charId: 'lucian', branchId: 'lucian_stab', arch: 'stab' },
+    boris:      { charId: 'boris', branchId: 'boris_hack', arch: 'hack' },
+    siblyn:     { charId: 'siblyn', branchId: 'siblyn_spear', arch: 'stab' },
+    other:      { charId: 'anais', branchId: 'anais_biho', arch: 'magic_def' }
+  };
+  const meta = jobMap[job] || jobMap.other;
+
   let p = profiles.find(x => x.id === id);
   if (!p) {
     p = {
       id: id,
       name: name,
       job: job,
+      characterId: meta.charId,
+      branchId: meta.branchId,
+      archetype: meta.arch,
       memo: memo,
       mdef: 1400,
       acc: 1300,
@@ -1062,6 +1137,9 @@ function saveProfileFromModal() {
     p.name = name;
     p.job = job;
     p.memo = memo;
+    p.characterId = meta.charId;
+    p.branchId = meta.branchId;
+    p.archetype = meta.arch;
   }
 
   currentProfileId = id;
