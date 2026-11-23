@@ -2275,7 +2275,33 @@
           </ul>
         </div>
 
-        <div class="pattern-card">
+        
+        <div class="pattern-card" style="border-left: 4px solid #a855f7;">
+          <div class="pattern-header">
+            <span class="pattern-title">🔮 아브리 엔키라 훈장 ➔ 소울 포인트 환전 & 종결 유물 [감각의 해방 · 소울이터]</span>
+            <span class="tag tag-critical">스펙업 필수 내실</span>
+          </div>
+          <div style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.6rem;">
+            5차 각성 이후 캐릭터 딜량을 비약적으로 상승시키는 <b>소울링크 종결 유물 스킬</b>을 뽑기 위해 매일 수행하는 핵심 훈장 파밍 루틴입니다.
+          </div>
+          <ul>
+            <li><b>1. 아브리 엔키라 훈장 수급 (일명 '스스랭 일퀘'):</b>
+              <br>• <code>Shift + M</code> 월드맵 ➔ <b>'라르사'</b> 이동 ➔ NPC <b>'눈을 뜬 아니타'</b>를 통해 <b>'티르칼라그'</b> 진입.
+              <br>• NPC <b>'정화된 에누마'</b>에게 <b>[아브리 엔키라 (반복)]</b> 퀘스트 수락 ➔ 네르갈 진격 클리어 시 <b>매일 훈장 2,000개</b> 획득!
+            </li>
+            <li><b>2. 소울 포인트 대량 교환:</b>
+              <br>• <b>네냐플</b> 우측 상단 NPC <b>'이네스'</b>에게 이동 ➔ <code>[훈장을 이용하여 교환하기]</code> 메뉴 클릭.
+              <br>• 획득한 <b>아브리 엔키라 훈장</b>을 선택하여 <b>'소울 포인트'</b>로 일괄 전환합니다. (네냐플 포인트 대비 압도적 교환 효율)
+            </li>
+            <li><b>3. 소울링크 종결 유물 스킬 2대장 (Alt + S):</b>
+              <br>• <b>💥 [감각의 해방] (10레벨 마스터 필수):</b> 가디언 블레싱(변신/가디언) 상태일 때 <b>크리티컬 대미지 배율이 폭발적으로 증가</b>하는 종결 1순위 유물!
+              <br>• <b>🧛 [소울이터] (5레벨 이상 필수):</b> 변신 상태에서 타격 시 일정 확률로 <b>보스의 스탯을 강탈하여 내 스탯으로 흡수</b>하는 최상급 유물!
+              <br>• <b>👁️ 기타:</b> [죽음의 시선] 등 캐릭터 성향에 맞는 유물을 소울 포인트로 뽑아 레벨업 진행.
+            </li>
+          </ul>
+        </div>
+
+<div class="pattern-card">
           <div class="pattern-header">
             <span class="pattern-title">🌿 네냐플 일일 파밍 코스: 디르웬 (태양의 렐릭) & 아그네스 (룬/코어 던전 TP)</span>
             <span class="tag tag-move">일일 네냐플 동선</span>
@@ -2316,8 +2342,8 @@
             <div id="weekly-seed-fill" class="seed-progress-fill" style="width: 0%;"></div>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#94a3b8; margin-top:4px;">
-            <span>진행률: <b id="weekly-task-ratio" style="color:#38bdf8;">0 / 27 완료</b></span>
-            <span>주간 기대 총합: <b style="color:#e2e8f0;">약 8.85억 Seed</b></span>
+            <span>진행률: <b id="weekly-task-ratio" style="color:#38bdf8;">0 / 28 완료</b></span>
+            <span>주간 기대 총합: <b style="color:#e2e8f0;">약 9.0억 Seed</b></span>
           </div>
         </div>
       </div>
@@ -2327,7 +2353,7 @@
         <h2>비호정령 주간 · 일일 숙제 체크리스트 (최소 컷 · 보상 활용법)</h2>
         <div class="progress-wrap">
           <div class="progress-bar-bg"><div id="weekly-progress-bar" class="progress-bar-fill"></div></div>
-          <span id="weekly-progress-text" class="progress-text">0 / 27 완료 (0%)</span>
+          <span id="weekly-progress-text" class="progress-text">0 / 28 완료 (0%)</span>
           <button class="reset-btn" onclick="resetWeeklyTasks()">초기화</button>
         </div>
       </div>
@@ -2392,6 +2418,36 @@
             </div>
           </div>
         </label>
+
+        <!-- 4. Abri Enkira Daily (Soul Points) -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_daily_abri_enkira" data-task="w_daily_abri_enkira" data-seed="15000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">아브리 엔키라 일퀘 (티르칼라그) ➔ 소울 포인트 환전</span>
+              <span class="task-meta">라르사 · 소울링크 종결 유물</span>
+            </div>
+            <div class="task-desc">Shift+M 라르사 '눈을 뜬 아니타' ➔ 티르칼라그 '정화된 에누마'에게 일퀘 수락 후 네르갈 진격 클리어 (매일 훈장 2,000개 수급)</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">필요 스펙</span><span>입문 장비 (스스랭 파티 또는 솔플 가능 스펙)</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span><b>아브리 엔키라 훈장 2,000개</b> (약 1,500만 Seed 상당 가치)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>네냐플 우측 상단 NPC <b>'이네스'</b>에게 <b>소울 포인트로 1:1 대량 교환</b></span></div>
+              <div class="task-row-info"><span class="pill-pattern" style="background:rgba(168,85,247,0.2); color:#c084fc; border-color:rgba(168,85,247,0.4);">⭐ 종결 유물</span><span><b>Alt + S</b> 소울링크 창에서 <b>[감각의 해방 10렙]</b>(크리 배율) & <b>[소울이터 5렙]</b>(보스 스탯 강탈) 뽑기/강화 필수!</span></div>
+            </div>
+            <button type="button" class="pattern-toggle-btn" onclick="toggleTaskPattern(event, 'pat_w_daily_abri_enkira')">📖 아브리 엔키라 ➔ 소울 포인트 환전 루틴 상세 펼치기 ▾</button>
+            <div id="pat_w_daily_abri_enkira" class="inline-pattern-box" onclick="event.stopPropagation()">
+              <h4><span>🔮 아브리 엔키라 훈장 & 소울 포인트 파밍 4단계 동선</span><span style="font-size:0.75rem; color:var(--muted);">다시 누르면 접힘</span></h4>
+              <ol style="padding-left:1.25rem; font-size:0.84rem; line-height:1.6; color:#e2e8f0; margin-top:0.4rem;">
+                <li><b>라르사 이동:</b> <code>Shift + M</code> 월드맵을 열고 <b>'라르사'</b> 지역으로 워프합니다.</li>
+                <li><b>티르칼라그 진입:</b> 라르사 NPC <b>'눈을 뜬 아니타'</b>를 통해 티르칼라그로 진입 후, NPC <b>'정화된 에누마'</b>에게 <b>[아브리 엔키라 (반복)]</b> 퀘스트를 수락합니다.</li>
+                <li><b>네르갈 진격 클리어:</b> 던전으로 입장하여 몬스터와 보스들을 정리하고 완료하면 <b>매일 훈장 2,000개</b>가 지급됩니다.</li>
+                <li><b>네냐플 '이네스' 소울 포인트 환전:</b> 네냐플 우측 상단 NPC <b>'이네스'</b>에게 가서 <code>[훈장을 이용하여 교환하기]</code>를 선택하고 <b>소울 포인트로 일괄 환전</b>합니다.</li>
+                <li><b>소울링크 유물 뽑기 (Alt + S):</b> <code>Alt + S</code> 창에서 모은 소울 포인트를 소모하여 <b>[감각의 해방]</b>(가디언 변신 시 크리 대미지 배율 증가 - 10렙 목표)과 <b>[소울이터]</b>(보스 스탯 흡수 - 5렙 목표)를 뽑아 강화합니다!</li>
+              </ol>
+            </div>
+          </div>
+        </label>
+
 
         <!-- 4. Eclipse Supply Reclaim -->
         <label class="task-item">
