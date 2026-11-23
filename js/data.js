@@ -822,6 +822,7 @@ const defaultCoeffProfiles = [
     baseStats: { stab: 658, hack: 66, int: 0, mr: 0, dex: 708 },
     bonusStats: {
       avatar: { stab: 10, hack: 10, dex: 10, int: 0, mr: 0 },
+      pet: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 },
       title: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 },
       card: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 }
     },
@@ -852,6 +853,7 @@ const defaultCoeffProfiles = [
     baseStats: { stab: 0, hack: 0, int: 550, mr: 850, dex: 850 },
     bonusStats: {
       avatar: { stab: 0, hack: 0, dex: 15, int: 0, mr: 15 },
+      pet: { stab: 0, hack: 0, dex: 30, int: 0, mr: 40 },
       title: { stab: 0, hack: 0, dex: 80, int: 80, mr: 80 },
       card: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 }
     },
@@ -882,6 +884,7 @@ const defaultCoeffProfiles = [
     baseStats: { stab: 550, hack: 850, int: 0, mr: 0, dex: 850 },
     bonusStats: {
       avatar: { stab: 15, hack: 15, dex: 15, int: 0, mr: 0 },
+      pet: { stab: 0, hack: 40, dex: 30, int: 0, mr: 0 },
       title: { stab: 80, hack: 80, dex: 80, int: 0, mr: 0 },
       card: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 }
     },
@@ -942,6 +945,7 @@ const defaultCoeffProfiles = [
     baseStats: { stab: 700, hack: 700, int: 0, mr: 0, dex: 800 },
     bonusStats: {
       avatar: { stab: 15, hack: 15, dex: 15, int: 0, mr: 0 },
+      pet: { stab: 0, hack: 40, dex: 30, int: 0, mr: 0 },
       title: { stab: 80, hack: 80, dex: 80, int: 0, mr: 0 },
       card: { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 }
     },

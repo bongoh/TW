@@ -1552,21 +1552,31 @@ function syncCoeffInputsFromProfile() {
   if (statMr)   statMr.value   = (prof.baseStats && prof.baseStats.mr)   || 0;
   if (statDex)  statDex.value  = (prof.baseStats && prof.baseStats.dex)  || 0;
 
-  // Avatar bonus
-  const avStab = document.getElementById('coeff-avatar-stab');
-  const avHack = document.getElementById('coeff-avatar-hack');
-  const avDex  = document.getElementById('coeff-avatar-dex');
-  if (avStab) avStab.value = (prof.bonusStats && prof.bonusStats.avatar && prof.bonusStats.avatar.stab) || 10;
-  if (avHack) avHack.value = (prof.bonusStats && prof.bonusStats.avatar && prof.bonusStats.avatar.hack) || 10;
-  if (avDex)  avDex.value  = (prof.bonusStats && prof.bonusStats.avatar && prof.bonusStats.avatar.dex)  || 10;
+  // Dynamic Override fields based on active formula
+  const mainKey = formula.mainStat.toLowerCase();
+  const subKey  = formula.subStat.toLowerCase();
+
+  // Avatar / Pet / Etc bonus inputs
+  const avatar = (prof.bonusStats && prof.bonusStats.avatar) || {};
+  const pet    = (prof.bonusStats && prof.bonusStats.pet) || {};
+  const etc    = (prof.bonusStats && prof.bonusStats.etc) || (prof.bonusStats && prof.bonusStats.title) || {};
+
+  const setBonusInputs = (prefix, obj) => {
+    const elMain = document.getElementById(`coeff-${prefix}-main`);
+    const elSub  = document.getElementById(`coeff-${prefix}-sub`);
+    const elDex  = document.getElementById(`coeff-${prefix}-dex`);
+    if (elMain) elMain.value = obj[mainKey] || 0;
+    if (elSub)  elSub.value  = obj[subKey] || 0;
+    if (elDex)  elDex.value  = obj.dex || 0;
+  };
+
+  setBonusInputs('avatar', avatar);
+  setBonusInputs('pet', pet);
+  setBonusInputs('etc', etc);
 
   // Core
   const coreInput = document.getElementById('coeff-core-input');
   if (coreInput) coreInput.value = prof.core || 0;
-
-  // Dynamic Override fields based on active formula
-  const mainKey = formula.mainStat.toLowerCase();
-  const subKey  = formula.subStat.toLowerCase();
 
   const ovEquipMainInput = document.getElementById('coeff-ov-equip-main');
   const ovEquipSubInput  = document.getElementById('coeff-ov-equip-sub');
@@ -1725,6 +1735,63 @@ function onBonusStatChange(cat, statKey, val) {
   calculateCoefficients();
 }
 
+function onBonusDynamicChange(cat, role, val) {
+  const prof = getActiveCoeffProfile();
+  const formula = coeffFormulas[prof.type] || coeffFormulas.stab;
+  const num = Number(val) || 0;
+
+  if (!prof.bonusStats) prof.bonusStats = {};
+  if (!prof.bonusStats[cat]) prof.bonusStats[cat] = {};
+
+  if (role === 'main') {
+    const mainKey = formula.mainStat.toLowerCase();
+    prof.bonusStats[cat][mainKey] = num;
+  } else if (role === 'sub') {
+    const subKey = formula.subStat.toLowerCase();
+    prof.bonusStats[cat][subKey] = num;
+  } else if (role === 'dex') {
+    prof.bonusStats[cat].dex = num;
+  }
+
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function applyPetQuickPreset(presetType) {
+  const prof = getActiveCoeffProfile();
+  const formula = coeffFormulas[prof.type] || coeffFormulas.stab;
+  const mainKey = formula.mainStat.toLowerCase();
+  const subKey  = formula.subStat.toLowerCase();
+
+  if (!prof.bonusStats) prof.bonusStats = {};
+  if (!prof.bonusStats.pet) prof.bonusStats.pet = {};
+
+  let mainVal = 0;
+  let dexVal = 0;
+
+  if (presetType === 'basic') {
+    mainVal = 20;
+    dexVal = 20;
+  } else if (presetType === 'standard') {
+    mainVal = 40;
+    dexVal = 30; // standard S-skill Lv.4 + 집중
+  } else if (presetType === 'max') {
+    mainVal = 60;
+    dexVal = 60; // max amplified S-skill
+  } else if (presetType === 'zero') {
+    mainVal = 0;
+    dexVal = 0;
+  }
+
+  prof.bonusStats.pet[mainKey] = mainVal;
+  prof.bonusStats.pet[subKey] = 0;
+  prof.bonusStats.pet.dex = dexVal;
+
+  saveCoeffProfiles();
+  syncCoeffInputsFromProfile();
+  calculateCoefficients();
+}
+
 function onCoreChange(val) {
   const prof = getActiveCoeffProfile();
   prof.core = Number(val) || 0;
@@ -1814,17 +1881,17 @@ function calculateCoefficients() {
     dex:  (Number(prof.baseStats.dex)  || 0) + (doping.dex || 0)
   };
 
-  // Additional Bonus
-  const avatar = prof.bonusStats.avatar || { stab: 10, hack: 10, dex: 10, int: 0, mr: 0 };
-  const title  = prof.bonusStats.title  || { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 };
-  const card   = prof.bonusStats.card   || { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 };
+  // Additional Bonus Sum (Avatar, Pet, Etc)
+  const avatar = (prof.bonusStats && prof.bonusStats.avatar) || { stab: 10, hack: 10, dex: 10, int: 0, mr: 0 };
+  const pet    = (prof.bonusStats && prof.bonusStats.pet)    || { stab: 0,  hack: 0,  dex: 0,  int: 0, mr: 0 };
+  const etc    = (prof.bonusStats && prof.bonusStats.etc)    || (prof.bonusStats && prof.bonusStats.title) || { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 };
 
   const bonusSum = {
-    stab: (avatar.stab || 0) + (title.stab || 0) + (card.stab || 0),
-    hack: (avatar.hack || 0) + (title.hack || 0) + (card.hack || 0),
-    int:  (avatar.int  || 0) + (title.int  || 0) + (card.int  || 0),
-    mr:   (avatar.mr   || 0) + (title.mr   || 0) + (card.mr   || 0),
-    dex:  (avatar.dex  || 0) + (title.dex  || 0) + (card.dex  || 0)
+    stab: (avatar.stab || 0) + (pet.stab || 0) + (etc.stab || 0),
+    hack: (avatar.hack || 0) + (pet.hack || 0) + (etc.hack || 0),
+    int:  (avatar.int  || 0) + (pet.int  || 0) + (etc.int  || 0),
+    mr:   (avatar.mr   || 0) + (pet.mr   || 0) + (etc.mr   || 0),
+    dex:  (avatar.dex  || 0) + (pet.dex  || 0) + (etc.dex  || 0)
   };
 
   // Equipment & Reinforcement Sum

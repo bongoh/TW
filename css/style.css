@@ -2126,6 +2126,36 @@
     font-size: 0.8rem;
   }
 
+  .coeff-pet-preset-btn {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .coeff-pet-preset-btn:hover {
+    background: #334155;
+    color: #f8fafc;
+    border-color: #475569;
+  }
+  .coeff-pet-preset-btn.active {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: #38bdf8;
+    color: #38bdf8;
+    font-weight: 700;
+  }
+  .coeff-pet-preset-btn.reset {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  .coeff-pet-preset-btn.reset:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+  }
+
   /* 장비 슬롯 그리드 */
   .coeff-equip-grid {
     display: grid;

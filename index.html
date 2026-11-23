@@ -3165,7 +3165,7 @@
             <!-- Additional Bonus Card -->
             <div class="coeff-card">
               <div class="coeff-card-title">
-                <span>✨ 추가 보너스 & 코어</span>
+                <span>✨ 추가 보너스 & 코어 (아바타 / 펫 / 내실)</span>
               </div>
               <table class="coeff-bonus-table">
                 <thead>
@@ -3178,13 +3178,42 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td style="color:#cbd5e1; font-weight:600;">아바타</td>
-                    <td><input type="number" id="coeff-avatar-stab" value="10" onchange="onBonusStatChange('avatar', 'stab', this.value)"></td>
-                    <td><input type="number" id="coeff-avatar-hack" value="10" onchange="onBonusStatChange('avatar', 'hack', this.value)"></td>
-                    <td><input type="number" id="coeff-avatar-dex" value="10" onchange="onBonusStatChange('avatar', 'dex', this.value)"></td>
+                    <td style="color:#cbd5e1; font-weight:600;">아바타 (5셋)</td>
+                    <td><input type="number" id="coeff-avatar-main" value="10" onchange="onBonusDynamicChange('avatar', 'main', this.value)"></td>
+                    <td><input type="number" id="coeff-avatar-sub"  value="10" onchange="onBonusDynamicChange('avatar', 'sub', this.value)"></td>
+                    <td><input type="number" id="coeff-avatar-dex"  value="10" onchange="onBonusDynamicChange('avatar', 'dex', this.value)"></td>
+                  </tr>
+                  <tr>
+                    <td style="color:#38bdf8; font-weight:600;">🐾 펫 (S스킬/명중)</td>
+                    <td><input type="number" id="coeff-pet-main" value="0" placeholder="0" onchange="onBonusDynamicChange('pet', 'main', this.value)"></td>
+                    <td><input type="number" id="coeff-pet-sub"  value="0" placeholder="0" onchange="onBonusDynamicChange('pet', 'sub', this.value)"></td>
+                    <td><input type="number" id="coeff-pet-dex"  value="0" placeholder="0" onchange="onBonusDynamicChange('pet', 'dex', this.value)"></td>
+                  </tr>
+                  <tr>
+                    <td style="color:#a78bfa; font-weight:600;">🃏 룬/카드/칭호</td>
+                    <td><input type="number" id="coeff-etc-main" value="0" placeholder="0" onchange="onBonusDynamicChange('etc', 'main', this.value)"></td>
+                    <td><input type="number" id="coeff-etc-sub"  value="0" placeholder="0" onchange="onBonusDynamicChange('etc', 'sub', this.value)"></td>
+                    <td><input type="number" id="coeff-etc-dex"  value="0" placeholder="0" onchange="onBonusDynamicChange('etc', 'dex', this.value)"></td>
                   </tr>
                 </tbody>
               </table>
+
+              <!-- Quick Pet Preset Helper -->
+              <div style="margin-top:0.75rem; padding:0.6rem; background:#0f172a; border-radius:6px; border:1px solid #1e293b; font-size:0.78rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                  <span style="color:#38bdf8; font-weight:700;">🐾 펫 옵션 빠른 적용</span>
+                  <span style="color:#94a3b8; font-size:0.72rem;">S스킬+3단계 집중</span>
+                </div>
+                <div style="display:flex; gap:0.3rem; flex-wrap:wrap;">
+                  <button type="button" class="coeff-pet-preset-btn" onclick="applyPetQuickPreset('basic')">보통 (+20 / DEX+20)</button>
+                  <button type="button" class="coeff-pet-preset-btn" onclick="applyPetQuickPreset('standard')">국민세팅 (+40 / DEX+30)</button>
+                  <button type="button" class="coeff-pet-preset-btn" onclick="applyPetQuickPreset('max')">종결증폭 (+60 / DEX+60)</button>
+                  <button type="button" class="coeff-pet-preset-btn reset" onclick="applyPetQuickPreset('zero')">초기화</button>
+                </div>
+                <div style="margin-top:0.35rem; color:#64748b; font-size:0.71rem; line-height:1.3;">
+                  💡 펫 3단계 필수 스킬: <b>집중</b> (상대 회피 비례 명중률 상승, 보스 올힛 필수)
+                </div>
+              </div>
 
               <div style="margin-top:0.85rem; padding-top:0.75rem; border-top:1px solid #1e293b;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
