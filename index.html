@@ -1,0 +1,2803 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>테일즈위버 비호정령(아나이스) 실전 공략 · 스펙 시뮬레이터 · 주간 숙제</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <span class="badge">테일즈위버 2026년 11월 기준 • 비호정령(아나이스) 전용</span>
+    <h1>비호정령 스펙 판독기 · 로카고스 공략 · 주간 숙제</h1>
+    <p>카테고리 탭을 선택해 스펙/버프 시뮬레이션, 보스 패턴, 숙제별 최소 컷·보상 활용법을 확인하세요</p>
+  </header>
+
+  <!-- Multi-Character Profile Management Bar -->
+  <div class="profile-manager-bar">
+    <div class="profile-select-wrap">
+      <span class="profile-icon">👤</span>
+      <label for="profile-select">캐릭터 프로필:</label>
+      <select id="profile-select" class="profile-select" onchange="switchProfile(this.value)">
+        <!-- Dynamic Options -->
+      </select>
+      <span id="profile-job-badge" class="profile-badge">비호정령(마방)</span>
+    </div>
+    <div class="profile-actions">
+      <button class="btn-sm btn-outline" onclick="openProfileModal('edit')">✏️ 프로필 설정</button>
+      <button class="btn-sm btn-primary-soft" onclick="openProfileModal('create')">➕ 새 캐릭터 등록</button>
+      <button class="btn-sm btn-danger-soft" onclick="deleteCurrentProfile()">🗑️ 삭제</button>
+      <button class="btn-sm btn-compact-toggle" id="btn-compact" onclick="toggleCompactMode()">📱 컴팩트 모드</button>
+    </div>
+  </div>
+
+  <!-- Category Navigation Tabs -->
+  <nav class="nav-tabs" role="tablist">
+    <button class="tab-btn active" data-tab="tab-spec" onclick="switchTab('tab-spec', this)">📊 1. 스펙 판독 & 버프 선택</button>
+    <button class="tab-btn" data-tab="tab-rokagos" onclick="switchTab('tab-rokagos', this)">⚔️ 2. 보스 · 던전 패턴 도감</button>
+    <button class="tab-btn" data-tab="tab-weekly" onclick="switchTab('tab-weekly', this)">✅ 3. 비호 주간 숙제 (컷·보상)</button>
+    <button class="tab-btn" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">🧮 4. 시드 · 재료 계산기</button>
+  </nav>
+
+  <!-- ==================== TAB 1: SPEC SIMULATOR & BUFF SELECTOR ==================== -->
+  <div id="tab-spec" class="tab-panel active">
+    <section>
+      <h2>내 스탯 실시간 판독기 (버프 선택 연동 · 가능 / 미스 판정)</h2>
+      <div class="sim-toolbar">
+        <div class="sim-select-group">
+          <label for="target-dungeon">목표 콘텐츠 선택:</label>
+          <select id="target-dungeon" class="target-select" onchange="evaluateStats()">
+            <option value="shinjo">신조의 둥지 (일반 · 입문 파플)</option>
+            <option value="abyss_normal">어비스 · 머큐리얼 (일반/어려움 입문)</option>
+            <option value="abyss_hell">어비스 헬 (헬 · 코어·진화 파밍)</option>
+            <option value="obang_hell">오방 헬 (헬 · 고대 주화·연마 파밍)</option>
+            <option value="rokagos" selected>이클립스 토벌 - 로카고스 (일반/기본)</option>
+            <option value="eclipse_high">이클립스 토벌 - 중상위 보스 (에토스·라이코스 등)</option>
+            <option value="obang_abyss">오를리 방어전 어비스 (5각 이후 · 막보 올힛 기준)</option>
+          </select>
+        </div>
+
+        <div class="toggle-bar">
+          <span style="font-size: 0.86rem; color: var(--muted); font-weight: 600;">입력 수치 기준:</span>
+          <button id="btn-nobuff" class="toggle-btn active" onclick="setBuffMode('nobuff')">마을 노버프 입력</button>
+          <button id="btn-buff" class="toggle-btn" onclick="setBuffMode('buff')">실전 풀버프 입력</button>
+        </div>
+      </div>
+
+      <!-- Individual Buff Checkboxes -->
+      
+      <!-- Upgraded Full Doping & Buff Dashboard (Notice 131192 Aligned) -->
+      <div class="doping-dashboard-box">
+        <div class="doping-header-top">
+          <div class="doping-title">
+            <span>🧪 테일즈위버 실전 도핑 백과 & 버프 시뮬레이터</span>
+            <span style="font-size:0.75rem; background:#1e3a8a; color:#93c5fd; padding:0.15rem 0.5rem; border-radius:999px;">공식 GM가이드 131192 기준</span>
+          </div>
+          <div class="preset-bar">
+            <span class="preset-label">원클릭 프리셋:</span>
+            <button type="button" class="preset-btn preset-hunt" onclick="applyDopingPreset('hunt')">🚀 기본 사냥</button>
+            <button type="button" class="preset-btn preset-raid" onclick="applyDopingPreset('raid')">👑 레이드 극도핑</button>
+            <button type="button" class="preset-btn preset-acc" onclick="applyDopingPreset('acc')">🎯 명중 보정 극대화</button>
+            <button type="button" class="preset-btn preset-exp" onclick="applyDopingPreset('exp')">📚 풀 경험치</button>
+            <button type="button" class="preset-btn preset-rare" onclick="applyDopingPreset('rare')">💎 풀 레어</button>
+            <button type="button" class="preset-btn preset-clear" onclick="applyDopingPreset('clear')">🔄 전체 해제</button>
+          </div>
+        </div>
+
+        <!-- Conflict notification toast banner -->
+        <div id="conflict-toast" class="conflict-toast"></div>
+
+        <!-- Navigation Tabs for Doping Categories -->
+        
+        <!-- TalesWeaver Stacking Rule Guide Box -->
+        <div class="stack-rules-box">
+          <h4>💡 테일즈위버 버프 중첩(Stacking) 공식 핵심 가이드</h4>
+          <div class="stack-rules-grid">
+            <div class="stack-rule-item">
+              <span style="color:#34d399; font-weight:800;">[🟢 100% 동시 중첩 가능]</span><br>
+              • <b>스탯류</b>: 고정 스탯(이자벨/특선) + 비율 스탯(이자벨/특선/신뢰) + 요리 + 괴력햄 + 클럽P + 비호장판<br>
+              • <b>대미지류</b>: 눈사람 포션 + 각성의 비약 + 이자벨 대미지 + 특선 대미지 + 클럽P + 탐험 공격력
+            </div>
+            <div class="stack-rule-item">
+              <span style="color:#f87171; font-weight:800;">[⚠️ 중복 불가 / 충돌 그룹]</span><br>
+              • <b>경험치 메인</b>: 클럽 E-2 ↔ 스승의 증표 ↔ 따뜻한 에오스<br>
+              • <b>눈사람 vs 에오스</b>: 눈사람 포션 ↔ 따뜻한 에오스<br>
+              • <b>부스터류</b>: 경험의 심장 ↔ 군고구마 / 레어의 심장 ↔ 밤고구마 / 도전 도장 ↔ 참 잘했어요
+            </div>
+          </div>
+        </div>
+
+        <!-- Stacking Filter Bar -->
+        <div class="stack-filter-bar">
+          <span style="font-weight:700; color:#38bdf8;">🏷️ 중첩 유형 필터:</span>
+          <button type="button" class="stack-filter-btn active" onclick="filterStackType('all', this)">📋 전체 표시 (54종)</button>
+          <button type="button" class="stack-filter-btn" onclick="filterStackType('ok', this)">🟢 자유 중첩 가능 버프 (42종)</button>
+          <button type="button" class="stack-filter-btn" onclick="filterStackType('limit', this)">⚠️ 중첩 주의/제한 버프 (12종)</button>
+          <span style="margin-left:auto; font-size:0.75rem; color:#94a3b8;">※ 버프 선택 시 중복 불가 버프는 자동으로 잠김(Lock) 처리됩니다.</span>
+        </div>
+
+        <div class="doping-nav">
+          <button type="button" class="doping-nav-btn active" onclick="switchDopingNav('cat_basic', this)">⚔️ 1. 기본 전투 (8종)</button><button type="button" class="doping-nav-btn " onclick="switchDopingNav('cat_high_end', this)">🔥 2. 추가·극딜 (14종)</button><button type="button" class="doping-nav-btn " onclick="switchDopingNav('cat_biho_skills', this)">🛡️ 3. 비호 장판 (3종)</button><button type="button" class="doping-nav-btn " onclick="switchDopingNav('cat_utility_hp', this)">🏃 4. 유틸·HP (7종)</button><button type="button" class="doping-nav-btn " onclick="switchDopingNav('cat_exp_doping', this)">📚 5. 경험치·룬 (12종)</button><button type="button" class="doping-nav-btn " onclick="switchDopingNav('cat_rare_doping', this)">💎 6. 레어 파밍 (10종)</button><button type="button" class="doping-nav-btn" onclick="switchDopingNav('cat_all_sources', this)">📖 7. 획득처 총정리 도감</button>
+        </div>
+
+        <!-- Panels for each Category -->
+        
+      <div id="cat_basic" class="doping-cat-panel active">
+        <div class="doping-cat-desc">💡 모든 컨텐츠 입문 및 기본 사냥/파플 시 기본으로 상시 도핑하는 8종</div>
+        <div class="doping-grid">
+          
+          <label class="doping-card" data-stack="limit" id="card-snowman_potion">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="snowman_potion"
+                  data-mdef="20" data-acc="15" data-elem="0"
+                  data-dmg="20" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('snowman_potion')">
+                <span class="doping-name">눈사람 포션 (축제 음료)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +20 / 명중 +15 / 대미지 +20%</span>
+            </div>
+            <div class="doping-tip">축제 음료보다 대미지 10% 높음 (대미지 +20%, 전스탯 +15)</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 엘티보 눈사람족 수장 / 거래소</span><span class="badge-conflict-tag">⚠️ 중복불가: 따뜻한 에오스의 파편</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-awakening_potion">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="awakening_potion"
+                  data-mdef="0" data-acc="20" data-elem="0"
+                  data-dmg="10" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('awakening_potion')">
+                <span class="doping-name">改-각성의 비약</span>
+              </div>
+              <span class="doping-stat-tag">명중 +20 / 대미지 +10%</span>
+            </div>
+            <div class="doping-tip">공격력/마공 +20%, 명중 +20 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 조제, 거래소, 이벤트</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-trust_potion">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="trust_potion"
+                  data-mdef="35" data-acc="30" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('trust_potion')">
+                <span class="doping-name">改-신뢰의 물약</span>
+              </div>
+              <span class="doping-stat-tag">마방 +35 / 명중 +30</span>
+            </div>
+            <div class="doping-tip">전 능력치 +10% (비호 마방 +35, 명중 +30 상승)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 조제, 거래소, 이벤트</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_fixed">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_fixed"
+                  data-mdef="30" data-acc="25" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_fixed')">
+                <span class="doping-name">이자벨의 비법 (고정)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +30 / 명중 +25</span>
+            </div>
+            <div class="doping-tip">모든 스탯 고정치 대폭 증가 (마방 +30, 명중 +25)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_percent">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_percent"
+                  data-mdef="40" data-acc="30" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_percent')">
+                <span class="doping-name">이자벨의 비법 (비율 / 퇴마사의 은총)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +40 / 명중 +30</span>
+            </div>
+            <div class="doping-tip">모든 스탯 10% 증가 (마방 +40, 명중 +30)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소 / 컨텐츠</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_damage">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_damage"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="10" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_damage')">
+                <span class="doping-name">이자벨의 비법 (대미지 / 전투)</span>
+              </div>
+              <span class="doping-stat-tag">대미지 +10%</span>
+            </div>
+            <div class="doping-tip">최종 피해량 +10% 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-purified_ampoule">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="purified_ampoule"
+                  data-mdef="0" data-acc="0" data-elem="10"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('purified_ampoule')">
+                <span class="doping-name">정제된 속성 앰플</span>
+              </div>
+              <span class="doping-stat-tag">속성 +10</span>
+            </div>
+            <div class="doping-tip">모든 속성치 +10 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 각 마을 마법상점</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-haste_potion">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="haste_potion"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('haste_potion')">
+                <span class="doping-name">신속 포션</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">이동속도 +3, 후딜레이 감소</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트</span></div>
+          </label>
+        
+        </div>
+      </div>
+    
+      <div id="cat_high_end" class="doping-cat-panel ">
+        <div class="doping-cat-desc">💡 신어헬, 로카고스, 에토스 등 상위 레이드에서 미스 방지 및 극딜을 위해 사용하는 14종</div>
+        <div class="doping-grid">
+          
+          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_fixed">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_fixed"
+                  data-mdef="35" data-acc="30" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_fixed')">
+                <span class="doping-name">이자벨의 특선 묘약 (고정)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +35 / 명중 +30</span>
+            </div>
+            <div class="doping-tip">모든 스탯 고정치 +35 추가 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_percent">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_percent"
+                  data-mdef="50" data-acc="35" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_percent')">
+                <span class="doping-name">이자벨의 특선 묘약 (비율)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +50 / 명중 +35</span>
+            </div>
+            <div class="doping-tip">모든 스탯 비율 +15% 추가 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_damage">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_damage"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="15" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_damage')">
+                <span class="doping-name">이자벨의 특선 묘약 (대미지)</span>
+              </div>
+              <span class="doping-stat-tag">대미지 +15%</span>
+            </div>
+            <div class="doping-tip">최종 피해량 +15% 추가 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_acc">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_acc"
+                  data-mdef="0" data-acc="30" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_acc')">
+                <span class="doping-name">이자벨의 비법 (명중)</span>
+              </div>
+              <span class="doping-stat-tag">명중 +30</span>
+            </div>
+            <div class="doping-tip">명중률 +30 (신어헬/로카고스 미스 대책 필수)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_acc">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_acc"
+                  data-mdef="0" data-acc="50" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_acc')">
+                <span class="doping-name">이자벨의 특선 묘약 (명중)</span>
+              </div>
+              <span class="doping-stat-tag">명중 +50</span>
+            </div>
+            <div class="doping-tip">명중률 +50 극대화 (상위 보스 올힛용)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_crit">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_crit"
+                  data-mdef="0" data-acc="10" data-elem="0"
+                  data-dmg="5" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_crit')">
+                <span class="doping-name">이자벨의 비법 (크리티컬)</span>
+              </div>
+              <span class="doping-stat-tag">명중 +10 / 대미지 +5%</span>
+            </div>
+            <div class="doping-tip">크리티컬 확률 +20%</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-samiseon_dish">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="samiseon_dish"
+                  data-mdef="20" data-acc="20" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('samiseon_dish')">
+                <span class="doping-name">사미선령지채 (요리)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +20 / 명중 +20</span>
+            </div>
+            <div class="doping-tip">마방 +20, 명중 +20, 전 능력치 +15</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 요리 스킬, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-super_ham">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="super_ham"
+                  data-mdef="15" data-acc="0" data-elem="0"
+                  data-dmg="5" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('super_ham')">
+                <span class="doping-name">괴력의 햄</span>
+              </div>
+              <span class="doping-stat-tag">마방 +15 / 대미지 +5%</span>
+            </div>
+            <div class="doping-tip">공격력/마공 +15, 마방 +15</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트, 룬정원 채집, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-protection_elixir">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="protection_elixir"
+                  data-mdef="30" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="10"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('protection_elixir')">
+                <span class="doping-name">보호의 비약</span>
+              </div>
+              <span class="doping-stat-tag">마방 +30 / 피감 +10%</span>
+            </div>
+            <div class="doping-tip">피격 대미지 10% 감소 (생존 극대화)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-focus_elixir">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="focus_elixir"
+                  data-mdef="0" data-acc="25" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('focus_elixir')">
+                <span class="doping-name">집중의 비약</span>
+              </div>
+              <span class="doping-stat-tag">명중 +25</span>
+            </div>
+            <div class="doping-tip">명중률 +25 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-will_elixir">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="will_elixir"
+                  data-mdef="15" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="5"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('will_elixir')">
+                <span class="doping-name">의지의 비약</span>
+              </div>
+              <span class="doping-stat-tag">마방 +15 / 피감 +5%</span>
+            </div>
+            <div class="doping-tip">피격 대미지 5% 감소 및 회피율 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-club_type_p">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="club_type_p"
+                  data-mdef="15" data-acc="15" data-elem="0"
+                  data-dmg="10" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('club_type_p')">
+                <span class="doping-name">클럽 상점 버프 Type P</span>
+              </div>
+              <span class="doping-stat-tag">마방 +15 / 명중 +15 / 대미지 +10%</span>
+            </div>
+            <div class="doping-tip">피해량 +10%, 모든 스탯 +10 (클럽 코인 구매)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 나르비크 클럽상점 알렌</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-soul_atk_buff">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="soul_atk_buff"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="5" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('soul_atk_buff')">
+                <span class="doping-name">탐험 공격 피해량 증가</span>
+              </div>
+              <span class="doping-stat-tag">대미지 +5%</span>
+            </div>
+            <div class="doping-tip">공격 피해량 +5% 상시 유지</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-soul_def_buff">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="soul_def_buff"
+                  data-mdef="20" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="5"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('soul_def_buff')">
+                <span class="doping-name">탐험 피해 감소 증가</span>
+              </div>
+              <span class="doping-stat-tag">마방 +20 / 피감 +5%</span>
+            </div>
+            <div class="doping-tip">피격 피해 5% 감소 상시 유지</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
+          </label>
+        
+        </div>
+      </div>
+    
+      <div id="cat_biho_skills" class="doping-cat-panel ">
+        <div class="doping-cat-desc">💡 비호정령(아나이스) 본인 및 파티원에게 부여되는 핵심 장판/스킬</div>
+        <div class="doping-grid">
+          
+          <label class="doping-card" data-stack="ok" id="card-skill_light">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="skill_light"
+                  data-mdef="40" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('skill_light')">
+                <span class="doping-name">생명의 빛 (아에르 힐 장판)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +40</span>
+            </div>
+            <div class="doping-tip">마방 +40, 초당 대량 HP 지속 회복 (기본 유지)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 비호정령 스킬</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-skill_over">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="skill_over"
+                  data-mdef="0" data-acc="40" data-elem="0"
+                  data-dmg="10" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('skill_over')">
+                <span class="doping-name">오버 페이스 (아에르 공격 장판)</span>
+              </div>
+              <span class="doping-stat-tag">명중 +40 / 대미지 +10%</span>
+            </div>
+            <div class="doping-tip">명중 +40, 딜러 후딜레이 대폭 감소 및 피해량 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 비호정령 스킬</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-skill_earth">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="skill_earth"
+                  data-mdef="60" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="30"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('skill_earth')">
+                <span class="doping-name">어스 프로텍션 (로키 피감 장판)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +60 / 피감 +30%</span>
+            </div>
+            <div class="doping-tip">피격 대미지 30% 즉시 감소, 마방 +60 (보스 광폭화/즉사기 방어)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 비호정령 스킬</span></div>
+          </label>
+        
+        </div>
+      </div>
+    
+      <div id="cat_utility_hp" class="doping-cat-panel ">
+        <div class="doping-cat-desc">💡 사거리, 경직 무시 및 위기 탈출용 추천 회복제 목록</div>
+        <div class="doping-grid">
+          
+          <label class="doping-card" data-stack="ok" id="card-soul_range">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="soul_range"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('soul_range')">
+                <span class="doping-name">탐험 사거리 증가</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">스킬 사거리 +2 증가 (패시브/상시)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-soul_superarmor">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="soul_superarmor"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('soul_superarmor')">
+                <span class="doping-name">탐험 경직 무시</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">피격 시 경직 100% 무시 (패시브에 경직무시 없는 캐릭 필수)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_hp">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_hp"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_hp')">
+                <span class="doping-name">☆★ 이자벨의 특선 묘약 (HP 회복)</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">초당 대량 지속 회복 (레이드 강력 추천)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_all">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_all"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_all')">
+                <span class="doping-name">☆★ 이자벨의 특선 묘약 (HP/MP/SP)</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">HP, MP, SP 동시 대량 지속 회복</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_elixir_hp">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_elixir_hp"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_elixir_hp')">
+                <span class="doping-name">이자벨의 선약 (HP 즉시 회복)</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">HP 즉시 50% 회복 (쿨타임 짧음)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-attendance_potion">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="attendance_potion"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('attendance_potion')">
+                <span class="doping-name">☆★ 스페셜 출석체크 물약</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">즉시 회복 및 지속 회복 겸용 (강력 추천)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 출석 이벤트</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-life_potion_large">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="life_potion_large"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('life_potion_large')">
+                <span class="doping-name">改/眞/신-라이프 포션(대)</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">기본 HP 회복제</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 조제, 거래소</span></div>
+          </label>
+        
+        </div>
+      </div>
+    
+      <div id="cat_exp_doping" class="doping-cat-panel ">
+        <div class="doping-cat-desc">💡 사냥 및 룬 경험치 파밍 시 사용하는 경험치 증가 도핑 (중복 불가 규칙 포함)</div>
+        <div class="doping-grid">
+          
+          <label class="doping-card" data-stack="limit" id="card-club_type_e2">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="club_type_e2"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('club_type_e2')">
+                <span class="doping-name">클럽 상점 버프 Type E-2</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">경험치 +100%</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 나르비크 클럽상점 알렌</span><span class="badge-conflict-tag">⚠️ 중복불가: 스승의 증표 / 따뜻한 에오스</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="limit" id="card-master_token">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="master_token"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('master_token')">
+                <span class="doping-name">스승의 증표</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">경험치 +100% / ⌛ 접종 시에도 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 나르비크 사제 관리 사무실</span><span class="badge-conflict-tag">⚠️ 중복불가: 클럽 상점 버프 Type E-2</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="limit" id="card-warm_eos">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="warm_eos"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('warm_eos')">
+                <span class="doping-name">따뜻한 에오스의 파편</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">경험치 +100%</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 이벤트</span><span class="badge-conflict-tag">⚠️ 중복불가: 클럽 E-2 / 눈사람 포션</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="limit" id="card-exp_heart">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="exp_heart"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('exp_heart')">
+                <span class="doping-name">경험의 심장</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">경험치 +100% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 컨텐츠, 거래소</span><span class="badge-conflict-tag">⚠️ 중복불가: 경험의 군고구마</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="limit" id="card-exp_sweet_potato">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="exp_sweet_potato"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('exp_sweet_potato')">
+                <span class="doping-name">경험의 군고구마 (숙성)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">경험치 +100% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 이벤트</span><span class="badge-conflict-tag">⚠️ 중복불가: 경험의 심장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="limit" id="card-quest_stamp_exp">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="quest_stamp_exp"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="50" data-rare="0"
+                  onchange="onDopingToggle('quest_stamp_exp')">
+                <span class="doping-name">도전 과제 완료 도장 (경험치)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +50%</span>
+            </div>
+            <div class="doping-tip">경험치 +50% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 참 잘했어요</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="limit" id="card-good_job_exp">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="good_job_exp"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="50" data-rare="0"
+                  onchange="onDopingToggle('good_job_exp')">
+                <span class="doping-name">참 잘했어요 (경험치)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +50%</span>
+            </div>
+            <div class="doping-tip">경험치 +50% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 도전 과제 완료 도장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-isabelle_exp">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_exp"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="50" data-rare="0"
+                  onchange="onDopingToggle('isabelle_exp')">
+                <span class="doping-name">이자벨의 비법/특선/선약 (경험)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +50%</span>
+            </div>
+            <div class="doping-tip">경험치 +50% (타 경험 도핑과 중복 가능)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-cash_trio">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="cash_trio"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="150" data-rare="0"
+                  onchange="onDopingToggle('cash_trio')">
+                <span class="doping-name">캐시 3종 (전설고구마/최상급에오스/얼리버드)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +150%</span>
+            </div>
+            <div class="doping-tip">경험치 대폭 증가 (중복 가능)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 아이템 샵, 거래소</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-nenyaple_cat1">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="nenyaple_cat1"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="30" data-rare="0"
+                  onchange="onDopingToggle('nenyaple_cat1')">
+                <span class="doping-name">네냐플 고양이1 버프</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +30%</span>
+            </div>
+            <div class="doping-tip">경험치 +30% (무료 버프)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 네냐플 고양이1</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-rune_tp_boost">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="rune_tp_boost"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('rune_tp_boost')">
+                <span class="doping-name">룬 던전 TP 룬 경험치 부스터</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">TP 사용하여 룬 경험치 획득량 2배 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 룬 경험의 던전 좌측 하단 아이콘</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-helmet_rune_opt">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="helmet_rune_opt"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="50" data-rare="0"
+                  onchange="onDopingToggle('helmet_rune_opt')">
+                <span class="doping-name">투구 랜덤 옵션 (룬 경험치 +500)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +50%</span>
+            </div>
+            <div class="doping-tip">몬스터 퇴치 시 룬 경험치 500 추가 획득</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 사냥터, 키트, 거래소</span></div>
+          </label>
+        
+        </div>
+      </div>
+    
+      <div id="cat_rare_doping" class="doping-cat-panel ">
+        <div class="doping-cat-desc">💡 아이템 파밍 시 드랍률을 극대화하는 레어 도핑 (중복 불가 규칙 포함)</div>
+        <div class="doping-grid">
+          
+          <label class="doping-card" data-stack="ok" id="card-roto_amulet">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="roto_amulet"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="100"
+                  onchange="onDopingToggle('roto_amulet')">
+                <span class="doping-name">로토의 부적</span>
+              </div>
+              <span class="doping-stat-tag">레어 +100%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +100% (필수 파밍 도핑)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 엘티보 눈사람족 수장</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="limit" id="card-rare_heart">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="rare_heart"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="100"
+                  onchange="onDopingToggle('rare_heart')">
+                <span class="doping-name">레어의 심장</span>
+              </div>
+              <span class="doping-stat-tag">레어 +100%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +100% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 컨텐츠, 거래소</span><span class="badge-conflict-tag">⚠️ 중복불가: 레어의 밤고구마</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="limit" id="card-rare_chestnut">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="rare_chestnut"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="100"
+                  onchange="onDopingToggle('rare_chestnut')">
+                <span class="doping-name">레어의 밤 고구마 (숙성)</span>
+              </div>
+              <span class="doping-stat-tag">레어 +100%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +100% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 이벤트</span><span class="badge-conflict-tag">⚠️ 중복불가: 레어의 심장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-four_leaf_clover">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="four_leaf_clover"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="50"
+                  onchange="onDopingToggle('four_leaf_clover')">
+                <span class="doping-name">행운의 네잎클로버</span>
+              </div>
+              <span class="doping-stat-tag">레어 +50%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +50% 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 엘티보 눈사람족 수장</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-club_type_r2">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="club_type_r2"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="50"
+                  onchange="onDopingToggle('club_type_r2')">
+                <span class="doping-name">클럽 상점 버프 Type R-2</span>
+              </div>
+              <span class="doping-stat-tag">레어 +50%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +50% 증가 (클럽 코인)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 나르비크 클럽상점 알렌</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="limit" id="card-quest_stamp_rare">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="quest_stamp_rare"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="50"
+                  onchange="onDopingToggle('quest_stamp_rare')">
+                <span class="doping-name">도전 과제 완료 도장 (레어)</span>
+              </div>
+              <span class="doping-stat-tag">레어 +50%</span>
+            </div>
+            <div class="doping-tip">레어 +50% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 참 잘했어요</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="limit" id="card-good_job_rare">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="good_job_rare"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="50"
+                  onchange="onDopingToggle('good_job_rare')">
+                <span class="doping-name">참 잘했어요 (레어)</span>
+              </div>
+              <span class="doping-stat-tag">레어 +50%</span>
+            </div>
+            <div class="doping-tip">레어 +50% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 도전 과제 완료 도장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-soul_rare_buff">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="soul_rare_buff"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="30"
+                  onchange="onDopingToggle('soul_rare_buff')">
+                <span class="doping-name">탐험 레어 버프</span>
+              </div>
+              <span class="doping-stat-tag">레어 +30%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +30% (탐험 포인트로 획득)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-nenyaple_cat_x">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="nenyaple_cat_x"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="30"
+                  onchange="onDopingToggle('nenyaple_cat_x')">
+                <span class="doping-name">네냐플 고양이X 버프</span>
+              </div>
+              <span class="doping-stat-tag">레어 +30%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +30% (무료 버프)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 네냐플 고양이X</span></div>
+          </label>
+        
+          <label class="doping-card" data-stack="ok" id="card-pet_treasure">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="pet_treasure"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="40"
+                  onchange="onDopingToggle('pet_treasure')">
+                <span class="doping-name">펫 보물찾기 & 몬스터 카드(+4)</span>
+              </div>
+              <span class="doping-stat-tag">레어 +40%</span>
+            </div>
+            <div class="doping-tip">펫 스킬 및 몬카 조합 상시 레어 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 엘티보 / 몬스터카드</span></div>
+          </label>
+        
+        </div>
+      </div>
+    
+  <div id="cat_all_sources" class="doping-cat-panel">
+    <div class="doping-cat-desc">
+      🔍 <b>[GM가이드 Notice 131192 기준]</b> 테일즈위버 54종 전체 버프/도핑 아이템의 획득처와 옵션을 실시간 검색할 수 있습니다.
+    </div>
+    <div class="doping-search-bar">
+      <input type="text" id="doping-search-input" class="doping-search-input" placeholder="도핑 이름, 획득처(엘티보, 나르비크, 키트 등), 효과 검색..." oninput="filterDopingTable(this.value)">
+    </div>
+    <div style="overflow-x: auto; max-height: 480px;">
+      <table class="doping-table">
+        <thead>
+          <tr>
+            <th style="width: 28%;">아이템 명칭</th>
+            <th style="width: 24%;">주요 효과</th>
+            <th style="width: 30%;">공식 획득처</th>
+            <th style="width: 18%;">특이사항</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+      <tr class="doping-row" data-search="눈사람 포션 (축제 음료) 엘티보 눈사람족 수장 / 거래소 마방+20 / 명중+15 / 대미지+20%">
+        <td><b>눈사람 포션 (축제 음료)</b></td>
+        <td style="color:#38bdf8;">마방+20 / 명중+15 / 대미지+20%</td>
+        <td>엘티보 눈사람족 수장 / 거래소</td>
+        <td><b style='color:#f87171;'>중복불가(따뜻한 에오스의 파편)</b></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="改-각성의 비약 조제, 거래소, 이벤트 명중+20 / 대미지+10%">
+        <td><b>改-각성의 비약</b></td>
+        <td style="color:#38bdf8;">명중+20 / 대미지+10%</td>
+        <td>조제, 거래소, 이벤트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="改-신뢰의 물약 조제, 거래소, 이벤트 마방+35 / 명중+30">
+        <td><b>改-신뢰의 물약</b></td>
+        <td style="color:#38bdf8;">마방+35 / 명중+30</td>
+        <td>조제, 거래소, 이벤트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 비법 (고정) 키트, 거래소 마방+30 / 명중+25">
+        <td><b>이자벨의 비법 (고정)</b></td>
+        <td style="color:#38bdf8;">마방+30 / 명중+25</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 비법 (비율 / 퇴마사의 은총) 키트, 거래소 / 컨텐츠 마방+40 / 명중+30">
+        <td><b>이자벨의 비법 (비율 / 퇴마사의 은총)</b></td>
+        <td style="color:#38bdf8;">마방+40 / 명중+30</td>
+        <td>키트, 거래소 / 컨텐츠</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 비법 (대미지 / 전투) 키트, 거래소 대미지+10%">
+        <td><b>이자벨의 비법 (대미지 / 전투)</b></td>
+        <td style="color:#38bdf8;">대미지+10%</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="정제된 속성 앰플 각 마을 마법상점 속성+10">
+        <td><b>정제된 속성 앰플</b></td>
+        <td style="color:#38bdf8;">속성+10</td>
+        <td>각 마을 마법상점</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="신속 포션 이벤트 유틸/회복">
+        <td><b>신속 포션</b></td>
+        <td style="color:#38bdf8;">유틸/회복</td>
+        <td>이벤트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 특선 묘약 (고정) 키트, 거래소 마방+35 / 명중+30">
+        <td><b>이자벨의 특선 묘약 (고정)</b></td>
+        <td style="color:#38bdf8;">마방+35 / 명중+30</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 특선 묘약 (비율) 키트, 거래소 마방+50 / 명중+35">
+        <td><b>이자벨의 특선 묘약 (비율)</b></td>
+        <td style="color:#38bdf8;">마방+50 / 명중+35</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 특선 묘약 (대미지) 키트, 거래소 대미지+15%">
+        <td><b>이자벨의 특선 묘약 (대미지)</b></td>
+        <td style="color:#38bdf8;">대미지+15%</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 비법 (명중) 키트, 거래소 명중+30">
+        <td><b>이자벨의 비법 (명중)</b></td>
+        <td style="color:#38bdf8;">명중+30</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 특선 묘약 (명중) 키트, 거래소 명중+50">
+        <td><b>이자벨의 특선 묘약 (명중)</b></td>
+        <td style="color:#38bdf8;">명중+50</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 비법 (크리티컬) 키트, 거래소 명중+10 / 대미지+5%">
+        <td><b>이자벨의 비법 (크리티컬)</b></td>
+        <td style="color:#38bdf8;">명중+10 / 대미지+5%</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="사미선령지채 (요리) 요리 스킬, 거래소 마방+20 / 명중+20">
+        <td><b>사미선령지채 (요리)</b></td>
+        <td style="color:#38bdf8;">마방+20 / 명중+20</td>
+        <td>요리 스킬, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="괴력의 햄 이벤트, 룬정원 채집, 거래소 마방+15 / 대미지+5%">
+        <td><b>괴력의 햄</b></td>
+        <td style="color:#38bdf8;">마방+15 / 대미지+5%</td>
+        <td>이벤트, 룬정원 채집, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="보호의 비약 이벤트 마방+30 / 피감+10%">
+        <td><b>보호의 비약</b></td>
+        <td style="color:#38bdf8;">마방+30 / 피감+10%</td>
+        <td>이벤트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="집중의 비약 이벤트 명중+25">
+        <td><b>집중의 비약</b></td>
+        <td style="color:#38bdf8;">명중+25</td>
+        <td>이벤트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="의지의 비약 이벤트 마방+15 / 피감+5%">
+        <td><b>의지의 비약</b></td>
+        <td style="color:#38bdf8;">마방+15 / 피감+5%</td>
+        <td>이벤트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="클럽 상점 버프 Type P 나르비크 클럽상점 알렌 마방+15 / 명중+15 / 대미지+10%">
+        <td><b>클럽 상점 버프 Type P</b></td>
+        <td style="color:#38bdf8;">마방+15 / 명중+15 / 대미지+10%</td>
+        <td>나르비크 클럽상점 알렌</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="탐험 공격 피해량 증가 소울링크 탐험 포인트 대미지+5%">
+        <td><b>탐험 공격 피해량 증가</b></td>
+        <td style="color:#38bdf8;">대미지+5%</td>
+        <td>소울링크 탐험 포인트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="탐험 피해 감소 증가 소울링크 탐험 포인트 마방+20 / 피감+5%">
+        <td><b>탐험 피해 감소 증가</b></td>
+        <td style="color:#38bdf8;">마방+20 / 피감+5%</td>
+        <td>소울링크 탐험 포인트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="생명의 빛 (아에르 힐 장판) 비호정령 스킬 마방+40">
+        <td><b>생명의 빛 (아에르 힐 장판)</b></td>
+        <td style="color:#38bdf8;">마방+40</td>
+        <td>비호정령 스킬</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="오버 페이스 (아에르 공격 장판) 비호정령 스킬 명중+40 / 대미지+10%">
+        <td><b>오버 페이스 (아에르 공격 장판)</b></td>
+        <td style="color:#38bdf8;">명중+40 / 대미지+10%</td>
+        <td>비호정령 스킬</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="어스 프로텍션 (로키 피감 장판) 비호정령 스킬 마방+60 / 피감+30%">
+        <td><b>어스 프로텍션 (로키 피감 장판)</b></td>
+        <td style="color:#38bdf8;">마방+60 / 피감+30%</td>
+        <td>비호정령 스킬</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="탐험 사거리 증가 소울링크 탐험 포인트 유틸/회복">
+        <td><b>탐험 사거리 증가</b></td>
+        <td style="color:#38bdf8;">유틸/회복</td>
+        <td>소울링크 탐험 포인트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="탐험 경직 무시 소울링크 탐험 포인트 유틸/회복">
+        <td><b>탐험 경직 무시</b></td>
+        <td style="color:#38bdf8;">유틸/회복</td>
+        <td>소울링크 탐험 포인트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="☆★ 이자벨의 특선 묘약 (HP 회복) 키트, 거래소 유틸/회복">
+        <td><b>☆★ 이자벨의 특선 묘약 (HP 회복)</b></td>
+        <td style="color:#38bdf8;">유틸/회복</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="☆★ 이자벨의 특선 묘약 (HP/MP/SP) 키트, 거래소 유틸/회복">
+        <td><b>☆★ 이자벨의 특선 묘약 (HP/MP/SP)</b></td>
+        <td style="color:#38bdf8;">유틸/회복</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 선약 (HP 즉시 회복) 키트, 거래소 유틸/회복">
+        <td><b>이자벨의 선약 (HP 즉시 회복)</b></td>
+        <td style="color:#38bdf8;">유틸/회복</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="☆★ 스페셜 출석체크 물약 출석 이벤트 유틸/회복">
+        <td><b>☆★ 스페셜 출석체크 물약</b></td>
+        <td style="color:#38bdf8;">유틸/회복</td>
+        <td>출석 이벤트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="改/眞/신-라이프 포션(대) 조제, 거래소 유틸/회복">
+        <td><b>改/眞/신-라이프 포션(대)</b></td>
+        <td style="color:#38bdf8;">유틸/회복</td>
+        <td>조제, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="클럽 상점 버프 Type E-2 나르비크 클럽상점 알렌 경험+100%">
+        <td><b>클럽 상점 버프 Type E-2</b></td>
+        <td style="color:#38bdf8;">경험+100%</td>
+        <td>나르비크 클럽상점 알렌</td>
+        <td><b style='color:#f87171;'>중복불가(스승의 증표 / 따뜻한 에오스)</b></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="스승의 증표 나르비크 사제 관리 사무실 경험+100%">
+        <td><b>스승의 증표</b></td>
+        <td style="color:#38bdf8;">경험+100%</td>
+        <td>나르비크 사제 관리 사무실</td>
+        <td><b style='color:#f87171;'>중복불가(클럽 상점 버프 Type E-2)</b> / <span style='color:#fbbf24;'>접속종료시차감</span></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="따뜻한 에오스의 파편 이벤트 경험+100%">
+        <td><b>따뜻한 에오스의 파편</b></td>
+        <td style="color:#38bdf8;">경험+100%</td>
+        <td>이벤트</td>
+        <td><b style='color:#f87171;'>중복불가(클럽 E-2 / 눈사람 포션)</b></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="경험의 심장 컨텐츠, 거래소 경험+100%">
+        <td><b>경험의 심장</b></td>
+        <td style="color:#38bdf8;">경험+100%</td>
+        <td>컨텐츠, 거래소</td>
+        <td><b style='color:#f87171;'>중복불가(경험의 군고구마)</b> / <span style='color:#fbbf24;'>접속종료시차감</span></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="경험의 군고구마 (숙성) 이벤트 경험+100%">
+        <td><b>경험의 군고구마 (숙성)</b></td>
+        <td style="color:#38bdf8;">경험+100%</td>
+        <td>이벤트</td>
+        <td><b style='color:#f87171;'>중복불가(경험의 심장)</b> / <span style='color:#fbbf24;'>접속종료시차감</span></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="도전 과제 완료 도장 (경험치) 도전 과제 경험+50%">
+        <td><b>도전 과제 완료 도장 (경험치)</b></td>
+        <td style="color:#38bdf8;">경험+50%</td>
+        <td>도전 과제</td>
+        <td><b style='color:#f87171;'>중복불가(참 잘했어요)</b> / <span style='color:#fbbf24;'>접속종료시차감</span></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="참 잘했어요 (경험치) 도전 과제 경험+50%">
+        <td><b>참 잘했어요 (경험치)</b></td>
+        <td style="color:#38bdf8;">경험+50%</td>
+        <td>도전 과제</td>
+        <td><b style='color:#f87171;'>중복불가(도전 과제 완료 도장)</b> / <span style='color:#fbbf24;'>접속종료시차감</span></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="이자벨의 비법/특선/선약 (경험) 키트, 거래소 경험+50%">
+        <td><b>이자벨의 비법/특선/선약 (경험)</b></td>
+        <td style="color:#38bdf8;">경험+50%</td>
+        <td>키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="캐시 3종 (전설고구마/최상급에오스/얼리버드) 아이템 샵, 거래소 경험+150%">
+        <td><b>캐시 3종 (전설고구마/최상급에오스/얼리버드)</b></td>
+        <td style="color:#38bdf8;">경험+150%</td>
+        <td>아이템 샵, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="네냐플 고양이1 버프 네냐플 고양이1 경험+30%">
+        <td><b>네냐플 고양이1 버프</b></td>
+        <td style="color:#38bdf8;">경험+30%</td>
+        <td>네냐플 고양이1</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="룬 던전 TP 룬 경험치 부스터 룬 경험의 던전 좌측 하단 아이콘 경험+100%">
+        <td><b>룬 던전 TP 룬 경험치 부스터</b></td>
+        <td style="color:#38bdf8;">경험+100%</td>
+        <td>룬 경험의 던전 좌측 하단 아이콘</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="투구 랜덤 옵션 (룬 경험치 +500) 사냥터, 키트, 거래소 경험+50%">
+        <td><b>투구 랜덤 옵션 (룬 경험치 +500)</b></td>
+        <td style="color:#38bdf8;">경험+50%</td>
+        <td>사냥터, 키트, 거래소</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="로토의 부적 엘티보 눈사람족 수장 레어+100%">
+        <td><b>로토의 부적</b></td>
+        <td style="color:#38bdf8;">레어+100%</td>
+        <td>엘티보 눈사람족 수장</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="레어의 심장 컨텐츠, 거래소 레어+100%">
+        <td><b>레어의 심장</b></td>
+        <td style="color:#38bdf8;">레어+100%</td>
+        <td>컨텐츠, 거래소</td>
+        <td><b style='color:#f87171;'>중복불가(레어의 밤고구마)</b> / <span style='color:#fbbf24;'>접속종료시차감</span></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="레어의 밤 고구마 (숙성) 이벤트 레어+100%">
+        <td><b>레어의 밤 고구마 (숙성)</b></td>
+        <td style="color:#38bdf8;">레어+100%</td>
+        <td>이벤트</td>
+        <td><b style='color:#f87171;'>중복불가(레어의 심장)</b> / <span style='color:#fbbf24;'>접속종료시차감</span></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="행운의 네잎클로버 엘티보 눈사람족 수장 레어+50%">
+        <td><b>행운의 네잎클로버</b></td>
+        <td style="color:#38bdf8;">레어+50%</td>
+        <td>엘티보 눈사람족 수장</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="클럽 상점 버프 Type R-2 나르비크 클럽상점 알렌 레어+50%">
+        <td><b>클럽 상점 버프 Type R-2</b></td>
+        <td style="color:#38bdf8;">레어+50%</td>
+        <td>나르비크 클럽상점 알렌</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="도전 과제 완료 도장 (레어) 도전 과제 레어+50%">
+        <td><b>도전 과제 완료 도장 (레어)</b></td>
+        <td style="color:#38bdf8;">레어+50%</td>
+        <td>도전 과제</td>
+        <td><b style='color:#f87171;'>중복불가(참 잘했어요)</b> / <span style='color:#fbbf24;'>접속종료시차감</span></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="참 잘했어요 (레어) 도전 과제 레어+50%">
+        <td><b>참 잘했어요 (레어)</b></td>
+        <td style="color:#38bdf8;">레어+50%</td>
+        <td>도전 과제</td>
+        <td><b style='color:#f87171;'>중복불가(도전 과제 완료 도장)</b> / <span style='color:#fbbf24;'>접속종료시차감</span></td>
+      </tr>
+    
+      <tr class="doping-row" data-search="탐험 레어 버프 소울링크 탐험 포인트 레어+30%">
+        <td><b>탐험 레어 버프</b></td>
+        <td style="color:#38bdf8;">레어+30%</td>
+        <td>소울링크 탐험 포인트</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="네냐플 고양이X 버프 네냐플 고양이X 레어+30%">
+        <td><b>네냐플 고양이X 버프</b></td>
+        <td style="color:#38bdf8;">레어+30%</td>
+        <td>네냐플 고양이X</td>
+        <td>-</td>
+      </tr>
+    
+      <tr class="doping-row" data-search="펫 보물찾기 & 몬스터 카드(+4) 엘티보 / 몬스터카드 레어+40%">
+        <td><b>펫 보물찾기 & 몬스터 카드(+4)</b></td>
+        <td style="color:#38bdf8;">레어+40%</td>
+        <td>엘티보 / 몬스터카드</td>
+        <td>-</td>
+      </tr>
+    
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+        <!-- Real-time Multi-Metric Dashboard -->
+        <div class="doping-summary-dashboard">
+          <span id="buff-bonus-text" style="display:none;"></span>
+          <div class="summary-title-row">
+            <span>📊 실시간 적용 도핑 총합 (<b id="doping-active-count" style="color:#38bdf8;">0개 선택됨</b>)</span>
+            <span style="color:#94a3b8; font-size:0.75rem;">※ 스탯 판독기 및 던전 매트릭스에 실시간 자동 반영됩니다.</span>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-item">
+              <div class="metric-label">🛡️ 마법방어력</div>
+              <div id="metric-mdef" class="metric-val">+0</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">🎯 명중률</div>
+              <div id="metric-acc" class="metric-val">+0</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">🌪️ 속성치</div>
+              <div id="metric-elem" class="metric-val">+0</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">💥 최종 대미지</div>
+              <div id="metric-dmg" class="metric-val" style="color:#f87171;">+0%</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">🛡️ 피격 피해감소</div>
+              <div id="metric-dmgred" class="metric-val" style="color:#fbbf24;">+0%</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">📚 경험치 증가</div>
+              <div id="metric-exp" class="metric-val" style="color:#34d399;">+0%</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">💎 레어 드랍률</div>
+              <div id="metric-rare" class="metric-val" style="color:#c084fc;">+0%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-input-grid">
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-title">🛡️ 마법방어력 (MR+장비)</span>
+            <span id="req-mdef" class="req-chip">기준: 1,550+</span>
+          </div>
+          <input type="number" id="in-mdef" class="stat-input" placeholder="예: 1520" oninput="evaluateStats()">
+          <div id="prev-mdef" class="calc-preview"></div>
+          <div id="res-mdef" class="result-pill res-empty">수치를 입력하세요</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-title">🎯 명중률 (올힛 판정)</span>
+            <span id="req-acc" class="req-chip">기준: 1,450+</span>
+          </div>
+          <input type="number" id="in-acc" class="stat-input" placeholder="예: 1430" oninput="evaluateStats()">
+          <div id="prev-acc" class="calc-preview"></div>
+          <div id="res-acc" class="result-pill res-empty">수치를 입력하세요</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-title">🌪️ 주력 속성 (풍속성)</span>
+            <span id="req-elem" class="req-chip">기준: 200+</span>
+          </div>
+          <input type="number" id="in-elem" class="stat-input" placeholder="예: 195" oninput="evaluateStats()">
+          <div id="prev-elem" class="calc-preview"></div>
+          <div id="res-elem" class="result-pill res-empty">수치를 입력하세요</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-title">✨ 에타(ETA) 레벨</span>
+            <span id="req-eta" class="req-chip">기준: 15+</span>
+          </div>
+          <input type="number" id="in-eta" class="stat-input" placeholder="예: 16" oninput="evaluateStats()">
+          <div id="prev-eta" class="calc-preview">버프 무관 고정 레벨</div>
+          <div id="res-eta" class="result-pill res-empty">수치를 입력하세요</div>
+        </div>
+      </div>
+
+      <div id="overall-result" class="overall-banner res-empty">
+        <span>📋 종합 진단 결과: 위 칸에 내 스탯을 입력하고 버프를 선택하면 진입 가능 여부를 판정해 드립니다.</span>
+      </div>
+
+      <!-- Multi-Dungeon Real-time Readiness Matrix -->
+      <div class="matrix-section">
+        <div class="matrix-header">
+          <div>
+            <h3>🎯 전체 콘텐츠 동시 판독 매트릭스</h3>
+            <span class="matrix-tip">내 현재 세팅(도핑 포함)으로 즉시 갈 수 있는 던전을 한눈에 확인하세요. (클릭 시 해당 목표로 전환)</span>
+          </div>
+          <span style="font-size:0.8rem; color:#38bdf8; font-weight:700;">실시간 자동 계산 중</span>
+        </div>
+        <div class="matrix-grid" id="dungeon-matrix-grid">
+          <!-- Populated by renderDungeonMatrix() -->
+        </div>
+      </div>
+
+    </section>
+
+    <section>
+      <h2>항목별 최저 스펙 정리표 (<span id="table-mode-label" style="color: var(--accent);">마을 노버프 기준</span>)</h2>
+      <p style="font-size: 0.88rem; color: var(--muted); margin-bottom: 0.75rem;">
+        ※ 버프를 하나라도 체크하거나 상단 <b>실전 풀버프 입력</b>을 선택하면 아래 표의 기준치도 실전 도핑 기준치로 자동 전환됩니다.
+      </p>
+      <div style="overflow-x: auto;">
+        <table style="min-width: 980px;">
+          <thead>
+            <tr>
+              <th style="width: 12%;">항목 / 콘텐츠</th>
+              <th style="width: 12.5%;">신조(일반)</th>
+              <th style="width: 12.5%;">어비스(일/어)</th>
+              <th style="width: 12.5%;">어비스 헬</th>
+              <th style="width: 12.5%;">오방 헬</th>
+              <th style="width: 12.5%;">로카고스</th>
+              <th style="width: 12.5%;">이클 중상위</th>
+              <th style="width: 12.5%;">오방 어비스</th>
+            </tr>
+          </thead>
+          <tbody id="min-spec-tbody">
+            <!-- Populated dynamically by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>난이도별(일반 · 어려움 · 헬 / 5각) 스펙·운용 비교 가이드</h2>
+      <p style="font-size: 0.88rem; color: var(--muted); margin-bottom: 0.75rem;">
+        ※ 동일 던전·콘텐츠라도 난이도(일반/어려움/헬) 및 5차 각성 전후에 따라 요구되는 <b>명중·마방·도핑·장판 운용</b>이 달라집니다.
+      </p>
+      <div style="overflow-x: auto;">
+        <table style="min-width: 780px;">
+          <thead>
+            <tr>
+              <th style="width: 16%;">구분</th>
+              <th style="width: 28%;">일반 (Normal) · 입문</th>
+              <th style="width: 28%;">어려움 (Hard) · 중급</th>
+              <th style="width: 28%;">헬 (Hell) · 5각 심화</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>권장 장비 · 에타</b></td>
+              <td>인퍼널~아퀼루스 셋 / 에타 1~14</td>
+              <td>아퀼루스 풀셋~어비스 부위 / 에타 15+</td>
+              <td>어비스 4~5셋 이상 / 에타 21+ · 5차 각성</td>
+            </tr>
+            <tr>
+              <td><b>마을 스펙 가이드</b></td>
+              <td>마방 1,200~1,300 / 명중 1,100~1,200</td>
+              <td>마방 1,350~1,550 / 명중 1,250~1,450</td>
+              <td>마방 1,550~1,850+ / 명중 1,450~2,250(막보)</td>
+            </tr>
+            <tr>
+              <td><b>도핑 · 장판 핵심</b></td>
+              <td>자버프 + 생명의 빛·오버 페이스 위주</td>
+              <td>민첩/신뢰/묘약 + 장판 위치 사수</td>
+              <td>풀도핑 + 어스 프로텍션(노란장판) 필수</td>
+            </tr>
+            <tr>
+              <td><b>실전 공략 포인트</b></td>
+              <td>기본 바닥 장판 회피 및 파티 합 맞추기</td>
+              <td>스택 관리·쫄 정리·기믹 순서 준수</td>
+              <td>미스 방지 명중 확보 및 패턴 피격 최소화</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== TAB 2: BOSS & DUNGEON PATTERN COMPENDIUM ==================== -->
+  <div id="tab-rokagos" class="tab-panel">
+    <section>
+      <h2>보스 · 던전별 핵심 패턴 & 비호정령 파훼 도감</h2>
+      <p style="font-size: 0.88rem; color: var(--muted); margin-bottom: 1rem;">
+        ※ 콘텐츠별로 분리된 핵심 패턴과 기믹 대처법입니다. <b>3번 주간 숙제 탭</b>에서도 각 숙제 카드 안의 <b>[패턴 공략 펼치기]</b> 버튼으로 바로 확인할 수 있습니다.
+      </p>
+
+      <div class="boss-sub-nav">
+        <button class="boss-sub-btn active" onclick="switchBossPanel('bp-rokagos', this)">🔥 이클립스: 로카고스</button>
+        <button class="boss-sub-btn" onclick="switchBossPanel('bp-eclipse-others', this)">🌑 이클립스: 기타 보스 (에토스 등)</button>
+        <button class="boss-sub-btn" onclick="switchBossPanel('bp-shin-abyss', this)">🦅 신조 · 어비스헬 · 오방헬</button>
+        <button class="boss-sub-btn" onclick="switchBossPanel('bp-siokan-obang', this)">❄️ 시오칸 · 오방 어비스 (5각)</button>
+        <button class="boss-sub-btn" onclick="switchBossPanel('bp-daily-eclipse', this)">⚡ 보급품 탈환 · 별동대</button>
+        <button class="boss-sub-btn" onclick="switchBossPanel('bp-abendon-special', this)">🪙 어벤던로드 & 특화 던전 (타이탄·수르트·닉스 등)</button>
+      </div>
+
+      <!-- PANEL 1: ROKAGOS -->
+      <div id="bp-rokagos" class="boss-panel active">
+        <h3 style="color: #7dd3fc; font-size: 1.08rem; margin-bottom: 0.75rem;">1) 로카고스 핵심 기믹: '피해 감소 스택' 관리</h3>
+        <p>로카고스는 패턴에 피격되거나 소환된 병사를 방치할 경우 보스에게 <b>피해 감소 버프 스택(0 ~ 최대 20)</b>이 누적됩니다.</p>
+        <div class="alert-danger">
+          <b>⚠️ 스택 20 도달 시 주의:</b> 로카고스에게 들어가는 모든 대미지가 <b>1로 고정</b>되어 클리어가 불가능해집니다.
+        </div>
+        <div class="alert-success">
+          <b>✅ 스택 감소 방법:</b> 폭격 구역 회피, QTE 타이밍 성공 등 주요 패턴을 파훼할 때마다 <b>스택이 3씩 감소</b>합니다. (반대로 패턴 피격 시 3씩 증가)
+        </div>
+        <div class="diagram-wrapper">
+          <img src="assets/images/rokagos_pattern_1.png" alt="로카고스 스택 관리 및 비호정령 장판 도식">
+          <div class="caption">▲ 로카고스 피해 감소 스택 증감 구조 및 비호정령 장판·정령 운용 도식</div>
+        </div>
+
+        <h3 style="color: #7dd3fc; font-size: 1.08rem; margin: 1.25rem 0 0.75rem;">2) 로카고스 4대 핵심 패턴 및 파훼법</h3>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">① 폭격 구역 대피 (알파 · 브라보 · 찰리 · 델타)</span>
+            <span class="tag tag-critical">최우선 기믹 · 스택 -3</span>
+          </div>
+          <p>맵이 4개 구역(<b>A: 알파, B: 브라보, C: 찰리, D: 델타</b>)으로 나뉘며 로카고스가 출력하는 대사를 보고 안전 구역으로 이동해야 합니다.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>로카고스 대사 유형</th>
+                <th>안전 구역 (이동 위치)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>"<b>알파</b> 구역에 마법 공격 지원 바란다"</td>
+                <td><b>A(알파)를 제외한</b> 나머지 구역(B, C, D)으로 이동</td>
+              </tr>
+              <tr>
+                <td>"<b>델타를 제외한</b> 구역에 마법 공격 지원 바란다"</td>
+                <td>오직 <b>D(델타) 구역</b>으로만 이동</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="color: var(--warning); font-size: 0.9rem;">※ <b>광폭화 주의:</b> 체력이 일정 이하로 내려가 광폭화에 진입하면 A·B·C·D 구역 위치가 <b>무작위로 뒤바뀌므로</b> 반드시 바닥에 표시된 알파벳을 확인하세요.</p>
+          <div class="diagram-wrapper">
+            <img src="assets/images/rokagos_pattern_2.png" alt="A B C D 4구역 폭격 회피 도식">
+            <div class="caption">▲ A(알파) · B(브라보) · C(찰리) · D(델타) 4구역 배치 및 안전지대 예시</div>
+          </div>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">② 열외 패턴 (QTE 타이밍 게이지)</span>
+            <span class="tag tag-qte">스턴 & 스택 -3</span>
+          </div>
+          <p>보스 대사에 파란 박스로 캐릭터 이름이 지목되며 타이밍 게이지가 나타납니다.</p>
+          <ul>
+            <li><b>노란색 구간 (대성공):</b> 로카고스 일정 시간 스턴 + 피해 감소 스택 3 감소</li>
+            <li><b>파란색 구간 (성공):</b> 패널티 없이 안전하게 통과</li>
+            <li><b>실패:</b> 캐릭터 일정 시간 행동 불가(스턴) + 보스 스택 3 증가</li>
+          </ul>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">③ 흩어져라 (붉은 연기 디버프)</span>
+            <span class="tag tag-move">외곽 회피</span>
+          </div>
+          <p>캐릭터 주변에 붉은 연기가 피어오르며 디버프가 부여됩니다. 디버프 지속시간이 끝날 때까지 <b>보스와 병사들에게 피격되지 않도록 외곽으로 이동</b>하며 버텨야 스택 누적을 막을 수 있습니다.</p>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">④ 내려찍기 & 병사 소환</span>
+            <span class="tag tag-move">장판 회피 & 쫄 정리</span>
+          </div>
+          <ul>
+            <li><b>내려찍기:</b> 보스 주변에 원형 경고 장판이 생성되면 즉시 범위 밖으로 이탈합니다.</li>
+            <li><b>병사 소환:</b> 소환된 병사에게 맞으면 스택이 쌓이므로 <b>로키 스퀘어 쇼크</b> 등 광역기로 빠르게 정리합니다.</li>
+          </ul>
+        </div>
+
+        <div class="info-box" style="border-color: rgba(52, 211, 153, 0.4);">
+          <strong>🌿 비호정령 실전 스킬 & 장판 운용</strong>
+          <ul>
+            <li><b>소환 정령:</b> 보스전 딜링과 빠른 폭격 구역 이동을 위해 <b>아에르(풍속성) + 대자연의 기운</b> 유지를 기본으로 하며, 병사 소환 시에만 로키를 활용합니다.</li>
+            <li><b>장판 조합:</b> <b>생명의 빛(힐) + 오버 페이스(초록)</b> 상시 유지, 광폭화 진입 시 <b>어스 프로텍션(노란 장판)</b> 추가로 급사를 방지합니다.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PANEL 2: ECLIPSE OTHER BOSSES -->
+      <div id="bp-eclipse-others" class="boss-panel">
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">① 에토스 (이클립스 중상위 보스)</span>
+            <span class="tag tag-critical">에타 21+ · 마방 2,000+</span>
+          </div>
+          <ul>
+            <li><b>광역 장판 및 연속 타격:</b> 기본 피격 대미지가 로카고스보다 훨씬 높으므로 비호정령은 <b>어스 프로텍션(노란 장판) + 생명의 빛</b>을 빈틈없이 유지해야 합니다.</li>
+            <li><b>특수 패턴(구슬/장판 처리):</b> 보스 주변에 생성되는 오브젝트나 바닥 경고 장판을 우선 회피하고, 파티원 상태이상 해제 및 힐 케어에 집중합니다.</li>
+          </ul>
+
+        <div class="svg-diagram-card">
+          <h4 style="color:#38bdf8; margin-bottom:0.75rem; font-size:1.02rem;">
+            🗺️ 에토스 4방향 돌진 기믹 & TWChatOverlay 방향 알림 파훼 전술도
+          </h4>
+          <svg viewBox="0 0 760 380" style="max-width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+            <rect width="760" height="380" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+            
+            <!-- Compass Axes -->
+            <line x1="380" y1="40" x2="380" y2="340" stroke="#334155" stroke-width="1.5" stroke-dasharray="5 5"/>
+            <line x1="120" y1="190" x2="640" y2="190" stroke="#334155" stroke-width="1.5" stroke-dasharray="5 5"/>
+            
+            <!-- Quadrants -->
+            <rect x="140" y="55" width="220" height="120" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+            <text x="250" y="90" fill="#94a3b8" font-size="13" font-weight="bold" text-anchor="middle">NW (북서 구역)</text>
+            <text x="250" y="125" fill="#34d399" font-size="12" font-weight="bold" text-anchor="middle">NE 알림 시 안전 지대</text>
+
+            <rect x="400" y="55" width="220" height="120" rx="8" fill="#450a0a" stroke="#ef4444" stroke-width="2"/>
+            <text x="510" y="90" fill="#fca5a5" font-size="13" font-weight="bold" text-anchor="middle">NE (북동 구역 - 위험)</text>
+            <text x="510" y="125" fill="#f87171" font-size="12" font-weight="bold" text-anchor="middle">⚠️ 에토스 돌진 돌파구</text>
+
+            <rect x="140" y="205" width="220" height="120" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+            <text x="250" y="240" fill="#94a3b8" font-size="13" font-weight="bold" text-anchor="middle">SW (남서 구역)</text>
+            <text x="250" y="275" fill="#34d399" font-size="12" font-weight="bold" text-anchor="middle">NE 알림 시 안전 지대</text>
+
+            <rect x="400" y="205" width="220" height="120" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+            <text x="510" y="240" fill="#94a3b8" font-size="13" font-weight="bold" text-anchor="middle">SE (남동 구역)</text>
+            <text x="510" y="275" fill="#e2e8f0" font-size="12" text-anchor="middle">측면 대기 구역</text>
+
+            <!-- Center Boss -->
+            <circle cx="380" cy="190" r="38" fill="#312e81" stroke="#818cf8" stroke-width="3"/>
+            <text x="380" y="195" fill="#ffffff" font-size="13" font-weight="bold" text-anchor="middle">에토스</text>
+
+            <!-- Attack Trajectory -->
+            <path d="M 380 190 L 530 80" stroke="#f87171" stroke-width="5" stroke-dasharray="8 4"/>
+            
+            <!-- TWChatOverlay Callout Badge -->
+            <rect x="230" y="325" width="300" height="34" rx="6" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1.5"/>
+            <text x="380" y="347" fill="#bfdbfe" font-size="12" font-weight="bold" text-anchor="middle">💡 TWChatOverlay [NE] 화살표 발생 ➔ 즉시 반대 대각선 회피!</text>
+          </svg>
+          <div class="svg-legend">
+            <div class="svg-legend-item"><div class="svg-legend-color" style="background:#ef4444;"></div><span>에토스 돌진 경로 (즉사/빈사)</span></div>
+            <div class="svg-legend-item"><div class="svg-legend-color" style="background:#10b981;"></div><span>회피 안전 포지션 (비호 장판 유지)</span></div>
+            <div class="svg-legend-item"><div class="svg-legend-color" style="background:#3b82f6;"></div><span>TWChatOverlay 실시간 화살표 연동</span></div>
+          </div>
+        </div>
+
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">② 라이코스 · 티르카 · 아칸 등 기타 토벌 보스 공통 수칙</span>
+            <span class="tag tag-qte">주간 20회 통합</span>
+          </div>
+          <ul>
+            <li><b>바닥 경고 장판 우선 이탈:</b> 이클립스 보스들은 즉사급/고대미지 장판 패턴을 보유하고 있으므로 <b>대자연의 기운</b> 이동속도 버프를 상시 유지합니다.</li>
+            <li><b>감전·빙결·기절 등 디버프 케어:</b> 파티원 피격 시 즉시 장판 위치를 재정비하여 딜로스를 최소화합니다.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PANEL 3: SHINJO / ABYSS HELL / OBANG HELL -->
+      <div id="bp-shin-abyss" class="boss-panel">
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">① 신조의 둥지 (입문 1단계)</span>
+            <span class="tag tag-qte">기초 파플</span>
+          </div>
+          <ul>
+            <li><b>알/깃털 소환 및 광역 브레스:</b> 전방 부채꼴 브레스 및 바닥 깃털 장판만 피하면 위협적인 즉사 기믹이 적어 무난히 클리어 가능합니다.</li>
+            <li><b>비호 운용:</b> 아에르 소환 후 생명의 빛 + 오버 페이스만 유지해도 파티 안정성이 충분합니다.</li>
+          </ul>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">② 어비스 헬 (코어 파밍 2단계)</span>
+            <span class="tag tag-move">장판 유지</span>
+          </div>
+          <ul>
+            <li><b>지속 도트 대미지 & 장판 패턴:</b> 보스별 바닥 장판(독/화염/전기) 중첩 시 체력이 빠르게 깎이므로 <b>생명의 빛(힐 장판)</b>을 보스 발밑과 딜러 위치에 겹쳐 깔아줍니다.</li>
+            <li><b>쫄 소환 구간:</b> 다수 몬스터 소환 시 로키 광역기 또는 아에르 범위 스킬로 빠르게 정리합니다.</li>
+          </ul>
+
+        <div class="svg-diagram-card">
+          <h4 style="color:#c084fc; margin-bottom:0.75rem; font-size:1.02rem;">
+            🛡️ 어비스 2사도 반사 쉴드 & TWChatOverlay 알림음 대응 전술도
+          </h4>
+          <svg viewBox="0 0 760 260" style="max-width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+            <rect width="760" height="260" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+            
+            <!-- Phase 1: Attack Phase -->
+            <rect x="40" y="45" width="310" height="170" rx="10" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="195" y="75" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">① 통상 딜링 구간 (40초 주기)</text>
+            <circle cx="195" cy="130" r="30" fill="#1e1b4b" stroke="#6366f1" stroke-width="2"/>
+            <text x="195" y="135" fill="#e0e7ff" font-size="12" font-weight="bold" text-anchor="middle">2사도</text>
+            <text x="195" y="185" fill="#34d399" font-size="12" font-weight="bold" text-anchor="middle">딜링 전개 · 오버페이스 유지</text>
+
+            <!-- Arrow between phases -->
+            <path d="M 370 130 L 400 130" stroke="#f59e0b" stroke-width="4" fill="none"/>
+
+            <!-- Phase 2: Reflect Shield Phase -->
+            <rect x="410" y="45" width="310" height="170" rx="10" fill="#450a0a" stroke="#ef4444" stroke-width="2"/>
+            <text x="565" y="75" fill="#f87171" font-size="14" font-weight="bold" text-anchor="middle">② 반사 쉴드 활성화 (⚠️ 딜 중지!)</text>
+            <circle cx="565" cy="130" r="30" fill="#7f1d1d" stroke="#ef4444" stroke-width="3"/>
+            <circle cx="565" cy="130" r="42" fill="none" stroke="#f87171" stroke-width="2" stroke-dasharray="6 3"/>
+            <text x="565" y="135" fill="#fef2f2" font-size="11" font-weight="bold" text-anchor="middle">반사 쉴드!</text>
+            <text x="565" y="195" fill="#fca5a5" font-size="11.5" font-weight="bold" text-anchor="middle">타격 시 즉사! 아에르 회수 & 생빛 힐만 유지</text>
+
+            <rect x="180" y="222" width="400" height="26" rx="5" fill="#1e3a8a" stroke="#3b82f6" stroke-width="1"/>
+            <text x="380" y="239" fill="#bfdbfe" font-size="11.5" font-weight="bold" text-anchor="middle">🔔 TWChatOverlay '반사 패턴' 알림음 즉시 타격 스킬 ALL STOP!</text>
+          </svg>
+        </div>
+
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">③ 오를리 방어전 헬 (오방 헬 · 3단계)</span>
+            <span class="tag tag-critical">피격 대미지 주의</span>
+          </div>
+          <ul>
+            <li><b>웨이브 방어 & 보스 돌진/광역기:</b> 신어헬오방 중 피격 대미지가 가장 강하므로 <b>어스 프로텍션(노란 장판) + 생명의 빛</b>을 상시 가동해야 합니다.</li>
+            <li><b>성문/거점 방어:</b> 몬스터가 방어선에 몰릴 때 광역 장판과 정령 스킬로 웨이브를 끊어줍니다.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PANEL 4: SIOKAN & OBANG ABYSS -->
+      <div id="bp-siokan-obang" class="boss-panel">
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">① 시오칸 보스 토벌전 (5차 각성 이후 · 주간 7회)</span>
+            <span class="tag tag-critical">흡혈 & 잡몹 기믹 주의</span>
+          </div>
+          <ul>
+            <li><b>피 흡수(흡혈) 경고 대사 회피:</b> 전투 중 보스가 <i>"어서 도망치는 게 좋을 거야"</i> 등의 경고 대사를 출력하면 즉시 보스에게서 멀어져 <b>피 흡수 패턴을 회피</b>해야 합니다.</li>
+            <li><b>잡몹 소환 우선 처리:</b> 보스 체력이 낮아져 잡몹을 소환하면 보스 딜을 멈추고 <b>소환된 잡몹을 먼저 처치</b>해야 보스를 마무리할 수 있습니다.</li>
+            <li><b>보스 리롤 팁:</b> 시간의 지배자, 마비온, 모리안, 맨드레이크 등 까다롭거나 미스가 많이 뜨는 보스가 나오면 <b>던전을 나갔다 재입장하여 보스를 리롤</b>할 수 있습니다.</li>
+          </ul>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">② 오를리 방어전 어비스 (오방 어비스 · 5차 각성 이후)</span>
+            <span class="tag tag-move">막보 명중 2,250 컷</span>
+          </div>
+          <ul>
+            <li><b>마지막 보스 명중 컷(2,250):</b> 5차 각성 직후 스펙에서는 마지막 보스에게 미스가 다수 발생하므로, 직클 스펙 도달 전까지는 <b>'오방 어비스 쩔'</b>로 경험의 정수만 확보하는 것이 효율적입니다.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PANEL 5: DAILY ECLIPSE QUESTS -->
+      <div id="bp-daily-eclipse" class="boss-panel">
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">① 이클립스 보급품 탈환 (일일 약 3,000만 시드)</span>
+            <span class="tag tag-qte">기믹 순서 중요</span>
+          </div>
+          <ol style="padding-left: 1.25rem; margin-top: 0.4rem;">
+            <li>맵을 돌며 <b>머리 위에 열쇠가 표시된 몬스터</b>를 처치하고 드랍된 열쇠를 클릭해 사용합니다.</li>
+            <li>기둥 주변의 <b>빨갛게 표시된 몬스터</b>를 처치합니다.</li>
+            <li>발판 암호를 확인한 뒤 <b>안내하는 색깔 순서대로 발판을 밟고 QTE를 해제</b>합니다. (기둥 위치는 매판 랜덤)</li>
+            <li><b>4개 기둥을 모두 파괴</b>하면 서쪽 막사 입구에 병사들이 등장하며, 이를 모두 처치하면 완료됩니다.</li>
+          </ol>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">② 이클립스 별동대 토벌 (일일 약 4,000만 시드)</span>
+            <span class="tag tag-critical">스킬 불가 · 평타 전용</span>
+          </div>
+          <ul>
+            <li><b>전용 무기 옵션 필수:</b> 던전 내부에서는 스킬 사용이 불가능하고 <b>오직 일반 공격(평타)</b>만 가능하므로, 버닝 무기 등 서브 무기에 보유석으로 <b>'단일 대상 공격 시 40% 확률로 광역 피해 발생'</b> 옵션을 띄워 입장합니다.</li>
+            <li><b>진행 방식:</b> 3분 동안 몰려오는 웨이브를 평타 광역 옵션으로 버티며 HP/스킬 구슬을 획득하고, 3분 종료 후 등장하는 보스(<b>마티아</b> 또는 <b>에토스</b>)를 처치합니다. (초반 스펙이 낮을 때는 '돈 던지기' + 자동 평타 활용)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- bp-abendon-special: 어벤던로드, 타이탄 반사 실드 및 주간 특화 던전 도감 -->
+      <div id="bp-abendon-special" class="boss-panel">
+        <div class="pattern-card" style="border-left: 4px solid #f59e0b;">
+          <div class="pattern-header">
+            <span class="pattern-title">🪙 어벤던로드 핵심 공략 & 보스 [타이탄] 반사 실드 즉사 기믹</span>
+            <span class="tag tag-critical">⚠️ 반사 실드 공격 즉사</span>
+          </div>
+          <div style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.8rem;">
+            어벤던로드는 매주 대량의 시드(약 2.1억~3.5억+)를 안정적으로 수급할 수 있는 핵심 주간 던전입니다.
+            <b>Shift + M</b>을 눌러 세계지도 좌측 바다에서 입장하며, 필멸의 땅/카디프/오를란느 각 10회씩 <b>총 30회</b> 진행합니다.
+            입장 전 반드시 <b>켈티카 왕성가(광장 우측) NPC '아크레아'</b>에게 난이도 테스트를 받아 최고 난이도로 진입하세요.
+          </div>
+          <ul>
+            <li><b>⚠️ [초특급 주의 기믹] 보스 '타이탄' 반사 실드:</b> 던전 진행 중 가끔 등장하는 타이탄은 눈알이나 칼이 <b>보라색으로 변신</b>한 직후 전신에 <b>'반사 실드'</b>를 발동합니다. <b>실드가 켜져 있을 때 공격하면 내 캐릭터가 반사 피해로 한 방에 즉사</b>하므로, 보라색 변신을 확인하면 <b>즉시 손을 떼고 실드가 완전히 꺼질 때까지 완전 대기</b>해야 합니다!</li>
+            <li><b>🚫 [손실 방지 꿀팁] 도박 NPC 100% 무시:</b> 던전 보스를 잡으면 나타나는 도박 제안 NPC는 확률이 극악하므로 절대 응하지 말고 가볍게 무시하세요. (벌어둔 시드를 전부 날립니다)</li>
+            <li><b>💰 마정석 환전:</b> 던전에서 드랍되는 하급~최상급 마정석을 모아 켈티카 왕성가 <b>'아크레아'</b>에게 가져가면 순수 시드로 환전해 줍니다.</li>
+          </ul>
+
+          <div class="svg-diagram-card" style="margin-top: 1rem;">
+            <h4 style="color:#fbbf24; margin-bottom:0.75rem; font-size:1.02rem;">
+              ⚡ 어벤던로드 [타이탄] 반사 실드 4단계 파훼 전술도
+            </h4>
+            <svg viewBox="0 0 760 220" style="max-width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+              <rect width="760" height="220" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+              
+              <!-- Step 1 -->
+              <rect x="25" y="35" width="160" height="150" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+              <text x="105" y="62" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">① 통상 딜링</text>
+              <circle cx="105" cy="105" r="24" fill="#1e1b4b" stroke="#3b82f6" stroke-width="2"/>
+              <text x="105" y="110" fill="#93c5fd" font-size="11" font-weight="bold" text-anchor="middle">타이탄</text>
+              <text x="105" y="155" fill="#94a3b8" font-size="11" text-anchor="middle">일반 상태 극딜</text>
+
+              <!-- Arrow 1 -->
+              <path d="M 195 110 L 215 110" stroke="#64748b" stroke-width="2.5" fill="none"/>
+
+              <!-- Step 2 -->
+              <rect x="225" y="35" width="160" height="150" rx="8" fill="#2d1b4e" stroke="#a855f7" stroke-width="1.5"/>
+              <text x="305" y="62" fill="#c084fc" font-size="13" font-weight="bold" text-anchor="middle">② 보라색 변신 경고</text>
+              <circle cx="305" cy="105" r="24" fill="#3b0764" stroke="#c084fc" stroke-width="2"/>
+              <text x="305" y="110" fill="#e9d5ff" font-size="11" font-weight="bold" text-anchor="middle">눈·칼 보라색</text>
+              <text x="305" y="155" fill="#d8b4fe" font-size="11" text-anchor="middle">실드 발동 전조!</text>
+
+              <!-- Arrow 2 -->
+              <path d="M 395 110 L 415 110" stroke="#ef4444" stroke-width="3" fill="none"/>
+
+              <!-- Step 3 -->
+              <rect x="425" y="35" width="160" height="150" rx="8" fill="#450a0a" stroke="#ef4444" stroke-width="2"/>
+              <text x="505" y="62" fill="#f87171" font-size="13" font-weight="bold" text-anchor="middle">③ 반사 실드 활성화</text>
+              <circle cx="505" cy="105" r="26" fill="#7f1d1d" stroke="#ef4444" stroke-width="3"/>
+              <circle cx="505" cy="105" r="32" fill="none" stroke="#fca5a5" stroke-dasharray="4,4" stroke-width="1.5"/>
+              <text x="505" y="110" fill="#fee2e2" font-size="11" font-weight="bold" text-anchor="middle">실드 전개</text>
+              <text x="505" y="155" fill="#fca5a5" font-size="11" font-weight="bold" text-anchor="middle">⚠️ 딜 완전 중지!</text>
+              <text x="505" y="172" fill="#ef4444" font-size="10" text-anchor="middle">(공격 시 반사 즉사)</text>
+
+              <!-- Arrow 3 -->
+              <path d="M 595 110 L 615 110" stroke="#10b981" stroke-width="2.5" fill="none"/>
+
+              <!-- Step 4 -->
+              <rect x="625" y="35" width="115" height="150" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/>
+              <text x="682" y="62" fill="#34d399" font-size="13" font-weight="bold" text-anchor="middle">④ 실드 소멸</text>
+              <circle cx="682" cy="105" r="24" fill="#022c22" stroke="#10b981" stroke-width="2"/>
+              <text x="682" y="110" fill="#a7f3d0" font-size="11" font-weight="bold" text-anchor="middle">안전</text>
+              <text x="682" y="155" fill="#6ee7b7" font-size="11" text-anchor="middle">딜링 재개</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">🏰 프라바 방어전 1인 모드 (★수르트) & 망각의 카타콤 (★닉스)</span>
+            <span class="tag tag-move">주간 솔플 & 파밍</span>
+          </div>
+          <ul>
+            <li><b>프라바 전초기지 1인 모드 (★수르트):</b> 렘므 전초기지 NPC 헤라클레스를 통해 1인 입장합니다. 파티 구인 없이 혼자 진행 가능하며 중앙 제단으로 몰려오는 정예 몬스터를 로키/아에르 범위기로 정리하고, 보스 수르트 등장 시 바닥의 화염 장판을 회피하며 생명의 빛 위에서 극딜합니다. (보상: 프라바 정수, 최고급 거인 버프 물약, 룬 경험치)</li>
+            <li><b>망각의 카타콤 (★닉스):</b> 보스 닉스가 거는 <b>석화 디버프</b>는 걸리는 즉시 만병통치약 또는 정화로 해제해야 합니다. 바닥의 암흑 폭발 장판을 피하며 오버 페이스와 힐 장판을 유지해 처치합니다. (보상: 카타콤 석화 조각, 폐지 시드 환전)</li>
+          </ul>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">🔮 머큐리얼 케이브 (4보스·루미너스·프시키 카사드) & 시뮬레이션 발굴지</span>
+            <span class="tag tag-qte">코어 & 커프 육성</span>
+          </div>
+          <ul>
+            <li><b>머큐리얼 4보스 (★샐리온·★셀레아나·★실라이론·★실반):</b> 물/불/바람/땅 4개 속성 굴 보스를 순회하며 각 속성 장판을 회피하고 코어 상자를 획득합니다.</li>
+            <li><b>머큐리얼 (★루미너스):</b> 중앙 회전 레이저를 시계 방향으로 돌며 회피하고, 바닥에 생성되는 '빛의 결계' 안에 안착하여 즉사기를 방어합니다.</li>
+            <li><b>프시키의 허상 (★어둠의 카사드):</b> ELSO 사냥터 및 보스 토벌. 분신 생성 시 진짜 본체를 찾아 점사합니다.</li>
+            <li><b>시뮬레이션 이공간 발굴지 (★발굴지):</b> 제한 시간 내 기계 수호병을 처치하고 데이터를 추출하여 <b>아퀼루스/어비스/이클립스 커프(팔찌) 진화·강화 필수 재료</b>를 획득합니다.</li>
+          </ul>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">🦅 신조의 둥지 & 어비스 보스전: [룬 레벨 30 미만 솔플 권장 가이드]</span>
+            <span class="tag tag-qte">솔플 권장 요령</span>
+          </div>
+          <div style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.6rem;">
+            💡 <b>왜 룬 레벨 30 미만은 파티보다 솔플이 유리한가?</b>
+          </div>
+          <ul>
+            <li><b>파티 페널티 및 룬 경험치 보존:</b> 룬 레벨이 낮은 상태에서 고스펙 파티에 참여하면 경험치 페널티나 파티 구인 진입장벽이 발생합니다. 일반 난이도는 비호의 '생명의 빛'과 '오버 페이스'만 유지하면 솔플로도 충분히 안정적인 클리어가 가능합니다.</li>
+            <li><b>신조의 둥지 (★신조):</b> 룬 30 미만일 시 [일반 솔플]로 입장하여 전방 부채꼴 브레스와 바닥 깃털 장판만 피하면서 아에르+오버 페이스로 천천히 딜하면 1인 격파가 가능합니다. (스펙 달성 후 [어려움] 파티 도전)</li>
+            <li><b>어비스 보스전 (★어비스 심층 1·2·3):</b> 마찬가지로 룬 30 미만일 시 [일반 솔플]로 진행하여 보스별 기믹(2사도 반사 쉴드 대기 등)을 1인 페이스로 차분히 파훼하는 것이 훨씬 안전합니다. (스펙에 따라 어려움/지옥 확장)</li>
+            <li><b>심연의 보물창고:</b> 보물상자 열쇠를 찾아 열고 미믹을 구별해 처치하여 어비스 코어와 고액 시드를 챙깁니다.</li>
+          </ul>
+        </div>
+
+        <div class="pattern-card">
+          <div class="pattern-header">
+            <span class="pattern-title">🌿 네냐플 일일 파밍 코스: 디르웬 (태양의 렐릭) & 아그네스 (룬/코어 던전 TP)</span>
+            <span class="tag tag-move">일일 네냐플 동선</span>
+          </div>
+          <ul>
+            <li><b>태양의 렐릭 업그레이드 (디르웬):</b> 네냐플 NPC 디르웬의 일일 숙제를 매일 수행하여 태양의 렐릭을 풀 업그레이드하면 상위 '신조의 렐릭'으로 진입 가능합니다. <br>
+            ※ <b>면제 꿀팁:</b> <b>신조의 펜던트나 브레이슬릿을 이미 보유하고 있다면 굳이 진행할 필요가 없습니다 (생략 가능)!</b></li>
+            <li><b>룬 경험 던전 (아그네스):</b> 네냐플 방랑상인 옆 아그네스를 통해 입장. <b>던전 내부 좌측 하단 아이콘에서 TP를 사용하면 룬 경험치 획득량이 몇 배로 대폭 증가</b>하므로 반드시 TP를 켜고 클리어하세요!</li>
+            <li><b>테시스 코어 던전 (아그네스):</b> 어비스 및 머큐리얼 코어 강화 재료를 수급하는 던전으로, <b>TP를 소모하면 코어 강화 재료 획득량이 몇 배로 증가</b>합니다.</li>
+          </ul>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+    <!-- ==================== TAB 3: WEEKLY CHECKLIST WITH MIN CUT & REWARDS ==================== -->
+  <div id="tab-weekly" class="tab-panel">
+    <section>
+
+    <!-- Weekly Reset Countdown & Seed Revenue Tracker -->
+    <div class="weekly-summary-card">
+      <div class="weekly-meta-grid">
+        <div class="countdown-box">
+          <div>
+            <div class="countdown-title">⏰ 목요일 06:00 정기점검 초기화</div>
+            <div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">목요일 오전 6시 자동 초기화</div>
+          </div>
+          <div id="thursday-countdown" class="countdown-digits">D-0 00:00:00</div>
+        </div>
+
+        <div class="seed-revenue-box">
+          <div class="seed-revenue-header">
+            <span>💰 이번 주 예상 달성 수익</span>
+            <b id="weekly-seed-text">0 Seed (0%)</b>
+          </div>
+          <div class="seed-progress-bar">
+            <div id="weekly-seed-fill" class="seed-progress-fill" style="width: 0%;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#94a3b8; margin-top:4px;">
+            <span>진행률: <b id="weekly-task-ratio" style="color:#38bdf8;">0 / 27 완료</b></span>
+            <span>주간 기대 총합: <b style="color:#e2e8f0;">약 8.85억 Seed</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <div class="checklist-header">
+        <h2>비호정령 주간 · 일일 숙제 체크리스트 (최소 컷 · 보상 활용법)</h2>
+        <div class="progress-wrap">
+          <div class="progress-bar-bg"><div id="weekly-progress-bar" class="progress-bar-fill"></div></div>
+          <span id="weekly-progress-text" class="progress-text">0 / 27 완료 (0%)</span>
+          <button class="reset-btn" onclick="resetWeeklyTasks()">초기화</button>
+        </div>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--muted); margin-bottom: 1rem;">
+        ※ 각 숙제 항목별로 <b>비호정령 최소 컷</b>, <b>획득 보상</b>, <b>보상 사용처(활용법)</b> 및 <b>상세 기믹 팁</b>이 정리되어 있습니다. 체크 상태는 캐릭터 프로필별로 자동 저장됩니다.
+      </p>
+
+      <!-- Category 1: Daily Core Routine -->
+      <div class="cat-block">
+        <div class="cat-title">🌟 카테고리 1. 일일 필수 숙제 & 성장 루틴 (네냐플 & 이클립스)</div>
+
+        <!-- 1. Solar Relic -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_daily_relic" data-task="w_daily_relic" data-seed="10000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">태양의 렐릭 업그레이드 (일일 숙제)</span>
+              <span class="task-meta">네냐플 디르웬 · 렐릭 성장</span>
+            </div>
+            <div class="task-desc">네냐플 NPC 디르웬에게 매일 퀘스트를 완료하여 태양의 렐릭 조각을 모으고 풀 업그레이드 진행</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">필요 스펙</span><span>입문 스펙 (누구나 즉시 수행 가능)</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>태양의 렐릭 조각, 렐릭 경험치, 일일 보상 (약 1,000만 Seed 상당)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>태양의 렐릭 풀 업그레이드 달성 시 상위 '신조의 렐릭' 해금</span></div>
+              <div class="task-row-info"><span class="pill-pattern" style="background:rgba(245,158,11,0.2); color:#fbbf24; border-color:rgba(245,158,11,0.4);">💡 면제 꿀팁</span><span><b>신조의 펜던트나 브레이슬릿을 이미 보유하고 있다면 굳이 진행할 필요 없음 (생략 가능)!</b></span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 2. Rune Exp Dungeon -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_daily_rune_exp" data-task="w_daily_rune_exp" data-seed="5000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">룬 경험 던전 (일일 숙제)</span>
+              <span class="task-meta">네냐플 아그네스 · 룬 레벨 급성장</span>
+            </div>
+            <div class="task-desc">네냐플 방랑상인 옆 NPC '아그네스'를 통해 입장. 룬 레벨 급속 성장의 핵심 일일 던전</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">필요 스펙</span><span>기초 장비 (범위 사냥 가능 스펙)</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>대량의 룬 경험치 (약 500만 Seed 가치)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>룬 스킬 포인트 해금 및 마법방어력·생존 스탯 보너스 획득</span></div>
+              <div class="task-row-info"><span class="pill-pattern" style="background:rgba(56,189,248,0.2); color:#38bdf8; border-color:rgba(56,189,248,0.4);">⚡ 핵심 꿀팁</span><span><b>던전 입장 후 좌측 하단 아이콘 클릭 → TP를 소모하면 룬 경험치 획득량이 몇 배로 대폭 증가!</b></span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 3. Tesis Core Dungeon -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_daily_tesis_core" data-task="w_daily_tesis_core" data-seed="10000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">테시스 코어 던전 (일일 숙제)</span>
+              <span class="task-meta">네냐플 아그네스 · 코어 강화 재료</span>
+            </div>
+            <div class="task-desc">네냐플 NPC '아그네스'를 통해 입장. 어비스 및 머큐리얼 코어 강화 재료 대량 수급</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">필요 스펙</span><span>인퍼널 이상 (광역 딜링)</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>어비스 코어 강화 재료, 머큐리얼 코어 재료 (약 1,000만 Seed 상당)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>테시스 코어 레벨업 및 부가 능력치(마방·공격력) 증폭</span></div>
+              <div class="task-row-info"><span class="pill-pattern" style="background:rgba(56,189,248,0.2); color:#38bdf8; border-color:rgba(56,189,248,0.4);">⚡ 핵심 꿀팁</span><span><b>던전 입장 후 TP를 사용하면 코어 강화 재료 획득량이 몇 배로 대폭 증가!</b></span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 4. Eclipse Supply Reclaim -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_supply_reclaim" data-task="w_supply_reclaim" data-seed="35000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">이클립스 보급품 탈환 (일일 지역 퀘스트)</span>
+              <span class="task-meta">일일 시드 루틴 · 약 3,500만 Seed</span>
+            </div>
+            <div class="task-desc">5차 각성 후 개방되는 일일 고정 시드 수급처. 4개 기둥의 암호 발판 기믹 수행 후 막사 병사 토벌</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>5차 각성 완료 / 아퀼루스 셋 / 마방 1,400+</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>일일 고정 <b>순수 시드 3,000만~3,500만 Seed</b>, 이클립스 잡템</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>일주일 7일 순회 시 <b>약 2.1억~2.4억 Seed</b>의 절대적 확정 현금 흐름 창출</span></div>
+              <div class="task-row-info"><span class="pill-pattern">진행 요령</span><span>열쇠 몹 처치 → 빨간 몹 처치 → 발판 색상 순서 QTE 해제 → 서쪽 막사 병사 소탕</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 5. Eclipse Commando Raid -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_commando_raid" data-task="w_commando_raid" data-seed="35000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">이클립스 별동대 토벌 (일일 지역 퀘스트)</span>
+              <span class="task-meta">일일 시드 루틴 · 약 3,500만 Seed</span>
+            </div>
+            <div class="task-desc">스킬 사용 불가 / 평타 전용 던전. 3분간 웨이브를 버틴 뒤 등장하는 보스(마티아 또는 에토스) 처치</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">필수 준비</span><span><b>단일 공격 시 40% 광역 피해</b> 옵션 무기 (버닝 무기 등에 보유석 작업)</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>일일 고정 <b>순수 시드 약 3,500만~4,000만 Seed</b></span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>보급품 탈환과 병행하여 매일 <b>총 7,000만 Seed</b> 확보 (주간 약 4.9억 Seed 파밍)</span></div>
+              <div class="task-row-info"><span class="pill-pattern">진행 요령</span><span>스킬 봉인 상태이므로 평타 광역으로 3분 버티며 HP/스킬 구슬 습득 후 보스 점사</span></div>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Category 2: Abandon Road Specialization -->
+      <div class="cat-block">
+        <div class="cat-title">🪙 카테고리 2. 어벤던로드 주간 특화 시드 파밍 (주 총 30회)</div>
+
+        <!-- Abandon Road Guide Banner -->
+        <div class="info-box" style="margin-bottom: 0.9rem; border-color: rgba(245, 158, 11, 0.45); background: rgba(30, 27, 75, 0.45);">
+          <div style="font-weight: 700; color: #fbbf24; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+            <span>🧭 어벤던로드 주간 순회 핵심 가이드 & 4대 필수 지침</span>
+          </div>
+          <div style="font-size: 0.85rem; color: #e2e8f0; line-height: 1.6;">
+            <div><b>① 입장방법:</b> <code>Shift + M</code> 눌러 세계지도 펼치면 좌측 바다에 <b>[어벤던로드 입장]</b> 버튼 클릭</div>
+            <div><b>② 입장단계:</b> 켈티카 왕성가(광장 우측) <b>'아크레아'</b>에게 난이도 테스트를 받아 최고 난이도로 진입 (난이도가 높을수록 마정석 드랍률 및 시드 대폭 증가)</div>
+            <div><b>③ 보상환전:</b> 드랍되는 하급~최상급 마정석을 모아 <b>'아크레아'</b>에게 가져가면 순수 시드로 즉시 교환 (주간 총 30회 완료 시 약 2.1억~3.5억+ 시드)</div>
+            <div style="color: #fca5a5; margin-top: 0.2rem;"><b>⚠️ [초특급 즉사 주의] 보스 '타이탄' 반사 실드:</b> 가끔 출현하는 타이탄은 눈알/칼이 <b>보라색으로 변하고 반사 실드가 발동</b>합니다. <b>실드 상태에서 공격 시 반사 딜로 캐릭터 즉사</b>하므로 <b>실드가 완전히 꺼질 때까지 완전 딜 중지 대기</b>하세요!</div>
+            <div style="color: #fde68a;"><b>🚫 [시드 낭비 방지] 도박 NPC 100% 무시:</b> 보스 처치 후 도박 제안 NPC는 절대 클릭하지 말고 무시하세요 (돈 다 날립니다).</div>
+          </div>
+        </div>
+
+        <!-- 6. Abandon Mortal -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_abendon_mortal" data-task="w_abendon_mortal" data-seed="70000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">어벤던로드: 필멸의 땅 구역 (주 10회)</span>
+              <span class="task-meta">주간 10회 · 마정석 수급</span>
+            </div>
+            <div class="task-desc">Shift+M 좌측 바다에서 필멸의 땅 어벤던로드 10회 입장. 마정석 파밍 및 보스 처치</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">추천 스펙</span><span>인퍼널~아퀼루스 셋 / 난이도 테스트 완료 스펙</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>마정석 다량 드랍, 시드 환전 (약 7,000만~1억 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>켈티카 아크레아를 통해 시드로 즉시 환전하여 스펙업 자금 확보</span></div>
+              <div class="task-row-info"><span class="pill-pattern">주의 사항</span><span>보스 타이탄 보라색 변신 시 딜 완전 중지 / 도박 NPC 무시</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 7. Abandon Cardif -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_abendon_cardif" data-task="w_abendon_cardif" data-seed="70000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">어벤던로드: 카디프 지역 (주 10회)</span>
+              <span class="task-meta">주간 10회 · 마정석 수급</span>
+            </div>
+            <div class="task-desc">Shift+M 좌측 바다에서 카디프 어벤던로드 10회 순회. 몬스터 몰이 사냥 및 마정석 획득</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">추천 스펙</span><span>인퍼널~아퀼루스 셋 (광역 사냥)</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>마정석 다량 드랍, 시드 환전 (약 7,000만~1억 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>아크레아 환전으로 순수 시드 대량 수급</span></div>
+              <div class="task-row-info"><span class="pill-pattern">주의 사항</span><span>타이탄 반사 실드 경계 / 도박 NPC 사절</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 8. Abandon Orlanne -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_abendon_orlanne" data-task="w_abendon_orlanne" data-seed="70000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">어벤던로드: 오를란느 지역 (주 10회)</span>
+              <span class="task-meta">주간 10회 · 주간 총 30회 완주</span>
+            </div>
+            <div class="task-desc">Shift+M 좌측 바다에서 오를란느 어벤던로드 10회 완료. 3개 구역 총 30회 완료로 주간 마정석 대박 실현</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">추천 스펙</span><span>아퀼루스 권장 (빠른 순회)</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>마정석 다량 드랍, 시드 환전 (약 7,000만~1억 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>3개 지역 완료 시 <b>주간 총 2.1억~3.5억+ Seed</b>의 막대한 현금 확보</span></div>
+              <div class="task-row-info"><span class="pill-pattern">주의 사항</span><span>보라색 눈/칼 타이탄 반사 실드 꺼질 때까지 완전 대기!</span></div>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Category 3: Weekly Boss & Dungeon Raids -->
+      <div class="cat-block">
+        <div class="cat-title">⚔️ 카테고리 3. 핵심 주간 보스 & 던전 토벌 (패턴 · 최소 컷)</div>
+
+        <!-- 9. Shinjo -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_shinjo" data-task="w_shinjo" data-seed="50000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">신조의 둥지 [파티/솔플] (★신조)</span>
+              <span class="task-meta">주간 보스 · 입문 파플 / 솔플</span>
+            </div>
+            <div class="task-desc">신어헬오방 루틴의 첫 관문. 일반 모드 기본 진행, 스펙 충족 시 어려움 도전</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>인퍼널~아퀼루스 셋 / 마을 마방 1,250+ / 명중 1,150+</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>신조의 깃털·진화 재료, 아퀼루스 장비 재료, 시드 (약 5,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>아퀼루스 장비 승급 및 거래소 판매를 통한 기초 자금 수급</span></div>
+              <div class="task-row-info"><span class="pill-pattern" style="background:rgba(52,211,153,0.2); color:#34d399; border-color:rgba(52,211,153,0.4);">💡 솔플 꿀팁</span><span><b>룬 레벨 30 미만일 시 파티보다 '솔플' 강력 권장!</b> (경험치 페널티 없이 편안하게 솔로 클리어)</span></div>
+            </div>
+            <button type="button" class="pattern-toggle-btn" onclick="toggleTaskPattern(event, 'pat_w_shinjo')">📖 상세 패턴 · 공략 펼치기 ▾</button>
+            <div id="pat_w_shinjo" class="inline-pattern-box" onclick="event.stopPropagation()">
+              <h4><span>⚔️ 신조의 둥지 패턴 요약</span><span style="font-size:0.75rem; color:var(--muted);">다시 누르면 접힘</span></h4>
+              <ul>
+                <li><b>전방 부채꼴 브레스:</b> 보스 정면 경고 범위 밖으로 살짝 이동하여 회피합니다.</li>
+                <li><b>깃털/원형 장판 & 소환:</b> 바닥 장판만 피하면 즉사 기믹이 없어 아에르 소환 + 생명의 빛·오버 페이스 장판으로 무난히 클리어됩니다.</li>
+                <li><b>룬 30 미만 솔플 요령:</b> 혼자 진행 시 어그로가 자신에게 집중되므로 보스 뒤편으로 돌면서 브레스를 피하고 힐 장판 위에서 안정적으로 딜링합니다.</li>
+              </ul>
+            </div>
+            <div class="diff-spec-box">
+              <div class="diff-line"><span class="pill-diff-norm">일반·입문</span><span>인퍼널~아퀼루스 / 마을 마방 1,200+ · 명중 1,100+ (생명의 빛+오버 페이스면 충분)</span></div>
+              <div class="diff-line"><span class="pill-diff-hard">어려움·심화</span><span>아퀼루스 풀셋 / 마을 마방 1,300+ · 명중 1,200+ (범위 딜·생존 안정화 구간)</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 10. Abyss Boss -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_abyss_boss" data-task="w_abyss_boss" data-seed="60000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">어비스 보스전 [파티/솔플] (★어비스 심층 1·2·3)</span>
+              <span class="task-meta">주간 레이드 · 일반 / 어려움 / 지옥</span>
+            </div>
+            <div class="task-desc">어비스 심층부 1~3층 사도 보스전. 일반 모드 권장, 스펙 충족 시 어려움/지옥 확장</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>아퀼루스 풀셋 / 마을 마방 1,450+ / 명중 1,350+</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>어비스 코어 상자, 사도 장비 재료, 시드 (약 6,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>어비스 코어 옵션 강화 및 상위 장비 파밍</span></div>
+              <div class="task-row-info"><span class="pill-pattern" style="background:rgba(52,211,153,0.2); color:#34d399; border-color:rgba(52,211,153,0.4);">💡 솔플 꿀팁</span><span><b>룬 레벨 30 미만일 시 파티보다 '솔플' 강력 권장!</b> (1인으로 차분히 기믹 대응 가능)</span></div>
+            </div>
+            <button type="button" class="pattern-toggle-btn" onclick="toggleTaskPattern(event, 'pat_w_abyss_boss')">📖 상세 패턴 · 공략 펼치기 ▾</button>
+            <div id="pat_w_abyss_boss" class="inline-pattern-box" onclick="event.stopPropagation()">
+              <h4><span>⚔️ 어비스 보스전 심층 1·2·3 패턴 요약</span><span style="font-size:0.75rem; color:var(--muted);">다시 누르면 접힘</span></h4>
+              <ul>
+                <li><b>2사도 반사 쉴드 (⚠️ 딜 완전 중지):</b> 붉은 오라와 함께 반사 쉴드가 켜지면 TWChatOverlay 사운드 알림 직후 모든 공격을 멈춥니다.</li>
+                <li><b>바닥 도트 장판 이탈:</b> 바닥에 깔리는 독/화염 장판에서 즉시 벗어나 생명의 빛(힐 장판)을 딜러 발밑에 겹쳐서 유지합니다.</li>
+                <li><b>잡몹 웨이브 정리:</b> 다수 몬스터 소환 시 로키 광역기로 빠르게 정리합니다.</li>
+              </ul>
+            </div>
+            <div class="diff-spec-box">
+              <div class="diff-line"><span class="pill-diff-norm">일반 (솔플/파티)</span><span>아퀼루스 셋 / 마방 1,450+ · 명중 1,350+ (룬 30 미만은 일반 솔플 추천)</span></div>
+              <div class="diff-line"><span class="pill-diff-hard">어려움/지옥 (파티)</span><span>어비스 셋 / 마방 1,600+ · 명중 1,450+ (2사도 반사 쉴드 브리핑 필수)</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 11. Abyss Treasury -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_abyss_treasury" data-task="w_abyss_treasury" data-seed="40000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">심연의 보물창고 (★심연의 보물창고)</span>
+              <span class="task-meta">주간 특화 던전 · 보물 파밍</span>
+            </div>
+            <div class="task-desc">어비스 내부의 심연의 보물창고에 입장하여 보물상자 열쇠 기믹 해제 및 미믹 처치</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>아퀼루스 셋 이상</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>심연의 보물상자, 어비스 코어 조각, 대량 시드 (약 4,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>어비스 장비 승급 재료 및 현금 시드 확보</span></div>
+              <div class="task-row-info"><span class="pill-pattern">진행 요령</span><span>상자 열쇠 탐색 후 미믹 구별 처치, 폭탄 상자 회피</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 12. Mercurial 4 Bosses -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_mercurial_4boss" data-task="w_mercurial_4boss" data-seed="40000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">머큐리얼 케이브 4보스 (★샐리온 ★셀레아나 ★실라이론 ★실반)</span>
+              <span class="task-meta">주간 던전 · 4대 속성 코어</span>
+            </div>
+            <div class="task-desc">물·불·바람·땅 4대 속성 굴 보스를 순회 토벌하여 머큐리얼 코어 및 속성 파편 획득</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>아퀼루스 셋 / 마방 1,400+ / 속성 120+</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>머큐리얼 코어 상자, 4대 속성 파편, 시드 (약 4,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>머큐리얼 테시스 코어 제작 및 속성 앰플 강화 밑천</span></div>
+              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>샐리온(수속성 장판), 셀레아나(화염 분출), 실라이론(돌풍), 실반(낙석) 회피</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 13. Mercurial Luminous -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_mercurial_luminous" data-task="w_mercurial_luminous" data-seed="30000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">머큐리얼 루미너스 (★루미너스)</span>
+              <span class="task-meta">주간 던전 · 중앙 보스</span>
+            </div>
+            <div class="task-desc">머큐리얼 케이브 중앙 구역의 최종 보스 루미너스 토벌. 회전 레이저 파훼</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>아퀼루스~어비스 셋 / 마방 1,450+</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>머큐리얼 완제 코어 및 고급 코어 상자, 시드 (약 3,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>고등급 테시스 코어 승급 및 스펙업</span></div>
+              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>시계 방향 회전 레이저 회피 + '빛의 결계' 내부로 신속 진입</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 14. Psiki Illusion (Casad) -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_psiki_illusion" data-task="w_psiki_illusion" data-seed="30000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">프시키의 허상 (★어둠의 카사드) [ELSO 사냥터]</span>
+              <span class="task-meta">주간 파밍 · ELSO 포인트</span>
+            </div>
+            <div class="task-desc">ELSO 주간 파밍의 핵심 사냥터. 프시키의 허상 던전에서 어둠의 카사드 토벌</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>아퀼루스 셋 / 마방 1,400+</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>ELSO 포인트 대량 획득, 프시키의 파편, 시드 (약 3,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>주간 ELSO 상한(2,000만) 채우기 및 NPC 투투 상점 재화 환전</span></div>
+              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>카사드 분신 소환 시 맵을 살펴 진짜 본체를 찾아 점사 극딜</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 15. Simulation Excavation -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_simulation_excavation" data-task="w_simulation_excavation" data-seed="30000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">시뮬레이션 이공간 발굴지 (★발굴지) [커프 업그레이드]</span>
+              <span class="task-meta">주간 내실 · 커프 성장 필수</span>
+            </div>
+            <div class="task-desc">시뮬레이션 이공간 발굴지 던전 완료. 아퀼루스/어비스/이클립스 커프(팔찌) 필수 업그레이드 재료 파밍</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>아퀼루스 셋 이상</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span><b>커프 업그레이드 전용 재료</b>, 이공간 데이터 파편, 시드 (약 3,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span><b>커프(팔찌) 능력치 강화 및 승급</b> (마방·명중·올스탯 대폭 상승 핵심 부위)</span></div>
+              <div class="task-row-info"><span class="pill-pattern">진행 요령</span><span>제한 시간 내 몰려오는 기계 수호병을 로키/아에르 범위기로 격파하고 데이터 추출</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 16. Catacomb Nyx -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_catacomb_nyx" data-task="w_catacomb_nyx" data-seed="30000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">망각의 카타콤 (★닉스)</span>
+              <span class="task-meta">주간 던전 · 폐지 & 코어 수급</span>
+            </div>
+            <div class="task-desc">망각의 카타콤 보스 '닉스' 토벌. 석화 저주 디버프 해제 및 바닥 폭발 장판 회피</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>인퍼널~아퀼루스 셋 / 마방 1,300+ / 명중 1,200+</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>카타콤 석화 조각, 고대 골렘의 심장 등 폐지 및 코어 재료 (약 3,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>플링/우즈 폐지 판매로 현금 시드 수급 및 코어 제작</span></div>
+              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>닉스 석화 디버프 발생 시 즉시 만병통치약 해제 + 암흑 폭발 장판 회피</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 17. Prava Surtr 1-person -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_prava_surtr" data-task="w_prava_surtr" data-seed="40000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">프라바 전초기지 방어전 1인 모드 (★수르트)</span>
+              <span class="task-meta">주간 솔플 · 정수 & 버프 수급</span>
+            </div>
+            <div class="task-desc">렘므 전초기지 헤라클레스를 통해 1인 모드 입장. 잡몹 수호전 후 보스 수르트 처치</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>아퀼루스~어비스 셋 / 마방 1,450+ / 명중 1,350+</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>프라바의 정수, 최고급 거인 버프 물약, 룬 경험치, 시드 (약 4,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>프라바 정수 판매 및 거인의 힘 버프 물약 비축, 룬 레벨업</span></div>
+              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>제단으로 오는 잡몹을 범위기로 차단 후 수르트 화염 장판 피하며 생명의 빛 극딜</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 18. Obang Hell -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_obang_hell" data-task="w_obang_hell" data-seed="40000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">오를리 방어전 헬 (오방 헬)</span>
+              <span class="task-meta">주간 방어전 · 방벽 보호</span>
+            </div>
+            <div class="task-desc">성문 방벽을 보호하며 몰려오는 적 웨이브와 사념 보스들을 격파하는 주간 방어전</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>아퀼루스 셋 / 마을 마방 1,450+ / 명중 1,350+</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>방어전 훈장, 승급 재료 상자, 시드 (약 4,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>훈장 상점에서 강화 주문서 및 특수 버프 교환</span></div>
+              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>로키 소환 후 광역 도발 및 범위 스킬로 방벽 타격 몬스터를 최우선 차단</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 19. Eclipse 6 Bosses -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_eclipse" data-task="w_eclipse" data-seed="80000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">이클립스 보스 토벌전 (로카고스 등 6종)</span>
+              <span class="task-meta">엔드 파플 · 피해 감소 스택 관리</span>
+            </div>
+            <div class="task-desc">로카고스, 에토스, 발토 등 이클립스 6종 보스 토벌. 피해 감소 디버프 스택 교대 핵심</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>어비스 풀셋 / 마을 마방 1,750+ / 명중 1,550+ / 속성 160+ / 에타 25+</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>이클립스 장비 재료, 이클립스 코어 상자, 대량 시드 (약 8,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>종결 이클립스 장비 제작 및 거래소 판매 (초고수익)</span></div>
+              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>로카고스 디버프 4스택 시 원 밖 이탈 교대 / 에토스 4방향 돌진 회피</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 20. Siokan 5th Awakening -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_siokan" data-task="w_siokan" data-seed="40000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">시오칸 보스 토벌전 (5차 각성 개방)</span>
+              <span class="task-meta">5각 전용 파플 · 고정 시드 수급</span>
+            </div>
+            <div class="task-desc">5차 각성 완료 후 개방되는 시오칸 고난이도 보스전. 주간 고정 시드 파밍처</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>5차 각성 완료 / 아퀼루스 풀셋 이상</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>주간 고정 시드 약 4,000만 Seed, 특수 재료</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>일주일 고정 시드 저축 및 소모품 수급</span></div>
+              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>광역 즉사 장판 사전 이탈 및 생명의 빛·오버 페이스 상시 유지</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 21. Obang Abyss -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_obang_abyss" data-task="w_obang_abyss" data-seed="40000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">오를리 방어전 어비스 (오방 어비스)</span>
+              <span class="task-meta">5각 전용 파플 · 침식 저지</span>
+            </div>
+            <div class="task-desc">5차 각성 후 개방되는 어비스 난이도 오를리 방어전. 강력한 침식 몬스터 저지</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-cut">최소 컷</span><span>5차 각성 완료 / 어비스 셋 권장</span></div>
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>어비스 방어전 상자, 고액 시드 (약 4,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>어비스 장비/코어 재료 교환</span></div>
+              <div class="task-row-info"><span class="pill-pattern">핵심 패턴</span><span>성문 피격 최소화, 엘리트 몬스터 등장 시 오버 페이스 집중 화력</span></div>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Category 4: Weekly Management & Shop -->
+      <div class="cat-block">
+        <div class="cat-title">📜 카테고리 4. 주간 내실 · 상점 교환 · 도전과제</div>
+
+        <!-- 22. Weekly Challenge -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_challenge" data-task="w_challenge" data-seed="20000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">주간 도전과제 달성 및 보상 수령</span>
+              <span class="task-meta">주간 내실 · 도전과제</span>
+            </div>
+            <div class="task-desc">주간 몬스터 처치, 던전 클리어 수치 달성 후 도전과제 UI에서 완료 도장 및 보상 수령</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>도전 과제 완료 도장(경험/레어), TP 포인트, 시드 (약 2,000만 Seed)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>경험치/레어 도핑 물약 확보 및 TP 충전으로 던전 배율 활용</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 23. Rune Garden -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_rune" data-task="w_rune" data-seed="10000000">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">네냐플 · 룬의 정원 주간 관리</span>
+              <span class="task-meta">주간 내실 · 채집 & 펫 보물</span>
+            </div>
+            <div class="task-desc">룬의 정원 화단 채집(괴력의 햄 등) 및 펫 보물찾기 파견, 네냐플 고양이 버프 갱신</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>채집 요리 재료, 괴력의 햄, 펫 보물찾기 레어 상자 (약 1,000만 Seed 상당)</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>자체 도핑 소모품 충당 및 상점 판매</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 24. ELSO Shop -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_elso_shop" data-task="w_elso_shop" data-seed="0">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">ELSO 상점 (NPC 투투) 주간 제한 품목 교환</span>
+              <span class="task-meta">주간 상점 · 주화 교환</span>
+            </div>
+            <div class="task-desc">네냐플 및 아크론 요새 NPC 투투에게 ELSO 포인트를 사용하여 주간 구매 제한 품목 교환</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>코어 진화 재료, 강화석, 주간 소모품 상자</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>목요일 초기화 전 주간 교환 한도 필수 소진</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 25. Lumina Shop -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_lumina_shop" data-task="w_lumina_shop" data-seed="0">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">회랑의 인장 상점 → 이클립스 코어 재료 상자</span>
+              <span class="task-meta">주간 상점 · 코어 파밍</span>
+            </div>
+            <div class="task-desc">루미나의 회랑에서 획득한 회랑의 인장으로 이클립스 코어 상자 교환</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>이클립스 코어 조각 및 진화 상자</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>가성비 +30작(부위당 +10강) 세팅 밑거름</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 26. Club Shop -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_club_shop" data-task="w_club_shop" data-seed="0">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">클럽 상점 버프 & 도핑류 보충</span>
+              <span class="task-meta">주간 정비 · 도핑 비축</span>
+            </div>
+            <div class="task-desc">나르비크 액시피터/섀도우&애쉬 클럽 상점에서 주간 클럽 버프 스크롤 및 비약류 구입</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>클럽 상점 버프 Type P, Type E-2, Type R-2, 신뢰/각성의 비약</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>실전 보스전 및 경험치/레어 파밍 도핑 비축</span></div>
+            </div>
+          </div>
+        </label>
+
+        <!-- 27. ELSO Cap -->
+        <label class="task-item">
+          <input type="checkbox" class="weekly-chk" data-id="w_elso_cap" data-task="w_elso_cap" data-seed="0">
+          <div class="task-body">
+            <div class="task-top">
+              <span class="task-name">주간 ELSO 획득 상한 및 미수령 보상 최종 점검</span>
+              <span class="task-meta">주간 마감 · 점검 전 완료</span>
+            </div>
+            <div class="task-desc">목요일 06:00 정기점검 전 주간 ELSO 최대 획득량(2,000만 포인트) 달성 여부 및 우편함 점검</div>
+            <div class="task-badges">
+              <div class="task-row-info"><span class="pill-reward">주요 보상</span><span>증발 방지된 잔여 ELSO 포인트 및 미수령 보상</span></div>
+              <div class="task-row-info"><span class="pill-use">보상 활용</span><span>목요일 점검 후 초기화되므로 전액 포인트 환전 완료 필수</span></div>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Practical Growth Tips Box -->
+      <div class="info-box" style="margin-top: 1rem; border-color: rgba(56, 189, 248, 0.45);">
+        <strong>💡 5차 각성 & 가성비 스펙업 핵심 체크포인트</strong>
+        <ul style="margin-top: 0.4rem; font-size: 0.87rem; color: #cbd5e1;">
+          <li><b>5차 각성 조합 주의:</b> 5차 각성 재료(윤기·수영석 등) 조합 시 한꺼번에 넣으면 1종만 나오므로 <b>반드시 1개씩 개별 조합</b>하여 '융합된 수호자의 영석' 제작 후 아크론 요새 NPC 리라 → 엔디미온('에타의 의지')까지 완료해야 이클립스 시드 보상이 열립니다.</li>
+          <li><b>이클립스 코어 가성비 세팅 (+30작):</b> 코어 상자에서 얻은 조각을 먼저 <b>1단계까지 기본 강화</b>한 뒤, 거래소의 저렴한 <b>이클립스 코어 진화권</b>을 사용하면 적은 비용으로 3부위 +10강(총 +30, 마방 +32 및 대미지 대폭 상승)을 맞출 수 있습니다.</li>
+          <li><b>어벤던로드 마정석 환전:</b> 드랍되는 마정석은 가방에 쌓아두지 말고 매주 켈티카 왕성가 '아크레아'에게 환전하여 고정 주간 시드를 확보하세요.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+
+  <!-- ==================== TAB 4: TALESRUNE-STYLE CALCULATORS ==================== -->
+  <div id="tab-calc" class="tab-panel">
+    <section>
+      <h2>테일즈위버 시드 · 던전 수익 · 장비 제작 계산기</h2>
+
+    <!-- Global Seed / Gwe Exchange Rate Bar -->
+    <div class="global-rate-bar">
+      <div class="global-rate-label">
+        <span>🪙 1괴(Gold Ingot)당 시드 환율 설정:</span>
+        <span style="font-size:0.78rem; color:#94a3b8; font-weight:normal;">(서버 시세에 맞춰 변경 시 계산기 전체 자동 연동)</span>
+      </div>
+      <div class="global-rate-input-wrap">
+        <input type="number" id="global-gwe-rate" class="global-rate-input" value="44000000" step="1000000" onchange="onGweRateChange(this.value)">
+        <span style="font-size:0.85rem; font-weight:700; color:#fbbf24;">Seed</span>
+      </div>
+    </div>
+
+      <div class="sub-nav">
+        <button class="sub-tab-btn active" onclick="switchSubCalc('sub-waste', this)">📜 폐지(잡템) 판매 계산기</button>
+        <button class="sub-tab-btn" onclick="switchSubCalc('sub-abendon', this)">💎 어밴던로드 마정석 계산기</button>
+        <button class="sub-tab-btn" onclick="switchSubCalc('sub-equip', this)">⚒️ 장비 제작 재료 계산기</button>
+      </div>
+
+      <!-- SUB-CALC 1: WASTE PAPER (폐지 계산기) -->
+      <div id="sub-waste" class="sub-panel active">
+        <div class="sim-toolbar" style="margin-bottom: 0.85rem;">
+          <div class="sim-select-group">
+            <label>판매 상점 기준:</label>
+            <button id="btn-npc-normal" class="toggle-btn active" onclick="setWasteNpc('normal')">일반 NPC (우즈 등 100%)</button>
+            <button id="btn-npc-bonus" class="toggle-btn" onclick="setWasteNpc('bonus')">플링 & 팔색조 (호감도 112.5%)</button>
+          </div>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <input type="text" id="waste-search" class="filter-input" placeholder="아이템 이름 검색..." oninput="renderWasteTable()">
+            <button class="reset-btn" onclick="resetWasteInputs()">수량 초기화</button>
+          </div>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem;">
+          ※ 보유한 폐지(잡템) 수량을 입력하면 <b>일반 NPC(우즈)</b> 및 <b>플링·팔색조(1.125배)</b> 매각 시 총 시드 합계를 자동 계산합니다.
+        </p>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>아이템 이름</th>
+                <th style="text-align:right;">우즈 (일반 매입가)</th>
+                <th style="text-align:right;">플링 & 팔색조 (+12.5%)</th>
+                <th style="text-align:right; width: 120px;">보유 수량</th>
+                <th style="text-align:right;">예상 판매 시드</th>
+              </tr>
+            </thead>
+            <tbody id="waste-tbody"></tbody>
+          </table>
+        </div>
+        <div class="calc-summary-sticky">
+          <div>
+            <span style="font-size: 0.88rem; color: var(--muted);">선택 상점 기준 총 판매 금액:</span>
+            <div id="waste-total-seed" style="font-size: 1.25rem; font-weight: 800; color: var(--success);">0 시드</div>
+          </div>
+          <div style="text-align: right; font-size: 0.85rem; color: #cbd5e1;">
+            <div>우즈 기준 합계: <b id="waste-sum-normal">0</b> 시드</div>
+            <div>플링·팔색조 합계: <b id="waste-sum-bonus" style="color: var(--warning);">0</b> 시드</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-CALC 2: ABENDON ROAD (어밴던로드 마정석 계산기) -->
+      <div id="sub-abendon" class="sub-panel">
+        <div class="sim-toolbar" style="margin-bottom: 0.85rem;">
+          <div class="sim-select-group">
+            <label for="abendon-stage">어밴던로드 단계 선택:</label>
+            <select id="abendon-stage" class="target-select" onchange="renderAbendonTable()">
+              <option value="1">1단계 (입장료 40만~ / 마정석 50만 시드)</option>
+              <option value="2">2단계 (입장료 80만~ / 마정석 100만 시드)</option>
+              <option value="3" selected>3단계 (입장료 160만~ / 마정석 200만 시드)</option>
+              <option value="4">4단계 (입장료 320만~ / 마정석 400만 시드)</option>
+              <option value="5">5단계 (입장료 640만~ / 마정석 800만 시드)</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <span style="font-size:0.85rem; color:var(--muted);">마정석 1개당 교환가: <b id="abendon-stone-price" style="color:var(--warning);">2,000,000 시드</b></span>
+            <button class="reset-btn" onclick="resetAbendonInputs()">입력 초기화</button>
+          </div>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem;">
+          ※ 입장 횟수(1~10회)에 따라 입장료가 누적 증가합니다. 각 회차별 실제 획득한 <b>마정석 수량</b>을 입력하면 입장료를 제외한 순이익을 즉시 계산합니다. (미입력 시 최소 드랍 기준 자동 계산)
+        </p>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>입장 횟수</th>
+                <th style="text-align:right;">입장료</th>
+                <th style="text-align:center;">최소 / 최대 마정석</th>
+                <th style="text-align:right;">최소 순이익</th>
+                <th style="text-align:right;">최대 순이익</th>
+                <th style="text-align:right; width: 110px;">실제 획득 수량</th>
+                <th style="text-align:right;">회차 순이익</th>
+              </tr>
+            </thead>
+            <tbody id="abendon-tbody"></tbody>
+          </table>
+        </div>
+        <div class="calc-summary-sticky">
+          <div>
+            <span style="font-size: 0.88rem; color: var(--muted);">누적 순이익 합계 (입장료 차감 후):</span>
+            <div id="abendon-total-profit" style="font-size: 1.25rem; font-weight: 800; color: var(--success);">0 시드</div>
+          </div>
+          <div style="text-align: right; font-size: 0.85rem; color: #cbd5e1;">
+            <div>총 지불 입장료: <b id="abendon-total-fee" style="color: var(--danger);">0</b> 시드</div>
+            <div>총 획득 마정석 가치: <b id="abendon-total-gross" style="color: var(--warning);">0</b> 시드</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-CALC 3: EQUIPMENT MATERIAL (장비 제작 재료 계산기) -->
+      <div id="sub-equip" class="sub-panel">
+        <div class="sim-toolbar" style="margin-bottom: 0.85rem;">
+          <div class="sim-select-group">
+            <label for="equip-tier-select">제작 장비 등급 선택:</label>
+            <select id="equip-tier-select" class="target-select" onchange="renderEquipCalc()">
+              <option value="aquilus">아퀼루스 장비 (인퍼널 → 아퀼 승급)</option>
+              <option value="abyss" selected>어비스 장비 (아퀼루스 → 어비스 승급)</option>
+              <option value="eclipse">이클립스 장비 (어비스 → 이클립스 승급)</option>
+            </select>
+          </div>
+          <button class="reset-btn" onclick="resetEquipPrices()">시세 초기화</button>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 0.85rem;">
+          ※ 상단 <b>재료별 거래소 단가(1개당 시드)</b>를 입력하면, 아래 <b>부위별 필요 재료 개수 × 단가</b>가 자동 반영되어 부위별 총 제작 비용을 한눈에 비교할 수 있습니다.
+        </p>
+
+        <!-- Unit Price Inputs for Materials -->
+        <div class="cat-block" style="margin-bottom: 1.1rem;">
+          <div class="cat-title" style="margin-bottom: 0.6rem;">💰 재료별 현재 거래소 시세 입력 (1개당 시드)</div>
+          <div id="equip-price-grid" class="buff-grid"></div>
+        </div>
+
+        <!-- Equipment Parts Grid -->
+        <div id="equip-cards-grid" class="equip-card-grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    테일즈위버 비호정령(아나이스) 종합 실전 가이드 • 2026년 11월 기준
+  </footer>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+<!-- Character Profile Modal -->
+<div id="profile-modal" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">캐릭터 프로필 등록/수정</h3>
+      <button class="modal-close-btn" onclick="closeProfileModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="modal-profile-id">
+      <div class="form-group">
+        <label for="modal-char-name">캐릭터 닉네임 / 이름</label>
+        <input type="text" id="modal-char-name" class="form-control" placeholder="예: 비호정령 (본캐)">
+      </div>
+      <div class="form-group">
+        <label for="modal-char-job">직업군 (계열)</label>
+        <select id="modal-char-job" class="form-control">
+          <option value="anais_biho">비호정령 (아나이스 - 마방·서포터)</option>
+          <option value="roamini">로아미니 (디버프·마공 딜러)</option>
+          <option value="yepnen">예프넨 (만능형 메인 딜러)</option>
+          <option value="tichiel_white">티치엘 (백법 - 퓨어 서포터)</option>
+          <option value="cloe">클로에 (원거리 마법 딜러)</option>
+          <option value="other">기타 딜러 / 서포터</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="modal-char-memo">메모 / 장비 목표</label>
+        <input type="text" id="modal-char-memo" class="form-control" placeholder="예: 어비스 4셋 목표, 에타 21 준비 중">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-outline" onclick="closeProfileModal()">취소</button>
+      <button class="btn-sm btn-primary-soft" onclick="saveProfileFromModal()">저장 완료</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
