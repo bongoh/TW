@@ -2488,3 +2488,136 @@
   .coeff-ref-links a:hover {
     text-decoration: underline;
   }
+
+  /* ==================== 8. BEGINNER GROWTH TAB STYLING ==================== */
+  .growth-hero-card {
+    background: linear-gradient(135deg, rgba(30, 27, 75, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  .growth-source-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .source-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #7dd3fc;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .source-link-btn:hover {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #ffffff;
+    transform: translateY(-1px);
+  }
+  .growth-nav {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.4rem;
+  }
+  .growth-sub-btn {
+    padding: 0.55rem 0.9rem;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    background: rgba(30, 41, 59, 0.6);
+    color: var(--muted);
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .growth-sub-btn:hover {
+    color: var(--text);
+    border-color: #64748b;
+  }
+  .growth-sub-btn.active {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #38bdf8;
+  }
+  .growth-section {
+    display: none;
+  }
+  .growth-section.active {
+    display: block;
+  }
+  .growth-roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .roadmap-step-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 1.1rem;
+    position: relative;
+    transition: border-color 0.2s ease;
+  }
+  .roadmap-step-card:hover {
+    border-color: #38bdf8;
+  }
+  .roadmap-step-num {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #38bdf8;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.3rem;
+  }
+  .roadmap-step-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+  }
+  .roadmap-step-desc {
+    font-size: 0.84rem;
+    color: #cbd5e1;
+    line-height: 1.5;
+  }
+  .step-tag-pill {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    margin-top: 0.5rem;
+  }
+  .milestone-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 0.75rem;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    border-radius: 6px;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+  }
+  .milestone-item input[type="checkbox"] {
+    accent-color: #38bdf8;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }

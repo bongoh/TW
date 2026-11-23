@@ -34,12 +34,325 @@
 
   <!-- Category Navigation Tabs -->
   <nav class="nav-tabs" role="tablist">
+    <button class="tab-btn" data-tab="tab-growth" onclick="switchTab('tab-growth', this)">🌱 0. 초보자 버닝 육성 가이드</button>
     <button class="tab-btn active" data-tab="tab-spec" onclick="switchTab('tab-spec', this)">📊 1. 스펙 판독 & 버프 선택</button>
     <button class="tab-btn" data-tab="tab-rokagos" onclick="switchTab('tab-rokagos', this)">⚔️ 2. 보스 · 던전 패턴 도감</button>
     <button class="tab-btn" data-tab="tab-weekly" onclick="switchTab('tab-weekly', this)">✅ 3. 비호 주간 숙제 (컷·보상)</button>
     <button class="tab-btn" data-tab="tab-coeff" onclick="switchTab('tab-coeff', this)">🧮 4. 계수 & 명중 계산기</button>
     <button class="tab-btn" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">💰 5. 시드 · 재료 계산기</button>
   </nav>
+
+  <!-- ==================== TAB 0: BEGINNER BURNING GROWTH GUIDE ==================== -->
+  <div id="tab-growth" class="tab-panel">
+    <section>
+      <!-- Hero Banner -->
+      <div class="growth-hero-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem;">
+          <div>
+            <span class="badge" style="background:rgba(52, 211, 153, 0.15); color:#34d399; border-color:rgba(52, 211, 153, 0.4);">
+              🌱 2026.07.23 이후 버닝러시 & 젤리삐 가이드 최신 개편 반영
+            </span>
+            <h2 style="font-size:1.45rem; color:#7dd3fc; margin:0.4rem 0 0.3rem;">
+              🌱 초보자 & 복귀자를 위한 버닝 완전 정복 육성 가이드 (1~5편 총정리)
+            </h2>
+            <p style="font-size:0.88rem; color:#cbd5e1; line-height:1.6;">
+              테일즈위버 정보 커뮤니티 <b>매직위버(MagicWeaver) 하이아칸 '햄찌'</b>님의 <b>[2026 07 23 이후 버닝 공략 (아나이스 비호정령 기준)]</b> 1~5편 전 과정을 웹 컴패니언에 최적화하여 수록했습니다.
+              캐릭터 생성부터 5차 각성, 眞아퀼루스 세트, 테시스 코어 4진화, 그리고 이클립스 보스 진입까지의 필수 동선과 실전 꿀팁을 확인하세요!
+            </p>
+          </div>
+        </div>
+
+        <!-- Official MagicWeaver Links Bar -->
+        <div style="margin-top:1rem; padding-top:0.85rem; border-top:1px solid rgba(51, 65, 85, 0.6);">
+          <div style="font-size:0.8rem; font-weight:700; color:#94a3b8; margin-bottom:0.45rem;">
+            🔗 매직위버 원문 공략 바로가기 (출처: 다음 카페 매직위버 퀘스트모음 게시판):
+          </div>
+          <div class="growth-source-bar">
+            <a href="https://cafe.daum.net/MagicWeaver/V1k5/1115" target="_blank" rel="noopener" class="source-link-btn">
+              <span>🐣 1편: Lv.1~310 초반 & 만렙</span> ↗
+            </a>
+            <a href="https://cafe.daum.net/MagicWeaver/V1k5/1116" target="_blank" rel="noopener" class="source-link-btn">
+              <span>⚡ 2편: 2차 극한 & 4·5각성 + 펫</span> ↗
+            </a>
+            <a href="https://cafe.daum.net/MagicWeaver/V1k5/1117" target="_blank" rel="noopener" class="source-link-btn">
+              <span>🗡️ 3편: 사과의 섬 & 프시키 허상 眞아퀼</span> ↗
+            </a>
+            <a href="https://cafe.daum.net/MagicWeaver/V1k5/1118" target="_blank" rel="noopener" class="source-link-btn">
+              <span>💎 4편: 가성비 어빌리티 & 마방 인챈트</span> ↗
+            </a>
+            <a href="https://cafe.daum.net/MagicWeaver/V1k5/1120" target="_blank" rel="noopener" class="source-link-btn">
+              <span>👑 5편: 코어 4진화/4강 & 이클립스 진입</span> ↗
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Growth Sub-navigation Tabs -->
+      <div class="growth-nav">
+        <button class="growth-sub-btn active" onclick="switchGrowthSection('growth-all', this)">📖 전체 펼쳐보기 (All)</button>
+        <button class="growth-sub-btn" onclick="switchGrowthSection('growth-roadmap', this)">📌 5단계 성장 로드맵</button>
+        <button class="growth-sub-btn" onclick="switchGrowthSection('growth-part1', this)">🐣 1편: 캐릭터 생성 & 만렙 루틴</button>
+        <button class="growth-sub-btn" onclick="switchGrowthSection('growth-part2', this)">⚡ 2편: 2차 극한 & 4·5각성 + 펫</button>
+        <button class="growth-sub-btn" onclick="switchGrowthSection('growth-part3', this)">🗡️ 3편: 사과의 섬 & 眞아퀼 파밍</button>
+        <button class="growth-sub-btn" onclick="switchGrowthSection('growth-part4', this)">💎 4편: 어빌리티 & 인챈트 세팅</button>
+        <button class="growth-sub-btn" onclick="switchGrowthSection('growth-part5', this)">👑 5편: 코어 4진화 & 이클립스 진입</button>
+        <button class="growth-sub-btn" onclick="switchGrowthSection('growth-milestone', this)">✅ 초보자 12대 마일스톤</button>
+      </div>
+
+      <!-- SECTION 0: ROADMAP OVERVIEW -->
+      <div id="growth-roadmap" class="growth-section active">
+        <h3 style="color:#7dd3fc; font-size:1.1rem; margin-bottom:0.75rem;">🗺️ 5단계 버닝 육성 핵심 요약 로드맵</h3>
+        <div class="growth-roadmap-grid">
+          <div class="roadmap-step-card" style="border-top:3px solid #38bdf8;">
+            <div class="roadmap-step-num">STEP 01 (1편)</div>
+            <div class="roadmap-step-title">🐣 생성 ➔ Lv.310 초고속 만렙</div>
+            <div class="roadmap-step-desc">
+              아나이스(비호정령) 생성 ➔ 젤리삐 가이드 1~10단계 ➔ <b>아카드라트-림보(보물 개구리 400% 버프)</b> & 가성비 도핑 3종으로 당일 310 돌파!
+            </div>
+            <span class="step-tag-pill">Lv.1 ~ 310 만렙</span>
+          </div>
+
+          <div class="roadmap-step-card" style="border-top:3px solid #818cf8;">
+            <div class="roadmap-step-num">STEP 02 (2편)</div>
+            <div class="roadmap-step-title">⚡ 2차 극한 & 4·5차 각성 + 펫</div>
+            <div class="roadmap-step-desc">
+              원격 퀘스트 [필멸의 땅] 2차 극한 ➔ 젤리삐 11단계 보상 ➔ <b>5차 각성 재료 반드시 1개씩 개별 조합</b> ➔ 펫 명중/마방 스킬 세팅.
+            </div>
+            <span class="step-tag-pill" style="color:#a5b4fc; background:rgba(129, 140, 248, 0.15);">스펙 제한 해제</span>
+          </div>
+
+          <div class="roadmap-step-card" style="border-top:3px solid #34d399;">
+            <div class="roadmap-step-num">STEP 03 (3편)</div>
+            <div class="roadmap-step-title">🗡️ 사과의 섬 & 眞 아퀼루스 풀셋</div>
+            <div class="roadmap-step-desc">
+              에피소드 4 챕터 1 클리어 ➔ 머큐리얼 1인 토벌 ➔ <b>프시키의 허상 (Ctrl+Y 강화석 소모 OFF)</b> 엘소 파밍 ➔ <b>眞 아퀼루스 2주 기간제 풀세트</b> 제작.
+            </div>
+            <span class="step-tag-pill" style="color:#34d399; background:rgba(52, 211, 153, 0.15);">엔드 장비 진입</span>
+          </div>
+
+          <div class="roadmap-step-card" style="border-top:3px solid #fbbf24;">
+            <div class="roadmap-step-num">STEP 04 (4편)</div>
+            <div class="roadmap-step-title">💎 가성비 어빌 & 마방 인챈트</div>
+            <div class="roadmap-step-desc">
+              <b>상실의 백마법 증폭 어빌리티</b>(피해량 % 증가) 장착 ➔ 일회용 마방 인챈트 주문서로 안전 마방 1,400+ ➔ 어벤던/보급품 주간 시드 루틴 가동.
+            </div>
+            <span class="step-tag-pill" style="color:#fbbf24; background:rgba(251, 191, 36, 0.15);">가성비 딜증폭</span>
+          </div>
+
+          <div class="roadmap-step-card" style="border-top:3px solid #c084fc;">
+            <div class="roadmap-step-num">STEP 05 (5편)</div>
+            <div class="roadmap-step-title">👑 코어 4진화/4강 & 이클립스</div>
+            <div class="roadmap-step-desc">
+              코어 던전(TP 소모) ➔ <b>엘소 소모 코어 4진화 & 4강화(최종 뎀증 버프)</b> ➔ 이클립스 코어 진화권 ➔ <b>이클립스 6대 보스</b> 본격 토벌!
+            </div>
+            <span class="step-tag-pill" style="color:#c084fc; background:rgba(192, 132, 252, 0.15);">엔드 레이드 완성</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: PART 1 -->
+      <div id="growth-part1" class="growth-section active">
+        <div class="pattern-card" style="border-left:4px solid #38bdf8;">
+          <div class="pattern-header">
+            <span class="pattern-title">🐣 [1편] 캐릭터 생성 & Lv.1 ~ Lv.310 초고속 만렙 루틴</span>
+            <span class="tag tag-move">Lv.1 ~ 310 구간</span>
+          </div>
+          <div style="font-size:0.86rem; color:#94a3b8; margin-bottom:0.75rem;">
+            출처 원문: <a href="https://cafe.daum.net/MagicWeaver/V1k5/1115" target="_blank" rel="noopener" style="color:#38bdf8;">2026 07 23 이후 버닝 공략 -1 [아나이스 비호정령 기준] (하이아칸 햄찌)</a>
+          </div>
+
+          <div class="alert-success" style="margin-bottom:0.85rem;">
+            <b>💡 19,900원 改-도약 패키지 vs 무과금 동선 비교:</b>
+            <br>• <b>改-도약 패키지 구매 시:</b> 캐릭터 생성 즉시 <b>Lv 310 달성, 4차 각성, 2차 극한, 연마 강화, 커프 올 100, 신조 퀘스트 완료</b> 상태로 시작하여 초반 수십~수백 시간의 노가다를 즉시 생략할 수 있어 여유가 있다면 압도적으로 추천됩니다.
+            <br>• <b>무과금 진행 시:</b> 아래의 <b>아카드라트-림보 보물 개구리 400% 버프</b>와 가성비 경험치 도핑을 활용하면 하루 만에 310 만렙을 달성할 수 있습니다!
+          </div>
+
+          <ul>
+            <li><b>1. 캐릭터 생성 및 버닝러시 참여:</b>
+              <br>• 캐릭터 선택 화면에서 <b>'아나이스'</b> 생성 후 <b>'비호정령'</b> 계열을 선택합니다.
+              <br>• 프롤로그 스킵 후 네냐플 진입 ➔ 화면 우측 상단 이벤트 메뉴에서 <b>[버닝 러시!]</b>를 클릭하여 참여 등록을 마칩니다.
+            </li>
+            <li><b>2. 젤리삐 가이드 (Alt + G) 1~10단계 미션 진행:</b>
+              <br>• 단축키 <code>Alt + G</code>를 눌러 젤리삐 가이드 창을 엽니다.
+              <br>• 1단계부터 10단계까지 안내되는 기본 미션을 순차적으로 수행하여 <b>젤리삐 무기/방어구 상자, 이벤트 인퍼널 장비, 스킬북, 버닝 포션</b>을 수령합니다.
+            </li>
+            <li><b>3. 🌟 초고속 사냥터 [아카드라트-림보 400% 버프 활용법]:</b>
+              <br>• 네냐플에서 그림자탑 진입 후 240+ 레벨 달성 시 <b>'아카드라트 - 림보 (솔로)'</b> 맵으로 이동합니다.
+              <br>• <b>보물 개구리 400% 경험치 버프:</b> 림보 맵에 20분마다 리젠되는 <b>'보물 개구리'</b>를 잡으면 <b>[20분간 경험치 +400% 버프]</b>를 줍니다! 20분 주기로 재진입하여 버프를 상시 유지하세요.
+              <br>• <b>초록색 발판 리젠:</b> 맵 중앙 퍼즐 구역에서 초록색 활성화 발판을 밟으면 몬스터가 무한 리젠되어 폭풍 레벨업이 가능합니다.
+            </li>
+            <li><b>4. 🚀 초가성비 경험치 도핑 3대장 (아이템 샵 소액 구매):</b>
+              <br>• 아이템 샵 ➔ 기능성 ➔ 경험치 카테고리에서 소액으로 구매 가능한 3대 도핑:
+              <br>&nbsp;&nbsp;① <b>전설의 군고구마</b> &nbsp;|&nbsp; ② <b>최상급 에오스의 파편</b> &nbsp;|&nbsp; ③ <b>얼리버드 경험치 부스터</b>
+              <br>• 버닝 이벤트 경험치 배율과 곱연산되어 300~310 구간을 단 몇 시간 만에 고속 돌파할 수 있습니다.
+            </li>
+            <li><b>5. 필수 스킬 등록 및 마스터:</b>
+              <br>• 인벤토리에 들어온 스페셜 스킬북(서드시엔, 컴플리트 서드시엔, 체력연마 등)을 모두 우클릭 등록합니다.
+              <br>• <b>아에르 소환, 카코포니(주력기), 생명의 빛(힐), 오버 페이스(피증), 하드 웨폰</b>을 우선 마스터합니다.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SECTION 2: PART 2 -->
+      <div id="growth-part2" class="growth-section active">
+        <div class="pattern-card" style="border-left:4px solid #818cf8;">
+          <div class="pattern-header">
+            <span class="pattern-title">⚡ [2편] 2차 극한 & 4·5차 각성 + 펫 내실 세팅</span>
+            <span class="tag tag-critical">⚠️ 5차 각성 개별 조합 필수</span>
+          </div>
+          <div style="font-size:0.86rem; color:#94a3b8; margin-bottom:0.75rem;">
+            출처 원문: <a href="https://cafe.daum.net/MagicWeaver/V1k5/1116" target="_blank" rel="noopener" style="color:#818cf8;">2026 07 23 이후 버닝 공략 -2 [아나이스 비호정령기준] (하이아칸 햄찌)</a>
+          </div>
+
+          <ul>
+            <li><b>1. 젤리삐 가이드 11단계 보상 수령:</b> <code>Alt + G</code>를 눌러 성장 미션 11단계 보상을 모두 수령합니다.</li>
+            <li><b>2. 2차 극한 퀘스트 완벽 진행:</b>
+              <br>• 화면 우측 원격 퀘스트(두루마리 아이콘)를 열어 <b>[필멸의 땅]</b> 퀘스트를 수락합니다.
+              <br>• 대화 선택지에서 반드시 <b>"그래도 도와줘야 할 것 같다"</b>를 클릭합니다!
+              <br>• 퀘스트 몬스터를 순서대로 처치하면 <b>2차 극한</b>이 완료되며 대미지 제한(9,999)이 해제됩니다.
+            </li>
+            <li><b>3. 4차 각성 & 5차 각성 (⚠️ 초특급 주의: 1개씩 개별 조합):</b>
+              <br>• 젤리삐 가이드 보상으로 지급되는 4차/5차 각성 재료 상자를 개봉합니다.
+              <br>• <b style="color:#f87171;">⚠️ 절대 주의: 5차 각성 재료(빛나는 영석, 윤기나는 정수 등) 조합 시 한꺼번에 넣으면 1종만 생성되고 나머지 재료가 증발합니다! 반드시 1개씩 분할하여 개별 조합하세요!</b>
+              <br>• '융합된 수호자의 영석'을 제작한 후 아크론 요새 NPC 리라 ➔ 엔디미온('에타의 의지')까지 클리어하여 5차 각성을 완료합니다.
+            </li>
+            <li><b>4. 🐾 펫 옵션 & 스킬 세팅:</b>
+              <br>• 펫 알을 부화시킨 후 펫 스킬북을 등록합니다:
+              <br>&nbsp;&nbsp;• <b>1순위: 명중률 강화 (DEX +20~30)</b> ➔ 상위 던전 올미스를 방지하기 위한 절대 필수 옵션!
+              <br>&nbsp;&nbsp;• <b>2순위: 마법 방어력 강화 (MR +20~40)</b> ➔ 비호정령의 주 공격력 및 생존력 직결.
+              <br>&nbsp;&nbsp;• 펫 S스킬 증폭 스크롤을 먹여 펫 스탯을 극대화합니다.
+            </li>
+            <li><b>5. 프라바 방어전 1인 모드 순회:</b>
+              <br>• 렘므 전초기지 NPC 헤라클레스를 통해 1인 입장하여 각성 재료와 <b>백사자 훈장</b>을 안정적으로 파밍합니다.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SECTION 3: PART 3 -->
+      <div id="growth-part3" class="growth-section active">
+        <div class="pattern-card" style="border-left:4px solid #34d399;">
+          <div class="pattern-header">
+            <span class="pattern-title">🗡️ [3편] 사과의 섬 & 프시키의 허상 (엘소 파밍 ➔ 眞 아퀼루스 풀셋 제작)</span>
+            <span class="tag tag-move">Ctrl+Y 강화석 OFF 필수</span>
+          </div>
+          <div style="font-size:0.86rem; color:#94a3b8; margin-bottom:0.75rem;">
+            출처 원문: <a href="https://cafe.daum.net/MagicWeaver/V1k5/1117" target="_blank" rel="noopener" style="color:#34d399;">2026 07 23 이후 버닝 공략 -3 [아나이스 비호정령] (하이아칸 햄찌)</a>
+          </div>
+
+          <ul>
+            <li><b>1. 에피소드 4: 챕터 1 [사과의 섬] 진행:</b>
+              <br>• 원격 퀘스트 창에서 에피소드 4 챕터 1 수락 후 사과의 섬으로 이동합니다.
+              <br>• '볼품없어진 선물 상자' NPC와 가위바위보 진행 ➔ 지정 좌표 바닥에서 '맑은 성수' 및 '순결한 뼛가루'를 인벤토리 우클릭 사용 ➔ 주요 NPC(에리카, 알스테, 줄리앙, 엘리자, 클레트)와 순차 대화.
+              <br>• 이벤트 보스는 스킵하고 젤리삐 가이드 13단계 보상으로 <b>'머큐리얼 차감권'</b>을 수령합니다.
+            </li>
+            <li><b>2. 머큐리얼 보스(루미너스 / 샐리온 1인) 토벌:</b>
+              <br>• <b>필수 버프:</b> 일루미 축제 음료, 신속 포션, 개각성/개신뢰의 비약, 이자벨 비법.
+              <br>• 로키 소환, 디소넌스(순격), 하드 웨폰, 아리아를 유지하며 보스를 공략합니다. (※ 맵 이동 시 로키 재소환 필수!)
+            </li>
+            <li><b>3. 🌟 프시키의 허상 엘소(ELSO) 파밍 & Ctrl+Y 조작:</b>
+              <br>• 설원마을 엘티보에서 <b>'로토의 문장'</b>을 준비하고 사과의 섬 제사장을 통해 <b>'프시키의 허상'</b>으로 진입합니다.
+              <br>• <b style="color:#38bdf8;">⭐ [초핵심 조작] <code>Ctrl + Y</code> 눌러 장비강화석 소모 OFF:</b> 허상 사냥 시 소중한 장비강화석이 자동으로 소모되지 않도록 <code>Ctrl + Y</code>를 눌러 강화석 옵션을 반드시 비활성화합니다!
+              <br>• 허상 잡몹을 몰아잡으며 핵심 재화인 <b>'엘소(ELSO)'</b>를 대량 수집합니다.
+            </li>
+            <li><b>4. 🛡️ 眞 아퀼루스 장비 세트 (2주 기간제) 제작:</b>
+              <br>• <code>ESC</code> ➔ <b>'룬의 정원'</b> ➔ NPC <b>'투투'</b>에게 이동.
+              <br>• 파밍한 엘소를 교환하여 <b>2주 기간제 眞 아퀼루스 무기 및 방어구 풀세트</b>를 제작·착용합니다. (스펙이 비약적으로 상승하여 어비스/이클립스 진입 가능)
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SECTION 4: PART 4 -->
+      <div id="growth-part4" class="growth-section active">
+        <div class="pattern-card" style="border-left:4px solid #fbbf24;">
+          <div class="pattern-header">
+            <span class="pattern-title">💎 [4편] 가성비 어빌리티 & 마방 인챈트 + 시드 빌드업</span>
+            <span class="tag tag-qte">가성비 스펙업 & 시드 파밍</span>
+          </div>
+          <div style="font-size:0.86rem; color:#94a3b8; margin-bottom:0.75rem;">
+            출처 원문: <a href="https://cafe.daum.net/MagicWeaver/V1k5/1118" target="_blank" rel="noopener" style="color:#fbbf24;">2026 07 23 이후 버닝 공략 -4 [아나이스 비호정령 기준] (하이아칸 햄찌)</a>
+          </div>
+
+          <ul>
+            <li><b>1. 가성비 극대화 [상실의 백마법 증폭 어빌리티]:</b>
+              <br>• 거래소나 상점에서 <b>[상실의 백마법 증폭 어빌리티]</b>(공격 피해량 % 증가)를 구매하여 무기/갑옷/투구에 장착합니다.
+              <br>• 적은 비용으로 실질 딜량을 수십 % 폭증시킬 수 있는 초보자 필수 가성비 세팅입니다.
+            </li>
+            <li><b>2. 장비 강화 & 일회용 마방 인챈트 주문서 세팅:</b>
+              <br>• 방어구 부위에 장비강화석으로 기본 강화(+10강 이상)를 진행합니다.
+              <br>• <b>일회용 마법 방어력 인챈트 주문서(MR 인챈트):</b> 장비 파괴 위험 없이 마법 방어력을 안전하게 부여하여 <b>마방 1,400+ 기본 라인</b>을 가볍게 돌파합니다.
+              <br>• 부여석을 사용하여 명중률(DEX)과 풍속성 강화 부가옵션을 챙깁니다.
+            </li>
+            <li><b>3. 💰 주간 고정 시드 수급처 순회 루틴:</b>
+              <br>• 🪙 <b>어벤던로드 (총 30회):</b> 마정석 파밍 ➔ 켈티카 '아크레아'에게 환전하여 <b>주간 약 2.1억~3.5억+ Seed</b> 확보.
+              <br>• ⚡ <b>이클립스 보급품 탈환 & 별동대 토벌:</b> 매일 4개 기둥 해제 및 3분 버티기로 <b>일일 총 약 7,000만 Seed (주 약 4.9억 Seed)</b> 확정 수급.
+              <br>• 망각의 카타콤(닉스) 석화 조각 및 프라바 방어전 1인 모드 부산물 환전.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SECTION 5: PART 5 -->
+      <div id="growth-part5" class="growth-section active">
+        <div class="pattern-card" style="border-left:4px solid #c084fc;">
+          <div class="pattern-header">
+            <span class="pattern-title">👑 [5편] 코어 4진화/4강화 & 이클립스 엔드 보스 진입 준비</span>
+            <span class="tag tag-critical">엔드 레이드 스펙 완성</span>
+          </div>
+          <div style="font-size:0.86rem; color:#94a3b8; margin-bottom:0.75rem;">
+            출처 원문: <a href="https://cafe.daum.net/MagicWeaver/V1k5/1120" target="_blank" rel="noopener" style="color:#c084fc;">2026 07 23 이후 아나이스 버닝공략 -5 [이클립스 보스를 향해] (대햄찌)</a>
+          </div>
+
+          <ul>
+            <li><b>1. 어비스 & 머큐리얼 코어 던전 순회:</b>
+              <br>• 네냐플 NPC 아그네스를 통해 코어 던전에 입장할 때 <b>TP 소모 옵션</b>을 켜서 코어 가루와 결정 획득량을 대폭 증가시킵니다.
+            </li>
+            <li><b>2. 🔮 테시스 코어 4진화 & 4강화 (엘소 투입):</b>
+              <br>• 프시키의 허상에서 모은 엘소를 소모하여 테시스 코어를 <b>4단계 진화 및 4단계 강화</b>까지 완료합니다.
+              <br>• 4진화/4강화 달성 시 주어지는 <b>[최종 대미지 증폭 버프]</b>가 활성화되어 상위 레이드 보스 격파 화력을 갖추게 됩니다.
+            </li>
+            <li><b>3. 라르사/티르칼라그 엔키라 장비 & 어비스 건틀렛 제작:</b>
+              <br>• 라르사 ➔ 티르칼라그에서 '아브리 엔키라 훈장' 일퀘를 돌며 소울 포인트를 파밍하고 인퍼널/엔키라 장비를 빌드업합니다.
+              <br>• 고대 기사의 건틀렛 파편 등을 수급하여 <b>어비스 건틀렛</b> 및 <b>어비스 아뮬렛</b> 제작 루트로 확장합니다.
+            </li>
+            <li><b>4. 👑 이클립스 코어 상자 개봉 & 6대 보스전 진입:</b>
+              <br>• 거래소의 저렴한 <b>이클립스 코어 진화권</b>을 활용하여 3부위 +10강(총 +30, 마방 +32 및 대미지 상승)을 완성합니다.
+              <br>• 이제 <b>2번 탭 [보스 · 던전 패턴 도감]</b>으로 이동하여 <b>로카고스 ➔ 에토스 ➔ 체리아 ➔ 라이코스 ➔ 티로로스 ➔ 마티아</b>의 핵심 기믹을 숙지하고 주간 6보스 토벌을 시작하세요!
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SECTION 6: BEGINNER MILESTONE CHECKLIST -->
+      <div id="growth-milestone" class="growth-section active">
+        <div class="pattern-card" style="border-left:4px solid #10b981;">
+          <div class="pattern-header">
+            <span class="pattern-title">✅ 초보자 버닝 육성 12대 필수 마일스톤 체크리스트</span>
+            <span class="tag tag-move">원클릭 진행 체크</span>
+          </div>
+          <div style="font-size:0.86rem; color:#cbd5e1; margin-bottom:0.75rem;">
+            버닝 육성 과정 중 완료한 항목을 체크하며 진행 상황을 한눈에 점검하세요. (체크 상태는 브라우저에 자동 저장됩니다)
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.5rem;">
+            <label class="milestone-item"><input type="checkbox" data-milestone="m1"> <span><b>Step 01.</b> 아나이스(비호정령) 생성 & 버닝러시 참여</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m2"> <span><b>Step 02.</b> 젤리삐 가이드 1~10단계 완료 & Lv.310 만렙 달성</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m3"> <span><b>Step 03.</b> 원격 퀘스트 [필멸의 땅] 진행 ➔ 2차 극한 완료</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m4"> <span><b>Step 04.</b> 4차 각성 완료 & 5차 각성 재료 1개씩 개별 조합</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m5"> <span><b>Step 05.</b> 펫 부화 및 명중률(DEX)/마방(MR) 스킬 세팅</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m6"> <span><b>Step 06.</b> 에피소드 4 사과의 섬 클리어 & 머큐리얼 1인 토벌</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m7"> <span><b>Step 07.</b> 프시키의 허상 (Ctrl+Y 강화석 OFF) 엘소 파밍</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m8"> <span><b>Step 08.</b> 룬의 정원 투투에게 眞 아퀼루스 2주 풀세트 제작</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m9"> <span><b>Step 09.</b> 상실의 백마법 증폭 어빌리티 & 일회용 마방 인챈트</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m10"> <span><b>Step 10.</b> 테시스 코어 4진화 & 4강화 (최종 뎀증 버프 획득)</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m11"> <span><b>Step 11.</b> 어벤던로드 30회 & 일일 보급품/별동대 시드 루틴 가동</span></label>
+            <label class="milestone-item"><input type="checkbox" data-milestone="m12"> <span><b>Step 12.</b> Tab 2 패턴 도감 숙지 후 이클립스 6보스 토벌 성공!</span></label>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <!-- ==================== TAB 1: SPEC SIMULATOR & BUFF SELECTOR ==================== -->
   <div id="tab-spec" class="tab-panel active">

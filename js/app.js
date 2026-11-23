@@ -28,6 +28,18 @@ function switchTab(tabId, btnEl) {
   btnEl.classList.add('active');
 }
 
+function switchGrowthSection(secId, btnEl) {
+  document.querySelectorAll('.growth-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.growth-sub-btn').forEach(b => b.classList.remove('active'));
+  if (secId === 'growth-all') {
+    document.querySelectorAll('.growth-section').forEach(s => s.classList.add('active'));
+  } else {
+    const el = document.getElementById(secId);
+    if (el) el.classList.add('active');
+  }
+  btnEl.classList.add('active');
+}
+
 // ==================== 2. BUFF SELECTOR & SPEC SIMULATOR ====================
 let inputMode = 'nobuff'; // 'nobuff' = user enters village stats, 'buff' = user enters already-buffed stats
 
@@ -1324,6 +1336,25 @@ updateWeeklyProgress = function() {
   saveCurrentStateToProfile();
 };
 
+function initGrowthMilestones() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('tw_growth_milestones') || '{}');
+    document.querySelectorAll('.milestone-item input[type="checkbox"]').forEach(chk => {
+      const key = chk.getAttribute('data-milestone');
+      if (key && saved[key]) {
+        chk.checked = true;
+      }
+      chk.addEventListener('change', () => {
+        try {
+          const cur = JSON.parse(localStorage.getItem('tw_growth_milestones') || '{}');
+          cur[key] = chk.checked;
+          localStorage.setItem('tw_growth_milestones', JSON.stringify(cur));
+        } catch (e) {}
+      });
+    });
+  } catch (e) {}
+}
+
 function bootCompanion() {
   initCharacterSelectors();
   initProfiles();
@@ -1335,6 +1366,7 @@ function bootCompanion() {
   evaluateStats();
   updateWeeklyProgress();
   initCoeffCalculator();
+  initGrowthMilestones();
 }
 
 // ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
