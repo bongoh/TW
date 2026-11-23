@@ -1822,3 +1822,488 @@
   .stack-rule-item b {
     color: #93c5fd;
   }
+
+  /* ==================== 8. COEFFICIENT & ACCURACY CALCULATOR STYLES ==================== */
+  .coeff-calc-wrapper {
+    background: #0b1120;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 1.25rem;
+    color: #f8fafc;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  }
+
+  .coeff-header-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #1e293b;
+    margin-bottom: 1rem;
+  }
+
+  .coeff-title-box {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .coeff-title-box h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .coeff-preset-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .coeff-preset-select {
+    background: #1e293b;
+    border: 1px solid #3b82f6;
+    color: #f8fafc;
+    font-size: 0.88rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    min-width: 200px;
+  }
+
+  .coeff-icon-btn {
+    background: #1e293b;
+    border: 1px solid #475569;
+    color: #94a3b8;
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s ease;
+  }
+  .coeff-icon-btn:hover {
+    background: #334155;
+    color: #38bdf8;
+    border-color: #38bdf8;
+  }
+  .coeff-icon-btn.danger:hover {
+    color: #f87171;
+    border-color: #f87171;
+  }
+
+  /* 계열 선택 탭 바 */
+  .coeff-type-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+    background: #0f172a;
+    padding: 0.35rem;
+    border-radius: 8px;
+    border: 1px solid #1e293b;
+  }
+
+  .coeff-type-btn {
+    flex: 1;
+    min-width: 90px;
+    padding: 0.55rem 0.8rem;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .coeff-type-btn:hover {
+    color: #e2e8f0;
+    background: rgba(56, 189, 248, 0.08);
+  }
+
+  .coeff-type-btn.active {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
+  }
+
+  /* 메인 그리드 레이아웃: 좌측 패널 (도핑/기본스탯/보너스) + 우측 그리드 (장비 슬롯) */
+  .coeff-main-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  @media (max-width: 980px) {
+    .coeff-main-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .coeff-side-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .coeff-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .coeff-card-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* 스탯 입력 필드 */
+  .coeff-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.84rem;
+  }
+
+  .coeff-stat-label {
+    color: #94a3b8;
+    font-weight: 600;
+    width: 65px;
+  }
+  .coeff-stat-label.highlight {
+    color: #facc15;
+    font-weight: 700;
+  }
+
+  .coeff-stat-input {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #38bdf8;
+    font-weight: 700;
+    font-size: 0.92rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    width: 110px;
+    text-align: right;
+  }
+  .coeff-stat-input:focus {
+    outline: none;
+    border-color: #38bdf8;
+    background: #0f172a;
+  }
+
+  /* 추가 보너스 미니 테이블 */
+  .coeff-bonus-table {
+    width: 100%;
+    font-size: 0.78rem;
+    border-collapse: collapse;
+    margin-top: 0.4rem;
+  }
+  .coeff-bonus-table th {
+    color: #94a3b8;
+    text-align: center;
+    padding: 0.35rem 0.2rem;
+    border-bottom: 1px solid #334155;
+    font-weight: 600;
+  }
+  .coeff-bonus-table td {
+    padding: 0.35rem 0.2rem;
+    text-align: center;
+  }
+  .coeff-bonus-table input {
+    width: 52px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #f8fafc;
+    border-radius: 4px;
+    padding: 0.2rem 0.3rem;
+    text-align: right;
+    font-size: 0.8rem;
+  }
+
+  /* 장비 슬롯 그리드 */
+  .coeff-equip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.85rem;
+  }
+
+  .coeff-slot-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 0.75rem 0.85rem;
+    transition: border-color 0.15s ease;
+  }
+  .coeff-slot-card:hover {
+    border-color: #3b82f6;
+  }
+
+  .coeff-slot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.45rem;
+  }
+  .coeff-slot-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #f8fafc;
+  }
+  .coeff-slot-preview {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-family: monospace;
+    background: rgba(15, 23, 42, 0.8);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    border: 1px solid #1e293b;
+  }
+
+  .coeff-slot-select {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.82rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+  }
+
+  .coeff-slot-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.78rem;
+  }
+  .coeff-slot-tag {
+    color: #94a3b8;
+    width: 32px;
+    font-weight: 600;
+  }
+  .coeff-slot-input-sm {
+    width: 65px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #38bdf8;
+    font-weight: 700;
+    padding: 0.25rem 0.4rem;
+    border-radius: 4px;
+    text-align: right;
+    font-size: 0.82rem;
+  }
+  .coeff-slot-stat-btn {
+    background: #1e293b;
+    border: 1px solid #3b82f6;
+    color: #93c5fd;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* 하단 집계 및 계산식 영역 */
+  .coeff-summary-box {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 1.25rem;
+  }
+  @media (max-width: 900px) {
+    .coeff-summary-box {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .coeff-sum-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+  }
+  .coeff-sum-table th {
+    background: #1e293b;
+    color: #94a3b8;
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px solid #334155;
+  }
+  .coeff-sum-table td {
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px solid #1e293b;
+    color: #e2e8f0;
+  }
+  .coeff-sum-table td.stat-highlight {
+    color: #38bdf8;
+    font-weight: 700;
+  }
+  .coeff-sum-table td.total-highlight {
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 1.05rem;
+  }
+
+  .coeff-formula-banner {
+    background: #1e1b4b;
+    border: 1px solid #4338ca;
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    font-family: monospace;
+    font-size: 0.76rem;
+    color: #c7d2fe;
+    line-height: 1.4;
+    margin-top: 0.75rem;
+    word-break: break-all;
+  }
+
+  /* 최종 결과 대형 KPI 카드 */
+  .coeff-kpi-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+  .coeff-kpi-card {
+    background: #1e293b;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid #334155;
+  }
+  .coeff-kpi-label {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+  }
+  .coeff-kpi-val {
+    font-size: 1.85rem;
+    font-weight: 900;
+    color: #38bdf8;
+    letter-spacing: -0.5px;
+  }
+  .coeff-kpi-val.acc {
+    color: #facc15;
+  }
+
+  /* 콘텐츠 및 보스 가이드 */
+  .coeff-boss-guide-box {
+    margin-top: 1.5rem;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 1.25rem;
+  }
+  .coeff-boss-guide-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .coeff-boss-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 0.85rem;
+  }
+
+  .coeff-boss-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .coeff-boss-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+  }
+  .coeff-boss-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f8fafc;
+  }
+  .coeff-boss-badge {
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    font-size: 0.74rem;
+    font-weight: 700;
+  }
+  .coeff-boss-badge.smooth { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+  .coeff-boss-badge.viable { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+  .coeff-boss-badge.hard   { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+  .coeff-boss-badge.fail   { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
+  .coeff-boss-reqs {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.76rem;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+  }
+  .coeff-boss-prog-track {
+    width: 100%;
+    height: 7px;
+    background: #0f172a;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.4rem;
+  }
+  .coeff-boss-prog-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #38bdf8);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+  .coeff-boss-acc-info {
+    font-size: 0.74rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .coeff-ref-links {
+    margin-top: 1.25rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid #1e293b;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.78rem;
+    color: #94a3b8;
+  }
+  .coeff-ref-links a {
+    color: #38bdf8;
+    text-decoration: none;
+  }
+  .coeff-ref-links a:hover {
+    text-decoration: underline;
+  }

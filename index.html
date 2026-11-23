@@ -37,7 +37,8 @@
     <button class="tab-btn active" data-tab="tab-spec" onclick="switchTab('tab-spec', this)">📊 1. 스펙 판독 & 버프 선택</button>
     <button class="tab-btn" data-tab="tab-rokagos" onclick="switchTab('tab-rokagos', this)">⚔️ 2. 보스 · 던전 패턴 도감</button>
     <button class="tab-btn" data-tab="tab-weekly" onclick="switchTab('tab-weekly', this)">✅ 3. 비호 주간 숙제 (컷·보상)</button>
-    <button class="tab-btn" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">🧮 4. 시드 · 재료 계산기</button>
+    <button class="tab-btn" data-tab="tab-coeff" onclick="switchTab('tab-coeff', this)">🧮 4. 계수 & 명중 계산기</button>
+    <button class="tab-btn" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">💰 5. 시드 · 재료 계산기</button>
   </nav>
 
   <!-- ==================== TAB 1: SPEC SIMULATOR & BUFF SELECTOR ==================== -->
@@ -3009,7 +3010,250 @@
   </div>
 
 
-  <!-- ==================== TAB 4: TALESRUNE-STYLE CALCULATORS ==================== -->
+  <!-- ==================== TAB 4: COEFFICIENT & ACCURACY CALCULATOR ==================== -->
+  <div id="tab-coeff" class="tab-panel">
+    <section>
+      <h2>테일즈위버 계수 및 명중 계산기 (스마트 스탯 & 도핑 연동)</h2>
+      <div style="font-size: 0.88rem; color: #94a3b8; margin-bottom: 1.25rem;">
+        구글 스프레드시트(텔쥐 계수계산기) 및 디시인사이드(TaleWiki 계수공식 / 216109 명중컷) 데이터를 기반으로 장비·강화·코어·도핑 합산 계수와 최종 DEX를 계산하고, 보스별 공략 가능 여부를 실시간 판정합니다.
+      </div>
+
+      <div class="coeff-calc-wrapper">
+        <!-- Top Header Bar -->
+        <div class="coeff-header-bar">
+          <div class="coeff-title-box">
+            <h3>🧮 계수 및 명중 계산기</h3>
+            <span class="tag tag-ready" style="font-size:0.75rem;">최신 밸런스 공식</span>
+          </div>
+          <div class="coeff-preset-controls">
+            <select id="coeff-profile-select" class="coeff-preset-select" onchange="onCoeffProfileSelectChange(this.value)">
+              <!-- Populated dynamically -->
+            </select>
+            <button type="button" class="coeff-icon-btn" onclick="addCoeffPreset()" title="새 프리셋 추가">➕</button>
+            <button type="button" class="coeff-icon-btn" onclick="renameCoeffPreset()" title="프리셋 이름 변경">✏️</button>
+            <button type="button" class="coeff-icon-btn danger" onclick="deleteCoeffPreset()" title="프리셋 삭제">🗑️</button>
+            <button type="button" id="coeff-mode-toggle-btn" class="coeff-icon-btn" style="background:#1e3a8a; border-color:#3b82f6; color:#93c5fd; font-weight:700;" onclick="toggleCoeffEquipMode()" title="모드 전환">⚡ 수동 총합 고정 모드 (스크린샷 일치)</button>
+          </div>
+        </div>
+
+        <!-- Attack Type Tabs -->
+        <div class="coeff-type-tabs">
+          <button class="coeff-type-btn active" data-type="stab" onclick="switchCoeffType('stab')">찌르기</button>
+          <button class="coeff-type-btn" data-type="hack" onclick="switchCoeffType('hack')">베기</button>
+          <button class="coeff-type-btn" data-type="composite" onclick="switchCoeffType('composite')">물리복합</button>
+          <button class="coeff-type-btn" data-type="magic_atk" onclick="switchCoeffType('magic_atk')">마법공격</button>
+          <button class="coeff-type-btn" data-type="magic_slash" onclick="switchCoeffType('magic_slash')">마법베기</button>
+          <button class="coeff-type-btn" data-type="magic_def" onclick="switchCoeffType('magic_def')">마법방어</button>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="coeff-main-grid">
+          <!-- Left Column: Doping / Base Stats / Bonus Stats / Override Settings -->
+          <div class="coeff-side-col">
+            <!-- Doping Preset Card -->
+            <div class="coeff-card">
+              <div class="coeff-card-title">
+                <span>⚡ 도핑 프리셋</span>
+              </div>
+              <select id="coeff-doping-select" class="coeff-slot-select" onchange="onCoeffDopingPresetChange(this.value)">
+                <option value="none">도핑 없음</option>
+                <option value="basic">기본 도핑 (스펙 가이드 표준 8종)</option>
+                <option value="full">상급 레이드 풀도핑 (이자벨/비약/Type P)</option>
+                <option value="tab1_link">Tab 1 버프 시뮬레이터 실시간 연동</option>
+              </select>
+              <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.4rem;">
+                <input type="checkbox" id="coeff-apply-doping-chk" onchange="toggleCoeffDopingApply(this.checked)">
+                <label for="coeff-apply-doping-chk" style="font-size:0.82rem; color:#cbd5e1; cursor:pointer;">스탯에 도핑 합산 반영</label>
+              </div>
+              <div id="coeff-doping-status-text" style="font-size:0.75rem; color:#94a3b8; margin-top:0.4rem;">도핑 미적용 (순수 스탯)</div>
+              <div style="font-size:0.72rem; color:#64748b; margin-top:0.4rem; line-height:1.4;">
+                ※ 프리셋을 선택하거나 Tab 1에서 체크한 도핑 물약 목록을 실시간 합산하여 스탯에 가산합니다.
+              </div>
+            </div>
+
+            <!-- Base Stats Card -->
+            <div class="coeff-card">
+              <div class="coeff-card-title">
+                <span>👤 기본 스탯</span>
+              </div>
+              <div class="coeff-stat-row">
+                <span class="coeff-stat-label">STAB</span>
+                <input type="number" id="coeff-base-stab" class="coeff-stat-input" value="658" onchange="onBaseStatChange('stab', this.value)">
+              </div>
+              <div class="coeff-stat-row">
+                <span class="coeff-stat-label">HACK</span>
+                <input type="number" id="coeff-base-hack" class="coeff-stat-input" value="66" onchange="onBaseStatChange('hack', this.value)">
+              </div>
+              <div class="coeff-stat-row">
+                <span class="coeff-stat-label">INT</span>
+                <input type="number" id="coeff-base-int" class="coeff-stat-input" value="0" onchange="onBaseStatChange('int', this.value)">
+              </div>
+              <div class="coeff-stat-row">
+                <span class="coeff-stat-label">MR</span>
+                <input type="number" id="coeff-base-mr" class="coeff-stat-input" value="0" onchange="onBaseStatChange('mr', this.value)">
+              </div>
+              <div class="coeff-stat-row">
+                <span class="coeff-stat-label highlight">DEX</span>
+                <input type="number" id="coeff-base-dex" class="coeff-stat-input" style="color:#facc15;" value="708" onchange="onBaseStatChange('dex', this.value)">
+              </div>
+            </div>
+
+            <!-- Additional Bonus Card -->
+            <div class="coeff-card">
+              <div class="coeff-card-title">
+                <span>✨ 추가 보너스 & 코어</span>
+              </div>
+              <table class="coeff-bonus-table">
+                <thead>
+                  <tr>
+                    <th>항목</th>
+                    <th><span id="coeff-label-main">STAB</span></th>
+                    <th><span id="coeff-label-sub">HACK</span></th>
+                    <th>DEX</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="color:#cbd5e1; font-weight:600;">아바타</td>
+                    <td><input type="number" id="coeff-avatar-stab" value="10" onchange="onBonusStatChange('avatar', 'stab', this.value)"></td>
+                    <td><input type="number" id="coeff-avatar-hack" value="10" onchange="onBonusStatChange('avatar', 'hack', this.value)"></td>
+                    <td><input type="number" id="coeff-avatar-dex" value="10" onchange="onBonusStatChange('avatar', 'dex', this.value)"></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div style="margin-top:0.85rem; padding-top:0.75rem; border-top:1px solid #1e293b;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:0.84rem; color:#94a3b8; font-weight:600;">테시스 코어 (강화합)</span>
+                  <input type="number" id="coeff-core-input" class="coeff-stat-input" style="width:85px;" value="0" onchange="onCoreChange(this.value)" placeholder="0">
+                </div>
+              </div>
+            </div>
+
+            <!-- Direct Override Card (Screenshot Match) -->
+            <div class="coeff-card" style="border-color:#3b82f6;">
+              <div class="coeff-card-title" style="color:#60a5fa;">
+                <span>⚙️ 장비/강화 수동 총합 (옵션)</span>
+              </div>
+              <div style="font-size:0.73rem; color:#94a3b8; margin-bottom:0.5rem; line-height:1.4;">
+                상단 <b>'수동 총합 고정 모드'</b> 활성화 시 아래 총합으로 고정 연산됩니다 (스크린샷 수치 재현용).
+              </div>
+              <div class="coeff-stat-row">
+                <span class="coeff-stat-label">장비 STAB</span>
+                <input type="number" id="coeff-ov-equip-stab" class="coeff-stat-input" value="1400" onchange="onOverrideChange('equip', 'stab', this.value)">
+              </div>
+              <div class="coeff-stat-row">
+                <span class="coeff-stat-label">장비 HACK</span>
+                <input type="number" id="coeff-ov-equip-hack" class="coeff-stat-input" value="770" onchange="onOverrideChange('equip', 'hack', this.value)">
+              </div>
+              <div class="coeff-stat-row">
+                <span class="coeff-stat-label highlight">장비 DEX</span>
+                <input type="number" id="coeff-ov-equip-dex" class="coeff-stat-input" style="color:#facc15;" value="891" onchange="onOverrideChange('equip', 'dex', this.value)">
+              </div>
+              <div class="coeff-stat-row">
+                <span class="coeff-stat-label">강화 STAB</span>
+                <input type="number" id="coeff-ov-enf-stab" class="coeff-stat-input" value="235" onchange="onOverrideChange('enf', 'stab', this.value)">
+              </div>
+              <div class="coeff-stat-row">
+                <span class="coeff-stat-label">강화 HACK</span>
+                <input type="number" id="coeff-ov-enf-hack" class="coeff-stat-input" value="0" onchange="onOverrideChange('enf', 'hack', this.value)">
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Equipment Slots Grid -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <h4 style="margin:0; font-size:1.02rem; color:#f8fafc; font-weight:700;">🛡️ 부위별 장비 베이스 & 강화 · 어빌리티 세팅 (12슬롯)</h4>
+              <span style="font-size:0.76rem; color:#94a3b8;">아이템 선택 시 베이스 스탯 자동 로드</span>
+            </div>
+            <div id="coeff-equip-grid" class="coeff-equip-grid">
+              <!-- Populated dynamically by renderCoeffSlots() -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary & Formula & KPI Section -->
+        <div class="coeff-summary-box">
+          <!-- Left: Summary Table & Formula Banner -->
+          <div>
+            <table class="coeff-sum-table">
+              <thead>
+                <tr>
+                  <th>구분</th>
+                  <th>기본 스탯</th>
+                  <th>장비/어빌 합</th>
+                  <th>강화 합계</th>
+                  <th>최종 합계</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="stat-highlight" id="sum-row-main-name">STAB</td>
+                  <td id="sum-char-main">658</td>
+                  <td id="sum-equip-main">1,400</td>
+                  <td id="sum-enf-main" style="color:#34d399;">235</td>
+                  <td id="sum-tot-main" class="total-highlight">2,293</td>
+                </tr>
+                <tr>
+                  <td class="stat-highlight" id="sum-row-sub-name">HACK</td>
+                  <td id="sum-char-sub">66</td>
+                  <td id="sum-equip-sub">770</td>
+                  <td id="sum-enf-sub">0</td>
+                  <td id="sum-tot-sub" class="total-highlight">836</td>
+                </tr>
+                <tr>
+                  <td class="stat-highlight" style="color:#facc15;">DEX</td>
+                  <td id="sum-char-dex">708</td>
+                  <td id="sum-equip-dex">891</td>
+                  <td id="sum-enf-dex">-</td>
+                  <td id="sum-tot-dex" class="total-highlight" style="color:#facc15;">1,599</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div id="coeff-formula-display" class="coeff-formula-banner">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <!-- Right: Big KPI Cards -->
+          <div style="display:flex; flex-direction:column; justify-content:center; gap:0.85rem;">
+            <div class="coeff-kpi-card" style="border-color:#2563eb;">
+              <div id="coeff-kpi-title" class="coeff-kpi-label">찌르기 종합 계수</div>
+              <div id="coeff-kpi-value" class="coeff-kpi-val">45,228.08</div>
+            </div>
+            <div class="coeff-kpi-card" style="border-color:#ca8a04;">
+              <div class="coeff-kpi-label">최종 명중 (DEX)</div>
+              <div id="coeff-kpi-dex" class="coeff-kpi-val acc">1,599</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Boss & Content Evaluation Guide -->
+        <div class="coeff-boss-guide-box">
+          <div class="coeff-boss-guide-title">
+            <span>🎯 콘텐츠 & 보스별 계수 및 명중 판정 가이드</span>
+            <span style="font-size:0.78rem; color:#94a3b8; font-weight:normal;">(출처: 텔쥐 계수계산기 & DC 216109 명중컷)</span>
+          </div>
+          <div id="coeff-boss-grid" class="coeff-boss-grid">
+            <!-- Populated dynamically by renderBossContentGuide() -->
+          </div>
+
+          <!-- Reference Links -->
+          <div class="coeff-ref-links">
+            <span style="font-weight:700; color:#cbd5e1;">정보 출처 (참고자료):</span>
+            <a href="https://docs.google.com/spreadsheets/d/1IUy4PgYEX0ov-yLPMR_v87k6fdXtMIEv7CxHabL85wk/edit?gid=0#gid=0" target="_blank" rel="noopener">🔗 텔쥐 계수계산기 (구글 스프레드시트 원본)</a>
+            <a href="https://gall.dcinside.com/mini/board/view/?id=talesweaver&no=144536" target="_blank" rel="noopener">🔗 일텔 계수 공식 (TaleWiki / DC 144536)</a>
+            <a href="https://gall.dcinside.com/mini/board/view/?id=talesweaver&no=216109" target="_blank" rel="noopener">🔗 컨텐츠 명중컷 총정리 (DC 216109)</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+
+  <!-- ==================== TAB 5: TALESRUNE-STYLE CALCULATORS ==================== -->
   <div id="tab-calc" class="tab-panel">
     <section>
       <h2>테일즈위버 시드 · 던전 수익 · 장비 제작 계산기</h2>

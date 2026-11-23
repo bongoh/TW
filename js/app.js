@@ -1091,7 +1091,579 @@ function bootCompanion() {
   renderEquipCalc();
   evaluateStats();
   updateWeeklyProgress();
+  initCoeffCalculator();
 }
+
+// ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
+// 출처: 구글 스프레드시트(텔쥐 계수계산기) & 디시인사이드 144536, 216109
+const COEFF_STORAGE_KEY = 'tw_coeff_calculator_profiles_v2';
+let coeffProfiles = [];
+let activeCoeffProfileId = 'preset_screenshot';
+let coeffEquipMode = 'override'; // 'override' = matches user screenshot 1400/770/891, 'slots' = dynamic sum
+
+function loadCoeffProfiles() {
+  try {
+    const raw = localStorage.getItem(COEFF_STORAGE_KEY);
+    if (raw) {
+      coeffProfiles = JSON.parse(raw);
+    }
+  } catch (e) {
+    console.error('Failed to load coeff profiles', e);
+  }
+  if (!coeffProfiles || !coeffProfiles.length) {
+    coeffProfiles = JSON.parse(JSON.stringify(defaultCoeffProfiles));
+  }
+  activeCoeffProfileId = coeffProfiles[0].id;
+}
+
+function saveCoeffProfiles() {
+  try {
+    localStorage.setItem(COEFF_STORAGE_KEY, JSON.stringify(coeffProfiles));
+  } catch (e) {
+    console.error('Failed to save coeff profiles', e);
+  }
+}
+
+function getActiveCoeffProfile() {
+  let prof = coeffProfiles.find(p => p.id === activeCoeffProfileId);
+  if (!prof) {
+    prof = coeffProfiles[0];
+    activeCoeffProfileId = prof.id;
+  }
+  return prof;
+}
+
+function renderCoeffPresetSelect() {
+  const select = document.getElementById('coeff-profile-select');
+  if (!select) return;
+  select.innerHTML = '';
+  coeffProfiles.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name;
+    if (p.id === activeCoeffProfileId) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
+function switchCoeffType(typeKey) {
+  const prof = getActiveCoeffProfile();
+  prof.type = typeKey;
+  saveCoeffProfiles();
+
+  document.querySelectorAll('.coeff-type-btn').forEach(btn => {
+    if (btn.dataset.type === typeKey) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  updateCoeffLabels();
+  calculateCoefficients();
+}
+
+function updateCoeffLabels() {
+  const prof = getActiveCoeffProfile();
+  const formula = coeffFormulas[prof.type] || coeffFormulas.stab;
+  const labelMain = document.getElementById('coeff-label-main');
+  const labelSub  = document.getElementById('coeff-label-sub');
+  if (labelMain) labelMain.textContent = formula.mainStat;
+  if (labelSub)  labelSub.textContent  = formula.subStat;
+}
+
+function renderCoeffSlots() {
+  const container = document.getElementById('coeff-equip-grid');
+  if (!container) return;
+  const prof = getActiveCoeffProfile();
+
+  const slotMeta = [
+    { key: 'helm',     name: '투구' },
+    { key: 'armor',    name: '갑옷' },
+    { key: 'weapon',   name: '무기' },
+    { key: 'wrist',    name: '손목' },
+    { key: 'head',     name: '머리' },
+    { key: 'wings',    name: '몸' },
+    { key: 'hands',    name: '손' },
+    { key: 'boots',    name: '다리' },
+    { key: 'cuff',     name: '커프' },
+    { key: 'effect',   name: '효과' },
+    { key: 'artifact', name: '아티팩트' },
+    { key: 'relic',    name: '렐릭' }
+  ];
+
+  let html = '';
+  slotMeta.forEach(s => {
+    const slotData = (prof.slots && prof.slots[s.key]) || { baseId: '', enfVal: 0, enfStat: 'HACK', abilMain: 0, abilSub: 0, abilDex: 0 };
+    const dbList = itemBaseDb[s.key] || [];
+    const currItem = dbList.find(i => i.id === slotData.baseId) || dbList[0] || {};
+    const preview = `M:${currItem.mr || currItem.int || 0} / S:${currItem.stab || currItem.hack || 0} (D:${currItem.dex || 0})`;
+
+    html += `
+      <div class="coeff-slot-card" data-slot="${s.key}">
+        <div class="coeff-slot-header">
+          <span class="coeff-slot-name">${s.name}</span>
+          <span class="coeff-slot-preview" id="slot-preview-${s.key}">${preview}</span>
+        </div>
+        <select class="coeff-slot-select" onchange="onSlotBaseChange('${s.key}', this.value)">
+          ${dbList.map(item => `<option value="${item.id}" ${item.id === slotData.baseId ? 'selected' : ''}>${item.name}</option>`).join('')}
+        </select>
+        <div class="coeff-slot-row">
+          <span class="coeff-slot-tag">강화</span>
+          <input type="number" class="coeff-slot-input-sm" value="${slotData.enfVal || 0}" onchange="onSlotEnfChange('${s.key}', this.value)" min="0" max="100">
+          <select class="coeff-slot-select" style="width: auto; margin-bottom: 0; padding: 0.2rem 0.4rem;" onchange="onSlotEnfStatChange('${s.key}', this.value)">
+            <option value="HACK" ${slotData.enfStat === 'HACK' ? 'selected' : ''}>HACK</option>
+            <option value="STAB" ${slotData.enfStat === 'STAB' ? 'selected' : ''}>STAB</option>
+            <option value="INT"  ${slotData.enfStat === 'INT'  ? 'selected' : ''}>INT</option>
+            <option value="MR"   ${slotData.enfStat === 'MR'   ? 'selected' : ''}>MR</option>
+          </select>
+        </div>
+        <div class="coeff-slot-row">
+          <span class="coeff-slot-tag">어빌</span>
+          <input type="number" class="coeff-slot-input-sm" placeholder="주" value="${slotData.abilMain || 0}" onchange="onSlotAbilChange('${s.key}', 'abilMain', this.value)" title="주스탯 어빌">
+          <input type="number" class="coeff-slot-input-sm" placeholder="DEX" value="${slotData.abilDex || 0}" onchange="onSlotAbilChange('${s.key}', 'abilDex', this.value)" title="DEX 어빌">
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function syncCoeffInputsFromProfile() {
+  const prof = getActiveCoeffProfile();
+  
+  // Type tabs
+  document.querySelectorAll('.coeff-type-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === prof.type);
+  });
+  updateCoeffLabels();
+
+  // Doping preset
+  const dopSelect = document.getElementById('coeff-doping-select');
+  if (dopSelect) dopSelect.value = prof.dopingPreset || 'none';
+  const dopChk = document.getElementById('coeff-apply-doping-chk');
+  if (dopChk) dopChk.checked = !!prof.applyDoping;
+
+  // Base stats
+  const statStab = document.getElementById('coeff-base-stab');
+  const statHack = document.getElementById('coeff-base-hack');
+  const statInt  = document.getElementById('coeff-base-int');
+  const statMr   = document.getElementById('coeff-base-mr');
+  const statDex  = document.getElementById('coeff-base-dex');
+
+  if (statStab) statStab.value = prof.baseStats.stab || 0;
+  if (statHack) statHack.value = prof.baseStats.hack || 0;
+  if (statInt)  statInt.value  = prof.baseStats.int  || 0;
+  if (statMr)   statMr.value   = prof.baseStats.mr   || 0;
+  if (statDex)  statDex.value  = prof.baseStats.dex  || 0;
+
+  // Avatar bonus
+  const avStab = document.getElementById('coeff-avatar-stab');
+  const avHack = document.getElementById('coeff-avatar-hack');
+  const avDex  = document.getElementById('coeff-avatar-dex');
+  if (avStab) avStab.value = (prof.bonusStats.avatar && prof.bonusStats.avatar.stab) || 10;
+  if (avHack) avHack.value = (prof.bonusStats.avatar && prof.bonusStats.avatar.hack) || 10;
+  if (avDex)  avDex.value  = (prof.bonusStats.avatar && prof.bonusStats.avatar.dex)  || 10;
+
+  // Core
+  const coreInput = document.getElementById('coeff-core-input');
+  if (coreInput) coreInput.value = prof.core || 0;
+
+  // Override fields
+  const ovEquipStab = document.getElementById('coeff-ov-equip-stab');
+  const ovEquipHack = document.getElementById('coeff-ov-equip-hack');
+  const ovEquipDex  = document.getElementById('coeff-ov-equip-dex');
+  const ovEnfStab   = document.getElementById('coeff-ov-enf-stab');
+  const ovEnfHack   = document.getElementById('coeff-ov-enf-hack');
+
+  if (ovEquipStab) ovEquipStab.value = (prof.overrideEquip && prof.overrideEquip.stab) || 1400;
+  if (ovEquipHack) ovEquipHack.value = (prof.overrideEquip && prof.overrideEquip.hack) || 770;
+  if (ovEquipDex)  ovEquipDex.value  = (prof.overrideEquip && prof.overrideEquip.dex)  || 891;
+  if (ovEnfStab)   ovEnfStab.value   = (prof.overrideEnf && prof.overrideEnf.stab) || 235;
+  if (ovEnfHack)   ovEnfHack.value   = (prof.overrideEnf && prof.overrideEnf.hack) || 0;
+
+  // Mode badge
+  const modeBtn = document.getElementById('coeff-mode-toggle-btn');
+  if (modeBtn) {
+    modeBtn.textContent = coeffEquipMode === 'override' ? '⚡ 수동 총합 고정 모드 (스크린샷 일치)' : '⚙️ 장비 슬롯 실시간 자동 합산 모드';
+  }
+}
+
+function onSlotBaseChange(slotKey, baseId) {
+  const prof = getActiveCoeffProfile();
+  if (!prof.slots[slotKey]) prof.slots[slotKey] = {};
+  prof.slots[slotKey].baseId = baseId;
+
+  const dbList = itemBaseDb[slotKey] || [];
+  const item = dbList.find(i => i.id === baseId) || {};
+  const previewEl = document.getElementById(`slot-preview-${slotKey}`);
+  if (previewEl) {
+    previewEl.textContent = `M:${item.mr || item.int || 0} / S:${item.stab || item.hack || 0} (D:${item.dex || 0})`;
+  }
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function onSlotEnfChange(slotKey, val) {
+  const prof = getActiveCoeffProfile();
+  if (!prof.slots[slotKey]) prof.slots[slotKey] = {};
+  prof.slots[slotKey].enfVal = Number(val) || 0;
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function onSlotEnfStatChange(slotKey, val) {
+  const prof = getActiveCoeffProfile();
+  if (!prof.slots[slotKey]) prof.slots[slotKey] = {};
+  prof.slots[slotKey].enfStat = val;
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function onSlotAbilChange(slotKey, field, val) {
+  const prof = getActiveCoeffProfile();
+  if (!prof.slots[slotKey]) prof.slots[slotKey] = {};
+  prof.slots[slotKey][field] = Number(val) || 0;
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function onBaseStatChange(statKey, val) {
+  const prof = getActiveCoeffProfile();
+  prof.baseStats[statKey] = Number(val) || 0;
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function onBonusStatChange(cat, statKey, val) {
+  const prof = getActiveCoeffProfile();
+  if (!prof.bonusStats[cat]) prof.bonusStats[cat] = {};
+  prof.bonusStats[cat][statKey] = Number(val) || 0;
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function onCoreChange(val) {
+  const prof = getActiveCoeffProfile();
+  prof.core = Number(val) || 0;
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function onOverrideChange(type, statKey, val) {
+  const prof = getActiveCoeffProfile();
+  if (type === 'equip') {
+    if (!prof.overrideEquip) prof.overrideEquip = {};
+    prof.overrideEquip[statKey] = Number(val) || 0;
+  } else if (type === 'enf') {
+    if (!prof.overrideEnf) prof.overrideEnf = {};
+    prof.overrideEnf[statKey] = Number(val) || 0;
+  }
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function toggleCoeffEquipMode() {
+  coeffEquipMode = coeffEquipMode === 'override' ? 'slots' : 'override';
+  const modeBtn = document.getElementById('coeff-mode-toggle-btn');
+  if (modeBtn) {
+    modeBtn.textContent = coeffEquipMode === 'override' ? '⚡ 수동 총합 고정 모드 (스크린샷 일치)' : '⚙️ 장비 슬롯 실시간 자동 합산 모드';
+  }
+  calculateCoefficients();
+}
+
+function onCoeffDopingPresetChange(val) {
+  const prof = getActiveCoeffProfile();
+  prof.dopingPreset = val;
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function toggleCoeffDopingApply(checked) {
+  const prof = getActiveCoeffProfile();
+  prof.applyDoping = !!checked;
+  saveCoeffProfiles();
+  calculateCoefficients();
+}
+
+function calculateCoefficients() {
+  const prof = getActiveCoeffProfile();
+  const typeKey = prof.type || 'stab';
+  const formula = coeffFormulas[typeKey] || coeffFormulas.stab;
+
+  // Doping Bonus Calculation
+  let doping = { stab: 0, hack: 0, int: 0, mr: 0, dex: 0 };
+  let dopingNote = '';
+  if (prof.applyDoping) {
+    if (prof.dopingPreset === 'tab1_link') {
+      const selBonus = getSelectedBuffBonus();
+      doping.dex = selBonus.acc || 0;
+      doping.mr = selBonus.mdef || 0;
+      doping.stab = Math.round((selBonus.acc || 0) * 0.7);
+      doping.hack = Math.round((selBonus.acc || 0) * 0.7);
+      doping.int = Math.round((selBonus.mdef || 0) * 0.5);
+      dopingNote = `Tab 1 실시간 연동 (명중+${doping.dex}, 마방+${doping.mr})`;
+    } else {
+      const preset = coeffDopingPresets[prof.dopingPreset] || coeffDopingPresets.none;
+      doping = { ...preset };
+      dopingNote = `${preset.name} (+DEX ${doping.dex})`;
+    }
+  }
+
+  const dopNoteEl = document.getElementById('coeff-doping-status-text');
+  if (dopNoteEl) {
+    dopNoteEl.textContent = prof.applyDoping ? `✅ 도핑 적용 중: ${dopingNote}` : '도핑 미적용 (순수 스탯)';
+    dopNoteEl.style.color = prof.applyDoping ? '#34d399' : '#94a3b8';
+  }
+
+  // Base Stats
+  const charStats = {
+    stab: (Number(prof.baseStats.stab) || 0) + (doping.stab || 0),
+    hack: (Number(prof.baseStats.hack) || 0) + (doping.hack || 0),
+    int:  (Number(prof.baseStats.int)  || 0) + (doping.int || 0),
+    mr:   (Number(prof.baseStats.mr)   || 0) + (doping.mr || 0),
+    dex:  (Number(prof.baseStats.dex)  || 0) + (doping.dex || 0)
+  };
+
+  // Additional Bonus
+  const avatar = prof.bonusStats.avatar || { stab: 10, hack: 10, dex: 10, int: 0, mr: 0 };
+  const title  = prof.bonusStats.title  || { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 };
+  const card   = prof.bonusStats.card   || { stab: 0, hack: 0, dex: 0, int: 0, mr: 0 };
+
+  const bonusSum = {
+    stab: (avatar.stab || 0) + (title.stab || 0) + (card.stab || 0),
+    hack: (avatar.hack || 0) + (title.hack || 0) + (card.hack || 0),
+    int:  (avatar.int  || 0) + (title.int  || 0) + (card.int  || 0),
+    mr:   (avatar.mr   || 0) + (title.mr   || 0) + (card.mr   || 0),
+    dex:  (avatar.dex  || 0) + (title.dex  || 0) + (card.dex  || 0)
+  };
+
+  // Equipment & Reinforcement Sum
+  let equipSum = { stab: 0, hack: 0, int: 0, mr: 0, dex: 0 };
+  let enfSum = { stab: 0, hack: 0, int: 0, mr: 0 };
+
+  if (coeffEquipMode === 'override' && prof.overrideEquip) {
+    equipSum.stab = Number(prof.overrideEquip.stab) || 0;
+    equipSum.hack = Number(prof.overrideEquip.hack) || 0;
+    equipSum.int  = Number(prof.overrideEquip.int)  || 0;
+    equipSum.mr   = Number(prof.overrideEquip.mr)   || 0;
+    equipSum.dex  = Number(prof.overrideEquip.dex)  || 0;
+
+    enfSum.stab = Number(prof.overrideEnf.stab) || 0;
+    enfSum.hack = Number(prof.overrideEnf.hack) || 0;
+    enfSum.int  = Number(prof.overrideEnf.int)  || 0;
+    enfSum.mr   = Number(prof.overrideEnf.mr)   || 0;
+  } else {
+    // Sum from slot items
+    Object.keys(prof.slots).forEach(slotKey => {
+      const slot = prof.slots[slotKey];
+      const dbList = itemBaseDb[slotKey] || [];
+      const item = dbList.find(i => i.id === slot.baseId) || dbList[0] || {};
+
+      equipSum.stab += (item.stab || 0) + (Number(slot.abilMain) || 0);
+      equipSum.hack += (item.hack || 0) + (Number(slot.abilSub) || 0);
+      equipSum.int  += (item.int  || 0);
+      equipSum.mr   += (item.mr   || 0);
+      equipSum.dex  += (item.dex  || 0) + (Number(slot.abilDex) || 0);
+
+      const enfVal = Number(slot.enfVal) || 0;
+      if (slot.enfStat === 'STAB') enfSum.stab += enfVal;
+      else if (slot.enfStat === 'HACK') enfSum.hack += enfVal;
+      else if (slot.enfStat === 'INT') enfSum.int += enfVal;
+      else if (slot.enfStat === 'MR') enfSum.mr += enfVal;
+    });
+
+    equipSum.stab += bonusSum.stab;
+    equipSum.hack += bonusSum.hack;
+    equipSum.int  += bonusSum.int;
+    equipSum.mr   += bonusSum.mr;
+    equipSum.dex  += bonusSum.dex;
+  }
+
+  const mainKey = formula.mainStat.toLowerCase();
+  const subKey  = formula.subStat.toLowerCase();
+
+  const charMain = charStats[mainKey] || 0;
+  const charSub  = charStats[subKey]  || 0;
+  const charDex  = charStats.dex      || 0;
+
+  const equipMain = equipSum[mainKey] || 0;
+  const equipSub  = equipSum[subKey]  || 0;
+  const equipDex  = equipSum.dex      || 0;
+
+  const enfMain = enfSum[mainKey] || 0;
+  const enfSub  = enfSum[subKey]  || 0;
+
+  const totalMain = charMain + equipMain + enfMain;
+  const totalSub  = charSub + equipSub + enfSub;
+  const totalDex  = charDex + equipDex;
+
+  const core = Number(prof.core) || 0;
+
+  // Formula Parts
+  const equipPart = equipMain * formula.equipMainMult + equipSub * formula.equipSubMult;
+  const enfPart   = enfMain * formula.enfMainMult + enfSub * formula.enfSubMult;
+  const charPart  = charMain * formula.charMainMult + charSub * formula.charSubMult;
+  const corePart  = core * formula.coreMult;
+
+  const totalCoeff = equipPart + enfPart + charPart + corePart;
+
+  // Update Summary Table DOM
+  const tdMainName = document.getElementById('sum-row-main-name');
+  const tdSubName  = document.getElementById('sum-row-sub-name');
+
+  if (tdMainName) tdMainName.textContent = formula.mainStat;
+  if (tdSubName)  tdSubName.textContent  = formula.subStat;
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = typeof val === 'number' ? val.toLocaleString() : val;
+  };
+
+  setVal('sum-char-main', charMain);
+  setVal('sum-char-sub',  charSub);
+  setVal('sum-char-dex',  charDex);
+
+  setVal('sum-equip-main', equipMain);
+  setVal('sum-equip-sub',  equipSub);
+  setVal('sum-equip-dex',  equipDex);
+
+  setVal('sum-enf-main', enfMain);
+  setVal('sum-enf-sub',  enfSub);
+  setVal('sum-enf-dex',  '-');
+
+  setVal('sum-tot-main', totalMain);
+  setVal('sum-tot-sub',  totalSub);
+  setVal('sum-tot-dex',  totalDex);
+
+  // Update Formula Text Banner
+  const formulaEl = document.getElementById('coeff-formula-display');
+  if (formulaEl) {
+    formulaEl.innerHTML = `<b>계수 계산식:</b> 장비(${formula.mainStat}*${formula.equipMainMult} + ${formula.subStat}*${formula.equipSubMult}) + 강화(${formula.mainStat}*${formula.enfMainMult} + ${formula.subStat}*${formula.enfSubMult}) + 캐릭터(${formula.mainStat}*${formula.charMainMult} + ${formula.subStat}*${formula.charSubMult}) + 코어*${formula.coreMult}`;
+  }
+
+  // Update Big KPI Cards
+  const kpiTitleEl = document.getElementById('coeff-kpi-title');
+  const kpiValEl   = document.getElementById('coeff-kpi-value');
+  const kpiDexEl   = document.getElementById('coeff-kpi-dex');
+
+  if (kpiTitleEl) kpiTitleEl.textContent = `${formula.name} 종합 계수`;
+  if (kpiValEl)   kpiValEl.textContent = totalCoeff.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (kpiDexEl)   kpiDexEl.textContent = totalDex.toLocaleString();
+
+  // Update Content Guide
+  renderBossContentGuide(totalCoeff, totalDex);
+}
+
+function renderBossContentGuide(currentCoeff, currentDex) {
+  const container = document.getElementById('coeff-boss-grid');
+  if (!container) return;
+
+  let html = '';
+  bossContentGuide.forEach(bg => {
+    const pct = Math.min(100, Math.round((currentCoeff / bg.reqCoeff) * 100));
+    const dexDiff = currentDex - bg.reqDex;
+
+    let badgeClass = 'fail';
+    let badgeText  = '불가능';
+
+    if (currentCoeff >= bg.reqCoeff && dexDiff >= 0) {
+      badgeClass = 'smooth';
+      badgeText  = '원활';
+    } else if (currentCoeff >= bg.reqCoeff * 0.8 && dexDiff >= -50) {
+      badgeClass = 'viable';
+      badgeText  = '가능';
+    } else if (currentCoeff >= bg.reqCoeff * 0.6 && dexDiff >= -150) {
+      badgeClass = 'hard';
+      badgeText  = '힘듬';
+    } else {
+      badgeClass = 'fail';
+      badgeText  = dexDiff < -200 ? '불가능' : '힘듬';
+    }
+
+    const accText = dexDiff >= 0
+      ? `<span style="color:#34d399; font-weight:700;">✅ DEX +${dexDiff} 여유 (100% 명중)</span>`
+      : `<span style="color:#f87171; font-weight:700;">⚠️ DEX ${Math.abs(dexDiff)} 부족 (MISS!)</span>`;
+
+    html += `
+      <div class="coeff-boss-item">
+        <div class="coeff-boss-top">
+          <span class="coeff-boss-name">${bg.name}</span>
+          <span class="coeff-boss-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="coeff-boss-reqs">
+          <span>목표: ${bg.reqCoeff.toLocaleString()}</span>
+          <span>현재: ${Math.round(currentCoeff).toLocaleString()} (${pct}%)</span>
+        </div>
+        <div class="coeff-boss-prog-track">
+          <div class="coeff-boss-prog-bar" style="width: ${pct}%;"></div>
+        </div>
+        <div class="coeff-boss-acc-info">
+          <span>필요 DEX: <b>${bg.reqDex}</b></span>
+          ${accText}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function addCoeffPreset() {
+  const name = prompt('새 계산기 프리셋 이름을 입력하세요:', '내 캐릭터 세팅');
+  if (!name || !name.trim()) return;
+  const current = getActiveCoeffProfile();
+  const newProfile = JSON.parse(JSON.stringify(current));
+  newProfile.id = 'prof_' + Date.now();
+  newProfile.name = name.trim();
+  coeffProfiles.push(newProfile);
+  activeCoeffProfileId = newProfile.id;
+  saveCoeffProfiles();
+  renderCoeffPresetSelect();
+  syncCoeffInputsFromProfile();
+  calculateCoefficients();
+}
+
+function renameCoeffPreset() {
+  const prof = getActiveCoeffProfile();
+  const newName = prompt('프리셋 이름 수정:', prof.name);
+  if (!newName || !newName.trim()) return;
+  prof.name = newName.trim();
+  saveCoeffProfiles();
+  renderCoeffPresetSelect();
+}
+
+function deleteCoeffPreset() {
+  if (coeffProfiles.length <= 1) {
+    alert('최소 1개의 프리셋은 유지되어야 합니다.');
+    return;
+  }
+  const prof = getActiveCoeffProfile();
+  if (!confirm(`'${prof.name}' 프리셋을 삭제하시겠습니까?`)) return;
+  coeffProfiles = coeffProfiles.filter(p => p.id !== prof.id);
+  activeCoeffProfileId = coeffProfiles[0].id;
+  saveCoeffProfiles();
+  renderCoeffPresetSelect();
+  syncCoeffInputsFromProfile();
+  calculateCoefficients();
+}
+
+function onCoeffProfileSelectChange(id) {
+  activeCoeffProfileId = id;
+  syncCoeffInputsFromProfile();
+  calculateCoefficients();
+}
+
+function initCoeffCalculator() {
+  loadCoeffProfiles();
+  renderCoeffPresetSelect();
+  renderCoeffSlots();
+  syncCoeffInputsFromProfile();
+  calculateCoefficients();
+}
+
+
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bootCompanion);
