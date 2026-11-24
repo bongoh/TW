@@ -1936,7 +1936,7 @@
 
         <div class="stat-card">
           <div class="stat-card-top">
-            <span class="stat-card-title">🌪️ 주력 속성 (풍속성)</span>
+            <span class="stat-card-title" id="card-elem-title">🔮 주력 속성 (풍·화·수·암·성 등)</span>
             <span id="req-elem" class="req-chip">기준: 200+</span>
           </div>
           <input type="number" id="in-elem" class="stat-input" placeholder="예: 195" oninput="evaluateStats()">
@@ -3127,7 +3127,7 @@
 
         <!-- 1. Solar Relic -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_daily_relic" data-task="w_daily_relic" data-seed="10000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_daily_relic" data-task="w_daily_relic" data-seed="10000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">태양의 렐릭 업그레이드 (일일 숙제)</span>
@@ -3146,7 +3146,7 @@
 
         <!-- 2. Rune Exp Dungeon -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_daily_rune_exp" data-task="w_daily_rune_exp" data-seed="5000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_daily_rune_exp" data-task="w_daily_rune_exp" data-seed="5000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">룬 경험 던전 (일일 숙제)</span>
@@ -3165,7 +3165,7 @@
 
         <!-- 3. Tesis Core Dungeon -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_daily_tesis_core" data-task="w_daily_tesis_core" data-seed="10000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_daily_tesis_core" data-task="w_daily_tesis_core" data-seed="10000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">테시스 코어 던전 (일일 숙제)</span>
@@ -3184,7 +3184,7 @@
 
         <!-- 4. Abri Enkira Daily (Soul Points) -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_daily_abri_enkira" data-task="w_daily_abri_enkira" data-seed="15000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_daily_abri_enkira" data-task="w_daily_abri_enkira" data-seed="15000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">아브리 엔키라 일퀘 (티르칼라그) ➔ 소울 포인트 환전</span>
@@ -3215,7 +3215,7 @@
 
         <!-- 4. Eclipse Supply Reclaim -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_supply_reclaim" data-task="w_supply_reclaim" data-seed="35000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_supply_reclaim" data-task="w_supply_reclaim" data-seed="35000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">이클립스 보급품 탈환 (일일 지역 퀘스트)</span>
@@ -3234,7 +3234,7 @@
 
         <!-- 5. Eclipse Commando Raid -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_commando_raid" data-task="w_commando_raid" data-seed="35000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_commando_raid" data-task="w_commando_raid" data-seed="35000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">이클립스 별동대 토벌 (일일 지역 퀘스트)</span>
@@ -3272,7 +3272,7 @@
 
         <!-- 6. Abandon Mortal -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_abendon_mortal" data-task="w_abendon_mortal" data-seed="70000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_abendon_mortal" data-task="w_abendon_mortal" data-seed="70000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">어벤던로드: 필멸의 땅 구역 (주 10회)</span>
@@ -3291,7 +3291,7 @@
 
         <!-- 7. Abandon Cardif -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_abendon_cardif" data-task="w_abendon_cardif" data-seed="70000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_abendon_cardif" data-task="w_abendon_cardif" data-seed="70000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">어벤던로드: 카디프 지역 (주 10회)</span>
@@ -3310,7 +3310,7 @@
 
         <!-- 8. Abandon Orlanne -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_abendon_orlanne" data-task="w_abendon_orlanne" data-seed="70000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_abendon_orlanne" data-task="w_abendon_orlanne" data-seed="70000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">어벤던로드: 오를란느 지역 (주 10회)</span>
@@ -3334,7 +3334,7 @@
 
         <!-- 9. Shinjo -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_shinjo" data-task="w_shinjo" data-seed="50000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_shinjo" data-task="w_shinjo" data-seed="50000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">신조의 둥지 [파티/솔플] (★신조)</span>
@@ -3366,7 +3366,7 @@
 
         <!-- 10. Abyss Boss -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_abyss_boss" data-task="w_abyss_boss" data-seed="60000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_abyss_boss" data-task="w_abyss_boss" data-seed="60000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">어비스 보스전 [파티/솔플] (★어비스 심층 1·2·3)</span>
@@ -3398,7 +3398,7 @@
 
         <!-- 11. Abyss Treasury -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_abyss_treasury" data-task="w_abyss_treasury" data-seed="40000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_abyss_treasury" data-task="w_abyss_treasury" data-seed="40000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">심연의 보물창고 (★심연의 보물창고)</span>
@@ -3417,7 +3417,7 @@
 
         <!-- 12. Mercurial 4 Bosses -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_mercurial_4boss" data-task="w_mercurial_4boss" data-seed="40000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_mercurial_4boss" data-task="w_mercurial_4boss" data-seed="40000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">머큐리얼 케이브 4보스 (★샐리온 ★셀레아나 ★실라이론 ★실반)</span>
@@ -3436,7 +3436,7 @@
 
         <!-- 13. Mercurial Luminous -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_mercurial_luminous" data-task="w_mercurial_luminous" data-seed="30000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_mercurial_luminous" data-task="w_mercurial_luminous" data-seed="30000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">머큐리얼 루미너스 (★루미너스)</span>
@@ -3455,7 +3455,7 @@
 
         <!-- 14. Psiki Illusion (Casad) -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_psiki_illusion" data-task="w_psiki_illusion" data-seed="30000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_psiki_illusion" data-task="w_psiki_illusion" data-seed="30000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">프시키의 허상 (★어둠의 카사드) [ELSO 사냥터]</span>
@@ -3474,7 +3474,7 @@
 
         <!-- 15. Simulation Excavation -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_simulation_excavation" data-task="w_simulation_excavation" data-seed="30000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_simulation_excavation" data-task="w_simulation_excavation" data-seed="30000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">시뮬레이션 이공간 발굴지 (★발굴지) [커프 업그레이드]</span>
@@ -3493,7 +3493,7 @@
 
         <!-- 16. Catacomb Nyx -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_catacomb_nyx" data-task="w_catacomb_nyx" data-seed="30000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_catacomb_nyx" data-task="w_catacomb_nyx" data-seed="30000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">망각의 카타콤 (★닉스)</span>
@@ -3512,7 +3512,7 @@
 
         <!-- 17. Prava Surtr 1-person -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_prava_surtr" data-task="w_prava_surtr" data-seed="40000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_prava_surtr" data-task="w_prava_surtr" data-seed="40000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">프라바 전초기지 방어전 1인 모드 (★수르트)</span>
@@ -3531,7 +3531,7 @@
 
         <!-- 18. Obang Hell -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_obang_hell" data-task="w_obang_hell" data-seed="40000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_obang_hell" data-task="w_obang_hell" data-seed="40000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">오를리 방어전 헬 (오방 헬)</span>
@@ -3550,7 +3550,7 @@
 
         <!-- 19. Eclipse 6 Bosses -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_eclipse" data-task="w_eclipse" data-seed="80000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_eclipse" data-task="w_eclipse" data-seed="80000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">이클립스 보스 토벌전 (로카고스 등 6종)</span>
@@ -3581,7 +3581,7 @@
 
         <!-- 20. Siokan 5th Awakening -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_siokan" data-task="w_siokan" data-seed="40000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_siokan" data-task="w_siokan" data-seed="40000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">시오칸 보스 토벌전 (5차 각성 개방)</span>
@@ -3600,7 +3600,7 @@
 
         <!-- 21. Obang Abyss -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_obang_abyss" data-task="w_obang_abyss" data-seed="40000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_obang_abyss" data-task="w_obang_abyss" data-seed="40000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">오를리 방어전 어비스 (오방 어비스)</span>
@@ -3624,7 +3624,7 @@
 
         <!-- 22. Weekly Challenge -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_challenge" data-task="w_challenge" data-seed="20000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_challenge" data-task="w_challenge" data-seed="20000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">주간 도전과제 달성 및 보상 수령</span>
@@ -3641,7 +3641,7 @@
 
         <!-- 23. Rune Garden -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_rune" data-task="w_rune" data-seed="10000000">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_rune" data-task="w_rune" data-seed="10000000">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">네냐플 · 룬의 정원 주간 관리</span>
@@ -3658,7 +3658,7 @@
 
         <!-- 24. ELSO Shop -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_elso_shop" data-task="w_elso_shop" data-seed="0">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_elso_shop" data-task="w_elso_shop" data-seed="0">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">ELSO 상점 (NPC 투투) 주간 제한 품목 교환</span>
@@ -3675,7 +3675,7 @@
 
         <!-- 25. Lumina Shop -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_lumina_shop" data-task="w_lumina_shop" data-seed="0">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_lumina_shop" data-task="w_lumina_shop" data-seed="0">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">회랑의 인장 상점 → 이클립스 코어 재료 상자</span>
@@ -3692,7 +3692,7 @@
 
         <!-- 26. Club Shop -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_club_shop" data-task="w_club_shop" data-seed="0">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_club_shop" data-task="w_club_shop" data-seed="0">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">클럽 상점 버프 & 도핑류 보충</span>
@@ -3709,7 +3709,7 @@
 
         <!-- 27. ELSO Cap -->
         <label class="task-item">
-          <input type="checkbox" class="weekly-chk" data-id="w_elso_cap" data-task="w_elso_cap" data-seed="0">
+          <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_elso_cap" data-task="w_elso_cap" data-seed="0">
           <div class="task-body">
             <div class="task-top">
               <span class="task-name">주간 ELSO 획득 상한 및 미수령 보상 최종 점검</span>

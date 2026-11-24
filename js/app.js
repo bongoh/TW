@@ -43,25 +43,6 @@ function switchGrowthSection(secId, btnEl) {
 // ==================== 2. BUFF SELECTOR & SPEC SIMULATOR ====================
 let inputMode = 'nobuff'; // 'nobuff' = user enters village stats, 'buff' = user enters already-buffed stats
 
-// [Extracted to js/data.js]
-
-function getSelectedBuffBonus() {
-  let bonus = { mdef: 0, acc: 0, elem: 0, count: 0 };
-  document.querySelectorAll('.buff-chk').forEach(chk => {
-    const chip = chk.closest('.buff-chip');
-    if (chk.checked) {
-      chip.classList.add('checked');
-      bonus.mdef += Number(chk.dataset.mdef || 0);
-      bonus.acc  += Number(chk.dataset.acc || 0);
-      bonus.elem += Number(chk.dataset.elem || 0);
-      bonus.count++;
-    } else {
-      chip.classList.remove('checked');
-    }
-  });
-  return bonus;
-}
-
 function setBuffMode(mode) {
   inputMode = mode;
   const btnNoBuff = document.getElementById('btn-nobuff');
@@ -193,6 +174,15 @@ function onCharArchetypeChange(branchOrArchId) {
     titleEl.textContent = statLabels[selectedArchetype] || '1. 노도핑 MR (마법방어)';
   }
 
+  const elemTitleEl = document.getElementById('card-elem-title');
+  if (elemTitleEl) {
+    if (selectedCharacterId === 'anais') elemTitleEl.textContent = '🌪️ 주력 속성 (비호: 풍속성)';
+    else if (selectedCharacterId === 'tichiel') elemTitleEl.textContent = '✨ 주력 속성 (백법: 성속성 / 흑법: 원소)';
+    else if (selectedCharacterId === 'boris') elemTitleEl.textContent = '❄️ 주력 속성 (빙한 수속성 / 암속성)';
+    else if (selectedCharacterId === 'ispin') elemTitleEl.textContent = '🔥 주력 속성 (화속성 / 무속성)';
+    else elemTitleEl.textContent = '🔮 주력 속성 (풍·화·수·암·성 등)';
+  }
+
   evaluateStats();
 
   if (charObj && branch) {
@@ -272,7 +262,7 @@ function renderMinSpecTable(effectiveBuffMode) {
       ${keys.map(k => `<td ${bgStyle(k)}><b>${data[k].acc.toLocaleString()}</b>+</td>`).join('')}
     </tr>
     <tr>
-      <td><b>🌪️ 풍속성</b></td>
+      <td><b>🔮 주력 속성</b></td>
       ${keys.map(k => `<td ${bgStyle(k)}><b>${data[k].elem}</b>+</td>`).join('')}
     </tr>
     <tr>
@@ -650,16 +640,10 @@ function updateWeeklyProgress() {
 }
 
 function loadWeeklyTasks() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    document.querySelectorAll('.weekly-chk').forEach(chk => {
-      const key = chk.dataset.id || chk.dataset.task;
-      if (key && saved[key]) {
-        chk.checked = true;
-      }
-      chk.addEventListener('change', updateWeeklyProgress);
-    });
-  } catch (e) {}
+  document.querySelectorAll('.weekly-chk').forEach(chk => {
+    chk.removeEventListener('change', updateWeeklyProgress);
+    chk.addEventListener('change', updateWeeklyProgress);
+  });
   updateWeeklyProgress();
 }
 
@@ -720,8 +704,10 @@ function recalcWasteTotals() {
 }
 
 function renderWasteTable() {
-  const kw = (document.getElementById('waste-search').value || '').trim().toLowerCase();
+  const searchEl = document.getElementById('waste-search');
+  const kw = searchEl ? searchEl.value.trim().toLowerCase() : '';
   const tbody = document.getElementById('waste-tbody');
+  if (!tbody) return;
   const filtered = wasteItems.filter(it => it.name.toLowerCase().includes(kw));
 
   tbody.innerHTML = filtered.map(it => {
@@ -764,11 +750,16 @@ function updateAbendonRun(stage, runIdx, val) {
 }
 
 function renderAbendonTable() {
-  const stage = Number(document.getElementById('abendon-stage').value);
+  const stageEl = document.getElementById('abendon-stage');
+  if (!stageEl) return;
+  const stage = Number(stageEl.value) || 4;
   const cfg = abendonConfig[stage];
-  document.getElementById('abendon-stone-price').textContent = cfg.stoneVal.toLocaleString() + ' 시드';
+  if (!cfg) return;
+  const priceEl = document.getElementById('abendon-stone-price');
+  if (priceEl) priceEl.textContent = cfg.stoneVal.toLocaleString() + ' 시드';
 
   const tbody = document.getElementById('abendon-tbody');
+  if (!tbody) return;
   let rowsHtml = '';
   let totalFee = 0;
   let totalGross = 0;
@@ -840,8 +831,11 @@ function updateEquipPrice(key, val) {
 }
 
 function updateEquipTotalsOnly() {
-  const tier = document.getElementById('equip-tier-select').value;
+  const tierEl = document.getElementById('equip-tier-select');
+  if (!tierEl) return;
+  const tier = tierEl.value;
   const recipe = equipRecipes[tier];
+  if (!recipe || !recipe.parts) return;
   recipe.parts.forEach((p, idx) => {
     let total = 0;
     p.mats.forEach(m => {
@@ -853,10 +847,14 @@ function updateEquipTotalsOnly() {
 }
 
 function renderEquipCalc() {
-  const tier = document.getElementById('equip-tier-select').value;
+  const tierEl = document.getElementById('equip-tier-select');
+  if (!tierEl) return;
+  const tier = tierEl.value || 'abyss';
   const recipe = equipRecipes[tier];
+  if (!recipe) return;
 
   const priceGrid = document.getElementById('equip-price-grid');
+  if (!priceGrid) return;
   priceGrid.innerHTML = recipe.sharedPrices.map(sp => {
     const val = equipUnitPrices[sp.key] || '';
     return `
@@ -869,6 +867,7 @@ function renderEquipCalc() {
   }).join('');
 
   const cardsGrid = document.getElementById('equip-cards-grid');
+  if (!cardsGrid) return;
   cardsGrid.innerHTML = recipe.parts.map((p, idx) => {
     let total = 0;
     const matLines = p.mats.map(m => {
@@ -1364,7 +1363,7 @@ function bootCompanion() {
   renderAbendonTable();
   renderEquipCalc();
   evaluateStats();
-  updateWeeklyProgress();
+  loadWeeklyTasks();
   initCoeffCalculator();
   initGrowthMilestones();
 }
@@ -2136,12 +2135,6 @@ function deleteCoeffPreset() {
   activeCoeffProfileId = coeffProfiles[0].id;
   saveCoeffProfiles();
   renderCoeffPresetSelect();
-  syncCoeffInputsFromProfile();
-  calculateCoefficients();
-}
-
-function onCoeffProfileSelectChange(id) {
-  activeCoeffProfileId = id;
   syncCoeffInputsFromProfile();
   calculateCoefficients();
 }
