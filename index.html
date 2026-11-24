@@ -23,6 +23,7 @@
         <!-- Dynamic Options -->
       </select>
       <span id="profile-job-badge" class="profile-badge">비호정령(마방)</span>
+      <span id="profile-gear-badge" class="profile-badge gear-badge" onclick="openProfileModal('edit'); switchProfileModalTab('gear', document.querySelector('.profile-modal-tab[data-tab=\'gear\']'));" title="착용 장비 상세 확인 (클릭 시 장비 탭 열림)">🛡️ 10강 국템 세팅</span>
     </div>
     <div class="profile-actions">
       <button class="btn-sm btn-outline" onclick="openProfileModal('edit')">✏️ 프로필 설정</button>
@@ -6795,6 +6796,11 @@
 
       <!-- TAB 2: STATS & YEONMA -->
       <div id="prof-tab-stats" class="prof-tab-content" style="display:none;">
+        <!-- Live Combined Combat Stat Summary Banner -->
+        <div id="modal-stat-live-summary" class="modal-stat-summary-card">
+          <!-- Dynamically populated with combined combat stats -->
+        </div>
+
         <div style="font-size:0.82rem; font-weight:700; color:#fde68a; margin-bottom:0.5rem;">
           📊 캐릭터 순수 스탯 (기본 스탯 포인트)
         </div>
@@ -6852,26 +6858,44 @@
       <div id="prof-tab-gear" class="prof-tab-content" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.4rem;">
           <div style="font-size:0.82rem; font-weight:700; color:#fde68a;">
-            🛡️ 기본 착용 장비 베이스 (국템 세팅)
+            🛡️ 내 캐릭터 착용 장비 현황 (인게임 템창 연동)
           </div>
-          <button type="button" class="btn-sm btn-korean-std" onclick="applyKoreanStandardToModal()" style="font-size:0.76rem; padding:0.3rem 0.6rem;">
-            ⚖️ 10강 국민작 국템 템플릿 자동 채우기
-          </button>
+          <div style="display:flex; gap:0.35rem; align-items:center;">
+            <button type="button" class="btn-sm btn-korean-std" onclick="applyKoreanStandardToModal()" style="font-size:0.74rem; padding:0.25rem 0.55rem;" title="10강 국민작 국템 템플릿 즉시 적용">
+              ⚖️ 10강 국템 표준
+            </button>
+            <button type="button" class="btn-sm btn-outline" onclick="jumpToDualEquipWindowFromModal()" style="font-size:0.74rem; padding:0.25rem 0.55rem; color:#38bdf8; border-color:#38bdf8;" title="6번 탭 인게임 장비창 듀얼 비교기로 즉시 이동">
+              🎮 6번 탭에서 듀얼 튜닝 ➔
+            </button>
+          </div>
         </div>
-        <div class="form-group">
+
+        <!-- Gear Preset Selector -->
+        <div class="form-group" style="margin-bottom:0.65rem;">
           <label for="modal-gear-preset">장비 세트 템플릿 선택</label>
           <select id="modal-gear-preset" class="form-control" onchange="onModalGearPresetChange(this.value)">
+            <option value="custom">🛠️ [커스텀 장비] 6번 탭 인게임 템창 세팅 그대로 사용</option>
             <option value="abyss_10_std">⚖️ [국템 표준] 어비스 8세트 10강 국민작 (최상급 어빌/3% 15 10)</option>
-            <option value="aquilus_all">🛡️ [가성비 입문] 眞 아퀼루스 풀세트 (8강 국민작)</option>
             <option value="eclipse_3_abyss_5">⭐ [상위 도약] 이클립스 3셋 + 어비스 5셋 (10강 표준)</option>
             <option value="eclipse_all_limit">👑 [초월 종결] 이클립스 풀세트 11강 한계작 (극마방/극대미지)</option>
-            <option value="custom">🛠️ 직접 입력 / 커스텀</option>
+            <option value="aquilus_all">🛡️ [가성비 입문] 眞 아퀼루스 풀세트 (8강 국민작)</option>
           </select>
         </div>
-        <div class="prof-gear-summary-box">
-          <div class="summary-line"><span>무기 강화 / 인챈트:</span> <b id="modal-gear-weapon-desc">10강 어비스 무기 (국민작 +15, 딜+3%)</b></div>
-          <div class="summary-line"><span>방어구 강화 / 인챈트:</span> <b id="modal-gear-armor-desc">10강 어비스 로브/메일 (국민작 +15)</b></div>
-          <div class="summary-line"><span>날개 / 손목 / 효과:</span> <b id="modal-gear-sub-desc">10강 날개/손목 + 60마방 효과 + 140 라이도 커프</b></div>
+
+        <!-- Equipment KPI Banner -->
+        <div id="modal-gear-kpi-banner" class="modal-gear-kpi-row">
+          <!-- Dynamically populated: Coeff contribution, DEX, Dmg% -->
+        </div>
+
+        <!-- 12-Slot In-Game Equipment Detailed List Grid -->
+        <div style="margin-top:0.65rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:#cbd5e1; margin-bottom:0.35rem; display:flex; justify-content:space-between; align-items:center;">
+            <span>📋 현재 프로필에 저장된 12부위 슬롯 상세:</span>
+            <span style="font-size:0.72rem; color:#94a3b8;">항목 클릭 시 6번 탭 인게임 템창에서 즉시 튜닝</span>
+          </div>
+          <div id="modal-gear-item-grid" class="modal-gear-grid">
+            <!-- Dynamically populated with 12 equipment cards -->
+          </div>
         </div>
       </div>
 

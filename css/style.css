@@ -6774,3 +6774,144 @@
   color: #fde68a;
   box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
 }
+
+/* ==================== Profile Gear Modal & Badge Styles ==================== */
+.profile-gear-badge {
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fde68a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.profile-gear-badge:hover {
+  background: rgba(245, 158, 11, 0.35);
+  border-color: #facc15;
+  color: #ffffff;
+}
+
+.modal-stat-summary-card {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.modal-gear-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 0.65rem;
+}
+.modal-gear-kpi-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.modal-gear-kpi-item .lbl {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 700;
+}
+.modal-gear-kpi-item .val {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fde68a;
+}
+
+.modal-gear-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.45rem;
+  max-height: 290px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+@media (max-width: 600px) {
+  .modal-gear-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.modal-gear-card {
+  background: #181d33;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 0.45rem 0.55rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.modal-gear-card:hover {
+  background: #232a48;
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+.modal-gear-card-icon {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.modal-gear-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.modal-gear-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.66rem;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.modal-gear-card-name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-gear-card-sub {
+  font-size: 0.66rem;
+  color: #94a3b8;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.modal-gear-card-sub .badge-pill {
+  font-size: 0.62rem;
+  padding: 0 4px;
+  border-radius: 2px;
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  font-weight: 700;
+}
+.modal-gear-card-sub .badge-pill.limit {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fde68a;
+}

@@ -1283,6 +1283,21 @@ function renderProfileSelect() {
     };
     badgeEl.textContent = jobNames[cur.job] || cur.job;
   }
+
+  const gearBadgeEl = document.getElementById('profile-gear-badge');
+  if (gearBadgeEl && cur) {
+    let gearText = "🛡️ 10강 국템 세팅";
+    if (cur.twEquipState && cur.twEquipState.arms && cur.twEquipState.arms.name) {
+      gearText = "🛡️ " + cur.twEquipState.arms.name;
+    } else if (cur.gearPreset === 'eclipse_all_limit') {
+      gearText = "👑 11강 이클립스 종결";
+    } else if (cur.gearPreset === 'eclipse_3_abyss_5') {
+      gearText = "⭐ 이클3 + 어비스5";
+    } else if (cur.gearPreset === 'aquilus_all') {
+      gearText = "🛡️ 8강 아퀼루스 풀셋";
+    }
+    gearBadgeEl.textContent = gearText;
+  }
 }
 
 function switchProfile(newId) {
@@ -1439,33 +1454,210 @@ function switchProfileModalTab(tabKey, btnEl) {
   if (tabBonus) tabBonus.style.display = tabKey === 'bonus' ? 'block' : 'none';
 }
 
+let modalGearState = null;
+
+function renderModalGearGrid(state) {
+  const gridEl = document.getElementById('modal-gear-item-grid');
+  if (!gridEl || !state || typeof TW_INGAME_EQUIP_LAYOUT === 'undefined') return;
+
+  const slotItems = [
+    { key: "arms", label: "무기 (REAL ARMS)", icon: "⚔️" },
+    { key: "armor", label: "갑옷 (REAL ARMOR)", icon: "🥋" },
+    { key: "subArms", label: "손목 (REAL SUB ARMS)", icon: "🛡️" },
+    { key: "showSubArms", label: "라이도 커프 (SHOW SUB)", icon: "💍" },
+    { key: "head", label: "투구 (REAL HEAD)", icon: "👑" },
+    { key: "face", label: "아뮬렛 (REAL FACE)", icon: "📿" },
+    { key: "back", label: "날개 (REAL BACK)", icon: "🪶" },
+    { key: "hand", label: "건틀렛 (HAND)", icon: "🧤" },
+    { key: "foot", label: "부츠 (REAL FOOT)", icon: "👢" },
+    { key: "effect", label: "효과 (REAL EFFECT)", icon: "🌟" },
+    { key: "artifact", label: "아티팩트 (ARTIFACT)", icon: "🔮" },
+    { key: "relicRight", label: "성소 렐릭 (RELIC)", icon: "☀️" }
+  ];
+
+  gridEl.innerHTML = slotItems.map(itemDef => {
+    const it = state[itemDef.key] || {};
+    const tierStyle = (typeof TW_TIER_STYLES !== 'undefined' && TW_TIER_STYLES[it.tier]) || { class: 'tw-rarity-abyss' };
+    const name = it.name || "미착용";
+    const qName = it.quality === 'limit' ? '한계작(+30)' : (it.quality === 'budget' ? '떡작(+3)' : '국민작(+15)');
+    const qClass = it.quality === 'limit' ? 'limit' : '';
+    const abText = it.ability === 'superior' ? '최상급(3%)' : (it.ability === 'normal' ? '상급(2%)' : '');
+    const optText = (it.optDmg ? `딜+${it.optDmg}%` : '') + (it.optAcc ? ` 명+${it.optAcc}` : '');
+
+    return `
+      <div class="modal-gear-card" onclick="jumpToDualEquipWindowFromModal('${itemDef.key}')" title="클릭하여 6번 탭 인게임 템창에서 이 슬롯 정밀 튜닝">
+        <div class="modal-gear-card-icon">${itemDef.icon}</div>
+        <div class="modal-gear-card-body">
+          <div class="modal-gear-card-top">
+            <span>${itemDef.label}</span>
+            <span style="color:#60a5fa; font-size:0.65rem;">튜닝 ➔</span>
+          </div>
+          <div class="modal-gear-card-name ${tierStyle.class}">
+            ${name}
+          </div>
+          <div class="modal-gear-card-sub">
+            ${it.enhance !== undefined ? `<span class="badge-pill">${it.enhance}강</span>` : ''}
+            <span class="badge-pill ${qClass}">${qName}</span>
+            ${abText ? `<span class="badge-pill">${abText}</span>` : ''}
+            ${optText ? `<span class="badge-pill">${optText}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateModalGearKpiBanner(state) {
+  const bannerEl = document.getElementById('modal-gear-kpi-banner');
+  if (!bannerEl || !state || typeof calculateEquipStateMetrics !== 'function') return;
+
+  const m = calculateEquipStateMetrics(state);
+  bannerEl.innerHTML = `
+    <div class="modal-gear-kpi-item">
+      <span class="lbl">착용 장비 종합 계수</span>
+      <span class="val" style="color:#fde68a;">+${m.totalCoeff.toLocaleString()}</span>
+    </div>
+    <div class="modal-gear-kpi-item">
+      <span class="lbl">착용 장비 총합 명중(DEX)</span>
+      <span class="val" style="color:#38bdf8;">+${m.totalDex}</span>
+    </div>
+    <div class="modal-gear-kpi-item">
+      <span class="lbl">부가 옵션 피해량 증폭</span>
+      <span class="val" style="color:#f472b6;">+${m.extraDmgPct}%</span>
+    </div>
+  `;
+}
+
+function updateModalStatLiveSummary() {
+  const sumEl = document.getElementById('modal-stat-live-summary');
+  if (!sumEl) return;
+
+  const inMR = Number(document.getElementById('modal-stat-mr') ? document.getElementById('modal-stat-mr').value : 1400) || 0;
+  const inDEX = Number(document.getElementById('modal-stat-dex') ? document.getElementById('modal-stat-dex').value : 1300) || 0;
+  const petConc = document.getElementById('modal-chk-pet-concentration') ? document.getElementById('modal-chk-pet-concentration').checked : true;
+  const petDex = petConc ? 150 : 0;
+
+  const m = (modalGearState && typeof calculateEquipStateMetrics === 'function') 
+    ? calculateEquipStateMetrics(modalGearState) 
+    : { totalCoeff: 45000, totalDex: 500, regularMainSum: 500, enhanceMainSum: 200, regularDexSum: 200, enhanceDexSum: 80 };
+
+  const totalMain = inMR + (m.regularMainSum || 0) + (m.enhanceMainSum || 0);
+  const totalDex = inDEX + (m.regularDexSum || 0) + (m.enhanceDexSum || 0) + petDex;
+
+  sumEl.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.35rem;">
+      <span style="font-weight:800; font-size:0.83rem; color:#fde68a;">🛡️ 순수 스탯 + 착용 장비 합산 실전 능력치</span>
+      <span style="font-size:0.72rem; color:#38bdf8;">(프로필 저장 시 6번 탭 전투 시험장 자동 반영)</span>
+    </div>
+    <div style="display:flex; gap:0.45rem; flex-wrap:wrap; font-size:0.76rem;">
+      <span style="background:rgba(245, 158, 11, 0.15); border:1px solid rgba(245, 158, 11, 0.35); padding:2px 7px; border-radius:4px; color:#fde68a;">
+        실전 최종 주스탯: <b>${totalMain.toLocaleString()}</b> (순수 ${inMR} + 장비 ${m.regularMainSum + m.enhanceMainSum})
+      </span>
+      <span style="background:rgba(56, 189, 248, 0.15); border:1px solid rgba(56, 189, 248, 0.35); padding:2px 7px; border-radius:4px; color:#38bdf8;">
+        실전 최종 명중(DEX): <b>${totalDex.toLocaleString()}</b> (순수 ${inDEX} + 장비 ${m.regularDexSum + m.enhanceDexSum} + 펫 ${petDex})
+      </span>
+      <span style="background:rgba(52, 211, 153, 0.15); border:1px solid rgba(52, 211, 153, 0.35); padding:2px 7px; border-radius:4px; color:#6ee7b7;">
+        종합 전투 계수: <b>${m.totalCoeff.toLocaleString()}</b>
+      </span>
+    </div>
+  `;
+}
+
+function jumpToDualEquipWindowFromModal(slotKey) {
+  closeProfileModal();
+  switchTab('tab-coeff', document.querySelector('.tab-btn[data-tab="tab-coeff"]'));
+  switchComparatorMode('equip_window', document.querySelector('.specup-mode-tab[data-mode="equip_window"]'));
+  if (slotKey && typeof openSlotTunerModal === 'function') {
+    setTimeout(() => {
+      openSlotTunerModal(slotKey);
+    }, 150);
+  }
+  const el = document.getElementById('specup-tw-dual-grid');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function onModalGearPresetChange(val) {
-  const wDesc = document.getElementById('modal-gear-weapon-desc');
-  const aDesc = document.getElementById('modal-gear-armor-desc');
-  const sDesc = document.getElementById('modal-gear-sub-desc');
-  if (!wDesc || !aDesc || !sDesc) return;
+  if (!modalGearState) {
+    modalGearState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
+  }
+
+  const realSlots = ['arms', 'subArms', 'armor', 'head', 'face', 'back', 'hand', 'foot'];
+  const sMap = { arms: "무기", subArms: "리스트", armor: "로브", head: "헬름", face: "아뮬렛", back: "윙", hand: "건틀렛", foot: "부츠" };
 
   if (val === 'abyss_10_std') {
-    wDesc.textContent = "10강 어비스 무기 (국민작 +15, 딜+3%)";
-    aDesc.textContent = "10강 어비스 로브/메일 (국민작 +15)";
-    sDesc.textContent = "10강 날개/손목 + 60마방 효과 + 140 라이도 커프";
+    realSlots.forEach(k => {
+      modalGearState[k] = {
+        key: k, tier: 'abyss', enhance: 10, quality: 'standard', ability: 'superior',
+        optDmg: k === 'arms' ? 3 : 0, optAcc: 15, optElem: 10,
+        name: `+10 어비스 ${sMap[k]}`, dur: "(52/52)", isOn: true
+      };
+    });
+    if (modalGearState.showSubArms) {
+      modalGearState.showSubArms = { key: "showSubArms", tier: "gold", name: "라이도 심볼릭 커프 (140)", stat: 140, dex: 35, dur: "(100/100)", isOn: true };
+    }
+    if (modalGearState.effect) {
+      modalGearState.effect = { key: "effect", tier: "gold", name: "[넥슨30주년] 빛나는 효과 (60마방)", stat: 60, dex: 35, dur: "(55/55)", isOn: true };
+    }
   } else if (val === 'aquilus_all') {
-    wDesc.textContent = "8강 眞 아퀼루스 무기 (국민작 +12)";
-    aDesc.textContent = "8강 眞 아퀼루스 방어구 5세트";
-    sDesc.textContent = "8강 날개 + 40효과 + 100 라이도 커프";
+    realSlots.forEach(k => {
+      modalGearState[k] = {
+        key: k, tier: 'aquilus', enhance: 8, quality: 'standard', ability: 'normal',
+        optDmg: k === 'arms' ? 2 : 0, optAcc: 10, optElem: 5,
+        name: `+8 眞 아퀼루스 ${sMap[k]}`, dur: "(48/52)", isOn: true
+      };
+    });
+    if (modalGearState.showSubArms) {
+      modalGearState.showSubArms = { key: "showSubArms", tier: "gold", name: "라이도 심볼릭 커프 (80)", stat: 80, dex: 20, dur: "(100/100)", isOn: true };
+    }
+    if (modalGearState.effect) {
+      modalGearState.effect = { key: "effect", tier: "gold", name: "30 마방 효과", stat: 30, dex: 15, dur: "(55/55)", isOn: true };
+    }
   } else if (val === 'eclipse_3_abyss_5') {
-    wDesc.textContent = "10강 이클립스 무기 (국민작 +16, 딜+5%)";
-    aDesc.textContent = "10강 이클립스 로브/메일 + 어비스 3셋";
-    sDesc.textContent = "10강 이클립스 날개 + 60마방 효과 + 160 라이도 커프";
+    ['arms', 'back'].forEach(k => {
+      modalGearState[k] = {
+        key: k, tier: 'eclipse', enhance: 10, quality: 'standard', ability: 'superior',
+        optDmg: k === 'arms' ? 5 : 0, optAcc: 15, optElem: 10,
+        name: `+10 이클립스 ${sMap[k]}`, dur: "(65/65)", isOn: true
+      };
+    });
+    ['subArms', 'armor', 'head', 'face', 'hand', 'foot'].forEach(k => {
+      modalGearState[k] = {
+        key: k, tier: 'abyss', enhance: 10, quality: 'standard', ability: 'superior',
+        optDmg: 0, optAcc: 15, optElem: 10,
+        name: `+10 어비스 ${sMap[k]}`, dur: "(52/52)", isOn: true
+      };
+    });
+    if (modalGearState.artifact) {
+      modalGearState.artifact = { key: "artifact", tier: "eclipse", name: "이클립스 아티팩트", stat: 120, dex: 40, dur: "(40/40)", isOn: true };
+    }
+    if (modalGearState.showSubArms) {
+      modalGearState.showSubArms = { key: "showSubArms", tier: "gold", name: "라이도 심볼릭 커프 (140)", stat: 140, dex: 35, dur: "(100/100)", isOn: true };
+    }
+    if (modalGearState.effect) {
+      modalGearState.effect = { key: "effect", tier: "gold", name: "[넥슨30주년] 빛나는 효과 (60마방)", stat: 60, dex: 35, dur: "(55/55)", isOn: true };
+    }
   } else if (val === 'eclipse_all_limit') {
-    wDesc.textContent = "11강 이클립스 무기 (한계작 +32, 딜+5% 극인챈)";
-    aDesc.textContent = "11강 이클립스 풀세트 한계작 (+30)";
-    sDesc.textContent = "11강 이클립스 날개/손목 + 100효과 + 180 커프";
-  } else {
-    wDesc.textContent = "커스텀 세팅 (사용자 직접 지정)";
-    aDesc.textContent = "커스텀 세팅 (사용자 직접 지정)";
-    sDesc.textContent = "커스텀 세팅 (사용자 직접 지정)";
+    realSlots.forEach(k => {
+      modalGearState[k] = {
+        key: k, tier: 'eclipse', enhance: 11, quality: 'limit', ability: 'superior',
+        optDmg: k === 'arms' ? 5 : 0, optAcc: 25, optElem: 15,
+        name: `+11 이클립스 ${sMap[k]}`, dur: "(65/65)", isOn: true
+      };
+    });
+    if (modalGearState.showSubArms) {
+      modalGearState.showSubArms = { key: "showSubArms", tier: "eclipse", name: "라이도 심볼릭 커프 (200)", stat: 200, dex: 50, dur: "(100/100)", isOn: true };
+    }
+    if (modalGearState.effect) {
+      modalGearState.effect = { key: "effect", tier: "eclipse", name: "[넥슨30주년] 찬란한 효과 (100마방)", stat: 100, dex: 50, dur: "(55/55)", isOn: true };
+    }
+    if (modalGearState.artifact) {
+      modalGearState.artifact = { key: "artifact", tier: "eclipse", name: "이클립스 아티팩트", stat: 120, dex: 40, dur: "(40/40)", isOn: true };
+    }
   }
+
+  renderModalGearGrid(modalGearState);
+  updateModalGearKpiBanner(modalGearState);
+  updateModalStatLiveSummary();
 }
 
 function applyKoreanStandardToModal() {
@@ -1493,6 +1685,8 @@ function applyKoreanStandardToModal() {
   if (document.getElementById('modal-chk-third-sien')) document.getElementById('modal-chk-third-sien').checked = true;
   if (document.getElementById('modal-chk-pet-concentration')) document.getElementById('modal-chk-pet-concentration').checked = true;
   if (document.getElementById('modal-chk-avatar-set')) document.getElementById('modal-chk-avatar-set').checked = true;
+
+  updateModalStatLiveSummary();
 }
 
 function openProfileModal(mode) {
@@ -1512,6 +1706,7 @@ function openProfileModal(mode) {
     nameInput.value = '';
     jobInput.value = 'anais_biho';
     memoInput.value = '';
+    modalGearState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
     applyKoreanStandardToModal();
   } else {
     const cur = profiles.find(p => p.id === currentProfileId) || profiles[0];
@@ -1538,13 +1733,6 @@ function openProfileModal(mode) {
     if (document.getElementById('modal-chk-elem-yeonma')) document.getElementById('modal-chk-elem-yeonma').checked = !!ym.elem;
     if (document.getElementById('modal-chk-third-sien')) document.getElementById('modal-chk-third-sien').checked = !!ym.thirdSien;
 
-    // Load gear preset
-    const preset = cur.gearPreset || 'abyss_10_std';
-    if (document.getElementById('modal-gear-preset')) {
-      document.getElementById('modal-gear-preset').value = preset;
-      onModalGearPresetChange(preset);
-    }
-
     // Load title/pet
     const tp = cur.titlePet || { title: '시련의 서약자 (DEX +80, 주스탯 +80)', titleMain: 80, titleDex: 80, petConc: true, avatarSet: true };
     if (document.getElementById('modal-bonus-title-name')) document.getElementById('modal-bonus-title-name').value = tp.title || '';
@@ -1552,7 +1740,25 @@ function openProfileModal(mode) {
     if (document.getElementById('modal-bonus-title-dex')) document.getElementById('modal-bonus-title-dex').value = tp.titleDex || 80;
     if (document.getElementById('modal-chk-pet-concentration')) document.getElementById('modal-chk-pet-concentration').checked = !!tp.petConc;
     if (document.getElementById('modal-chk-avatar-set')) document.getElementById('modal-chk-avatar-set').checked = !!tp.avatarSet;
+
+    // Load equipment state
+    modalGearState = JSON.parse(JSON.stringify(cur.twEquipState || asIsEquipState || TW_DEFAULT_EQUIP_STATE));
+    cur.twEquipState = JSON.parse(JSON.stringify(modalGearState));
+    const preset = cur.gearPreset || 'custom';
+    if (document.getElementById('modal-gear-preset')) {
+      document.getElementById('modal-gear-preset').value = preset;
+    }
+    renderModalGearGrid(modalGearState);
+    updateModalGearKpiBanner(modalGearState);
+    updateModalStatLiveSummary();
   }
+
+  // Cross-bind stats inputs to live summary
+  const statInputs = ['modal-stat-mr', 'modal-stat-dex', 'modal-stat-stab', 'modal-stat-hack', 'modal-stat-int', 'modal-chk-pet-concentration'];
+  statInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.oninput = updateModalStatLiveSummary;
+  });
 }
 
 function closeProfileModal() {
@@ -1598,7 +1804,7 @@ function saveProfileFromModal() {
     thirdSien: document.getElementById('modal-chk-third-sien') ? document.getElementById('modal-chk-third-sien').checked : true
   };
 
-  const gearPreset = document.getElementById('modal-gear-preset') ? document.getElementById('modal-gear-preset').value : 'abyss_10_std';
+  const gearPreset = document.getElementById('modal-gear-preset') ? document.getElementById('modal-gear-preset').value : 'custom';
   const etaLevel = Number(document.getElementById('modal-stat-eta').value) || 1;
 
   const titlePet = {
@@ -1631,7 +1837,8 @@ function saveProfileFromModal() {
       yeonma: yeonma,
       gearPreset: gearPreset,
       titlePet: titlePet,
-      gearBase: {}
+      gearBase: {},
+      twEquipState: modalGearState ? JSON.parse(JSON.stringify(modalGearState)) : JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE))
     };
     profiles.push(p);
   } else {
@@ -1648,6 +1855,24 @@ function saveProfileFromModal() {
     p.yeonma = yeonma;
     p.gearPreset = gearPreset;
     p.titlePet = titlePet;
+    if (modalGearState) {
+      p.twEquipState = JSON.parse(JSON.stringify(modalGearState));
+    }
+  }
+
+  if (p.twEquipState) {
+    asIsEquipState = JSON.parse(JSON.stringify(p.twEquipState));
+    toBeEquipState = JSON.parse(JSON.stringify(p.twEquipState));
+    if (typeof calculateEquipStateMetrics === 'function') {
+      const m = calculateEquipStateMetrics(p.twEquipState);
+      p.totalCoeff = m.totalCoeff;
+      p.totalDex = m.totalDex;
+    }
+    if (document.getElementById('tw-equip-window-asis')) {
+      renderInGameEquipWindow('asis', asIsEquipState, false);
+      renderInGameEquipWindow('tobe', toBeEquipState, true);
+      if (typeof updateDualEquipWindowDiff === 'function') updateDualEquipWindowDiff();
+    }
   }
 
   currentProfileId = id;
@@ -5981,12 +6206,19 @@ function saveToBeToProfile() {
   if (!p) return;
   p.twEquipState = JSON.parse(JSON.stringify(toBeEquipState));
   asIsEquipState = JSON.parse(JSON.stringify(toBeEquipState));
+  p.gearPreset = 'custom';
+  if (typeof calculateEquipStateMetrics === 'function') {
+    const m = calculateEquipStateMetrics(p.twEquipState);
+    p.totalCoeff = m.totalCoeff;
+    p.totalDex = m.totalDex;
+  }
   try {
     localStorage.setItem('tw_companion_profiles_v3', JSON.stringify(profiles));
     renderInGameEquipWindow('asis', asIsEquipState, false);
     renderInGameEquipWindow('tobe', toBeEquipState, true);
     updateDualEquipWindowDiff();
-    alert(`'${p.name}' 캐릭터 프로필에 To-Be 템창 세팅이 영구 저장되었으며, 현재 [As-Is] 장비로 확정되었습니다!`);
+    renderProfileSelect();
+    alert(`'${p.name}' 캐릭터 프로필에 To-Be 템창 세팅이 영구 저장되었으며, 현재 [As-Is] 장비로 확정되었습니다!\n상단 [✏️ 프로필 설정]의 [착용 장비] 탭에서도 12부위 상세 정보를 실시간으로 확인하실 수 있습니다.`);
   } catch (e) {}
 }
 
