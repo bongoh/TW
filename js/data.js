@@ -2751,3 +2751,380 @@ const EQUIP_UPGRADE_RECOMMENDATIONS = [
     tip: "무기 기본 깡마방/깡스탯 증가로 몬스터 방어력을 뚫고 1방 컷 구간이 비약적으로 확장됩니다."
   }
 ];
+
+// ==================== 27. PART-BY-PART UPGRADE DATA & QUALITY TIERS ====================
+// 떡락작(노작/최저가), 국민작(실전 표준), 종결 한계작(한계 인챈트) 부위별 스탯 및 가성비 데이터
+const SLOT_UPGRADE_DATA = {
+  weapon: {
+    slotName: "⚔️ 무기 (Weapon)",
+    currentBaseName: "어비스 무기 (국민작 기준)",
+    qualities: {
+      budget: {
+        name: "📉 떡락작 / 노작 (최저가 매물)",
+        tag: "떡락작",
+        tagColor: "budget",
+        mainStat: 75,
+        dex: 25,
+        coeffGain: 4000,
+        dexGain: 25,
+        costEstimate: "약 20~30괴",
+        efficiencyStar: "★★★☆☆",
+        desc: "인챈트가 망했거나 노작 상태인 최저가 매물입니다. 기본 깡스탯만 챙기는 가성비 입문 세팅입니다.",
+        tip: "자금이 극도로 부족할 때 채굴장 입장 명중 컷만 급히 채우는 용도로 쓰이며, 추후 감가가 심하므로 장기 보유는 비권장합니다."
+      },
+      standard: {
+        name: "⚖️ 국민작 (실전 표준 / 8~10강 / 마방작)",
+        tag: "국민작",
+        tagColor: "standard",
+        mainStat: 140,
+        dex: 40,
+        coeffGain: 7500,
+        dexGain: 40,
+        costEstimate: "약 60~85괴",
+        efficiencyStar: "★★★★☆",
+        desc: "실전에서 가장 널리 쓰이는 표준 인챈트(+10~15) 및 8~10강화가 완료된 균형 잡힌 무기입니다.",
+        tip: "어코마/머코마에서 모은 시드로 구매하기 가장 적합하며, 딜 체감과 되팔 때의 감가 방어가 훌륭합니다."
+      },
+      limit: {
+        name: "👑 종결 한계작 (한계 돌파 / 11강 / 극마방)",
+        tag: "한계작",
+        tagColor: "limit",
+        mainStat: 230,
+        dex: 65,
+        coeffGain: 12500,
+        dexGain: 65,
+        costEstimate: "약 160~240괴",
+        efficiencyStar: "★★★★★ (극딜 종결)",
+        desc: "한계 인챈트 만수치 및 11강화, 최상위 어빌리티가 풀세팅된 엔드 무기입니다.",
+        tip: "대미지 상한선을 뚫어내고 최상위 레이드에서 1방 컷 구간을 완성하는 최종 종결 무기입니다."
+      }
+    }
+  },
+  wings: {
+    slotName: "🪶 날개 / 몸 (Wings)",
+    currentBaseName: "어비스 윙 (국민작 기준)",
+    qualities: {
+      budget: {
+        name: "📉 떡락작 / 노작 (마방 180 이하)",
+        tag: "떡락작",
+        tagColor: "budget",
+        mainStat: 80,
+        dex: 30,
+        coeffGain: 4300,
+        dexGain: 30,
+        costEstimate: "약 15~25괴",
+        efficiencyStar: "★★★★☆",
+        desc: "인챈트가 낮게 붙어 저렴하게 올라오는 이클립스 윙 매물입니다.",
+        tip: "날개는 기본 베이스 스탯 자체가 높아 떡락작이라도 어비스 윙보다 딜 상승폭이 큽니다."
+      },
+      standard: {
+        name: "⚖️ 국민작 (마방 220 / 실전 표준작)",
+        tag: "국민작",
+        tagColor: "standard",
+        mainStat: 130,
+        dex: 50,
+        coeffGain: 7000,
+        dexGain: 50,
+        costEstimate: "약 45~60괴",
+        efficiencyStar: "★★★★★ (최고 가성비)",
+        desc: "마방 220 전후로 세팅된 이클립스 3신기의 핵심 날개입니다.",
+        tip: "선배 모험가들이 이클 3신기 중 가장 1순위로 교체를 권장하는 최고 가성비 부위입니다."
+      },
+      limit: {
+        name: "👑 종결 한계작 (마방 260+ / 극명중)",
+        tag: "한계작",
+        tagColor: "limit",
+        mainStat: 180,
+        dex: 70,
+        coeffGain: 9800,
+        dexGain: 70,
+        costEstimate: "약 110~150괴",
+        efficiencyStar: "★★★★☆",
+        desc: "한계 인챈트 및 높은 명중률이 보장된 종결 날개입니다.",
+        tip: "골고다 부대장 등 초고회피 보스 상대로 100% 올힛을 안정적으로 보장합니다."
+      }
+    }
+  },
+  effect: {
+    slotName: "✨ 효과 (Effect)",
+    currentBaseName: "30 효과 (아일단 기본)",
+    qualities: {
+      budget: {
+        name: "📉 떡락작 / 보급형 (30~45 효과)",
+        tag: "떡락작",
+        tagColor: "budget",
+        mainStat: 35,
+        dex: 15,
+        coeffGain: 1900,
+        dexGain: 15,
+        costEstimate: "약 5~10괴",
+        efficiencyStar: "★★★☆☆",
+        desc: "아일단 진입 시 기본으로 지급되거나 저렴한 가성비 효과입니다.",
+        tip: "어비스 일반/헬 진입에는 충분하지만 상위 채굴장 진입 시 스탯 부족이 발생합니다."
+      },
+      standard: {
+        name: "⚖️ 국민작 (60~80 효과)",
+        tag: "국민작",
+        tagColor: "standard",
+        mainStat: 70,
+        dex: 35,
+        coeffGain: 3800,
+        dexGain: 35,
+        costEstimate: "약 25~40괴",
+        efficiencyStar: "★★★★☆",
+        desc: "가격 대비 스탯 상승률이 매우 준수한 중간 단계 효과입니다.",
+        tip: "100효과 구매 전 중간 징검다리로 활용하기에 매우 적합합니다."
+      },
+      limit: {
+        name: "👑 종결 한계작 (100 효과 만수치)",
+        tag: "한계작",
+        tagColor: "limit",
+        mainStat: 100,
+        dex: 50,
+        coeffGain: 5500,
+        dexGain: 50,
+        costEstimate: "약 65~85괴",
+        efficiencyStar: "★★★★★ (채굴장 필수 1순위)",
+        desc: "올스탯 100이 붙는 최상위 종결 효과입니다.",
+        tip: "설계자의 채굴장(에타 20) 입장 컷을 맞추기 위한 절대 필수 부위이며, 감가가 거의 없습니다."
+      }
+    }
+  },
+  artifact: {
+    slotName: "🔮 아티팩트 (Artifact)",
+    currentBaseName: "아크론 혈투 아티팩트 (아일단 기준)",
+    qualities: {
+      budget: {
+        name: "📉 떡락작 (노강화 이클 아티)",
+        tag: "떡락작",
+        tagColor: "budget",
+        mainStat: 50,
+        dex: 20,
+        coeffGain: 2700,
+        dexGain: 20,
+        costEstimate: "약 15~22괴",
+        efficiencyStar: "★★★☆☆",
+        desc: "인챈트가 되지 않은 기본 이클립스 아티팩트입니다.",
+        tip: "아크론 혈투 아티팩트보다 약간 우세하지만 극적인 체감은 적습니다."
+      },
+      standard: {
+        name: "⚖️ 국민작 (표준 마방작 / 10강)",
+        tag: "국민작",
+        tagColor: "standard",
+        mainStat: 95,
+        dex: 40,
+        coeffGain: 5200,
+        dexGain: 40,
+        costEstimate: "약 35~50괴",
+        efficiencyStar: "★★★★☆",
+        desc: "이클립스 3신기의 한 축을 담당하는 정규 마방 아티팩트입니다.",
+        tip: "날개와 함께 착용 시 세트 시너지와 계수 상승량이 확연히 올라갑니다."
+      },
+      limit: {
+        name: "👑 종결 한계작 (극인챈 / 11강 종결)",
+        tag: "한계작",
+        tagColor: "limit",
+        mainStat: 150,
+        dex: 60,
+        coeffGain: 8100,
+        dexGain: 60,
+        costEstimate: "약 90~130괴",
+        efficiencyStar: "★★★★☆",
+        desc: "한계 수치 인챈트와 11강화가 완비된 종결 아티팩트입니다.",
+        tip: "상위 레이드 토벌전에서 딜 컷을 뚫어내는 주력 스펙업 부위입니다."
+      }
+    }
+  },
+  cuff: {
+    slotName: "💍 라이도 커프 (Cuff)",
+    currentBaseName: "발굴지 기본 커프 (주스탯 50)",
+    qualities: {
+      budget: {
+        name: "📉 떡락작 / 초급작 (발굴지 80작 이하)",
+        tag: "떡락작",
+        tagColor: "budget",
+        mainStat: 80,
+        dex: 20,
+        coeffGain: 4300,
+        dexGain: 20,
+        costEstimate: "0괴 (발굴지 1주)",
+        efficiencyStar: "★★★★☆",
+        desc: "발굴지 초반에 조각을 조금 채워 넣은 상태입니다.",
+        tip: "시드 소모 없이 일일 숙제만으로 빠르게 도달 가능합니다."
+      },
+      standard: {
+        name: "⚖️ 국민작 (발굴지 140 졸업작)",
+        tag: "국민작",
+        tagColor: "standard",
+        mainStat: 140,
+        dex: 35,
+        coeffGain: 7600,
+        dexGain: 35,
+        costEstimate: "0괴 (발굴지 2~3주)",
+        efficiencyStar: "★★★★★ (무과금 혜자 내실)",
+        desc: "신규 채굴장 진입 전 발굴지에서 달성하는 국민 표준 140작 커프입니다.",
+        tip: "시드를 전혀 쓰지 않고도 주스탯 +90을 올리는 현존 최고의 무과금 내실입니다."
+      },
+      limit: {
+        name: "👑 종결 한계작 (설계자의 채굴장 200 종결)",
+        tag: "한계작",
+        tagColor: "limit",
+        mainStat: 200,
+        dex: 60,
+        coeffGain: 10800,
+        dexGain: 60,
+        costEstimate: "0괴 (채굴장 일일 파밍)",
+        efficiencyStar: "★★★★★ (현존 단일 부위 최고 효율)",
+        desc: "설계자의 채굴장(에타 20) 일일 조각 파밍으로 주스탯을 200 만수치까지 채운 종결 커프입니다.",
+        tip: "단일 부위에서 무려 주스탯 200을 제공하여 엔드 보스 진입 스펙의 핵심 기둥이 됩니다."
+      }
+    }
+  },
+  wrist: {
+    slotName: "🛡️ 손목 / 서브 (Wrist)",
+    currentBaseName: "어비스 리스트/암릿 (국민작 기준)",
+    qualities: {
+      budget: {
+        name: "📉 떡락작 / 노작 (마방 180 이하)",
+        tag: "떡락작",
+        tagColor: "budget",
+        mainStat: 70,
+        dex: 25,
+        coeffGain: 3800,
+        dexGain: 25,
+        costEstimate: "약 15~22괴",
+        efficiencyStar: "★★★☆☆",
+        desc: "기본 베이스 위주의 저렴한 이클립스 서브/리스트입니다.",
+        tip: "단일 딜러는 3신기 우선이므로 4신기는 천천히 맞추셔도 좋습니다."
+      },
+      standard: {
+        name: "⚖️ 국민작 (마방 220 / 실전작)",
+        tag: "국민작",
+        tagColor: "standard",
+        mainStat: 110,
+        dex: 40,
+        coeffGain: 5900,
+        dexGain: 40,
+        costEstimate: "약 40~55괴",
+        efficiencyStar: "★★★★☆ (마방캐 추천)",
+        desc: "비호정령 등 마방 캐릭의 필수 4신기 부위입니다.",
+        tip: "마방 캐릭터는 서브 부위의 마방 비중이 높아 4신기 세팅 시 딜/생존력이 크게 도약합니다."
+      },
+      limit: {
+        name: "👑 종결 한계작 (마방 260+ / 극인챈)",
+        tag: "한계작",
+        tagColor: "limit",
+        mainStat: 165,
+        dex: 55,
+        coeffGain: 8900,
+        dexGain: 55,
+        costEstimate: "약 95~140괴",
+        efficiencyStar: "★★★★☆",
+        desc: "한계 인챈트와 11강화가 완료된 마방 종결 손목 장비입니다.",
+        tip: "마방캐의 최종 종결 세팅에 해당합니다."
+      }
+    }
+  },
+  armor: {
+    slotName: "🥋 갑옷 (Armor)",
+    currentBaseName: "어비스 로브/아머 (국민작 기준)",
+    qualities: {
+      budget: {
+        name: "📉 떡락작 / 노작 (노인챈)",
+        tag: "떡락작",
+        tagColor: "budget",
+        mainStat: 80,
+        dex: 30,
+        coeffGain: 4300,
+        dexGain: 30,
+        costEstimate: "약 25~35괴",
+        efficiencyStar: "★★★☆☆",
+        desc: "인챈트가 되지 않은 이클립스 로브/아머입니다.",
+        tip: "갑옷은 가격이 높은 편이므로 날개/효과/아티팩트 3신기를 먼저 맞추는 것을 권장합니다."
+      },
+      standard: {
+        name: "⚖️ 국민작 (마방 450+ / 10강)",
+        tag: "국민작",
+        tagColor: "standard",
+        mainStat: 135,
+        dex: 50,
+        coeffGain: 7300,
+        dexGain: 50,
+        costEstimate: "약 60~85괴",
+        efficiencyStar: "★★★★☆",
+        desc: "방어력과 주스탯이 안정적으로 보정된 실전 갑옷입니다.",
+        tip: "생존력과 딜링을 동시에 끌어올려 상위 던전 돌연사를 완벽히 방지합니다."
+      },
+      limit: {
+        name: "👑 종결 한계작 (한계 인챈트 / 11강)",
+        tag: "한계작",
+        tagColor: "limit",
+        mainStat: 195,
+        dex: 70,
+        coeffGain: 10500,
+        dexGain: 70,
+        costEstimate: "약 140~200괴",
+        efficiencyStar: "★★★★☆",
+        desc: "최상위 한계 마방과 11강 방어력이 결합된 종결 갑옷입니다.",
+        tip: "주화단 및 최상위 레이드 공략의 핵심 방어구입니다."
+      }
+    }
+  },
+  relic: {
+    slotName: "☀️ 성소 렐릭 (Relic)",
+    currentBaseName: "렐릭 5단계 (아일단 기본)",
+    qualities: {
+      budget: {
+        name: "📉 떡락작 / 미사용 (더블리워드 미가동)",
+        tag: "떡락작",
+        tagColor: "budget",
+        mainStat: 40,
+        dex: 15,
+        coeffGain: 2200,
+        dexGain: 15,
+        costEstimate: "0 TP (1년 소요 ⚠️)",
+        efficiencyStar: "★★☆☆☆ (비권장)",
+        desc: "더블리워드 쿠폰 없이 일반 진행 시 10강까지 무려 1년이 걸립니다.",
+        tip: "나중에 스펙이 올라도 10강이 없어 성소 13단을 못 가게 되므로 반드시 더블리워드를 쓰세요!"
+      },
+      standard: {
+        name: "⚖️ 국민작 (렐릭 8단계 / 더블리워드 가동)",
+        tag: "국민작",
+        tagColor: "standard",
+        mainStat: 80,
+        dex: 30,
+        coeffGain: 4300,
+        dexGain: 30,
+        costEstimate: "주 4,200 TP (2~3개월)",
+        efficiencyStar: "★★★★☆",
+        desc: "더블리워드를 꾸준히 가동하여 도달하는 중간 정착 스펙입니다.",
+        tip: "올스탯 증가로 모든 계수와 명중에 고루 기여합니다."
+      },
+      limit: {
+        name: "👑 종결 한계작 (렐릭 10단계 완료 / 성소 13단 진입)",
+        tag: "한계작",
+        tagColor: "limit",
+        mainStat: 130,
+        dex: 50,
+        coeffGain: 7000,
+        dexGain: 50,
+        costEstimate: "더블리워드 5~6개월",
+        efficiencyStar: "★★★★★ (필수 고정 내실)",
+        desc: "렐릭 10강을 졸업하고 성소 13단계 진입 자격을 획득한 상태입니다.",
+        tip: "성소 13단에서 상위 렐릭 스탯을 파밍하기 위한 필수 불가결 내실입니다."
+      }
+    }
+  }
+};
+
+// 부위별 스펙업 가성비 효율 랭킹 요약 데이터
+const SLOT_EFFICIENCY_RANKING = [
+  { rank: 1, slot: "✨ 효과 (100 효과)", roi: "최상 (★★★★★)", cost: "65~85괴", gainDmg: "+12~18%", gainDex: "+50", note: "단일 부위 올스탯 +100 제공, 채굴장 컷 필수 1순위" },
+  { rank: 2, slot: "💍 라이도 커프 (200작)", roi: "최상 (★★★★★)", cost: "0괴 (순수 파밍)", gainDmg: "+20~28%", gainDex: "+60", note: "시드 소모 0원, 주스탯 200 만수치 제공 최고 혜자 내실" },
+  { rank: 3, slot: "🪶 이클립스 윙 (국민작)", roi: "상 (★★★★★)", cost: "45~60괴", gainDmg: "+15~22%", gainDex: "+50", note: "3신기 중 가성비 1순위, 떡락작으로 가도 딜 상승 확실" },
+  { rank: 4, slot: "🔮 이클립스 아티 (국민작)", roi: "상 (★★★★☆)", cost: "35~50괴", gainDmg: "+10~15%", gainDex: "+40", note: "날개와 함께 세트 시너지 및 마방 급상승" },
+  { rank: 5, slot: "☀️ 성소 렐릭 10단", roi: "상 (★★★★☆)", cost: "주 4,200 TP", gainDmg: "+12~16%", gainDex: "+50", note: "성소 13단 진입 필수, 시간 단축 위해 더블리워드 필수" },
+  { rank: 6, slot: "🛡️ 이클립스 손목 (마방캐)", roi: "중상 (★★★★☆)", cost: "40~55괴", gainDmg: "+10~14%", gainDex: "+40", note: "비호정령 등 마방캐 4신기 채굴장 안정성 극대화" },
+  { rank: 7, slot: "⚔️ 이클립스 무기 (한계작)", roi: "중 (★★★★☆)", cost: "160~240괴", gainDmg: "+25~35%", gainDex: "+65", note: "시드 투자는 크지만 1방 컷 구간 뚫어내는 극딜 종결" },
+  { rank: 8, slot: "🥋 이클립스 갑옷 (국민작)", roi: "중 (★★★☆☆)", cost: "60~85괴", gainDmg: "+12~17%", gainDex: "+50", note: "방어력 및 생존력 우수, 3신기 이후 교체 권장" }
+];

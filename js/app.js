@@ -4921,15 +4921,22 @@ function syncProfileToRoadmap() {
 // ==================== 26. EQUIPMENT UPGRADE COMPARATOR LOGIC ====================
 let lastCalculatedCoeff = 45200;
 let lastCalculatedDex = 1680;
+let specupCompareMode = 'bundle'; // 'bundle', 'part', 'ranking'
+let activeSlotKey = 'wings';
+let activeQualityKey = 'standard';
+let customStatBonus = { main: 130, dex: 50 };
 
 function initSpecupComparator() {
   const curSel = document.getElementById('specup-cur-gear-select');
+  const curPartSel = document.getElementById('specup-part-cur-gear-select');
   const recSel = document.getElementById('specup-rec-gear-select');
 
   if (curSel && typeof CURRENT_GEAR_PRESETS !== 'undefined') {
-    curSel.innerHTML = CURRENT_GEAR_PRESETS.map(p => 
+    const opts = CURRENT_GEAR_PRESETS.map(p => 
       `<option value="${p.id}">${p.name}</option>`
     ).join('');
+    curSel.innerHTML = opts;
+    if (curPartSel) curPartSel.innerHTML = opts;
   }
 
   if (recSel && typeof EQUIP_UPGRADE_RECOMMENDATIONS !== 'undefined') {
@@ -4939,6 +4946,10 @@ function initSpecupComparator() {
   }
 
   if (curSel) curSel.addEventListener('change', updateSpecupComparison);
+  if (curPartSel) curPartSel.addEventListener('change', (e) => {
+    if (curSel) curSel.value = e.target.value;
+    updateSpecupComparison();
+  });
   if (recSel) recSel.addEventListener('change', updateSpecupComparison);
 
   // Cross-bind with combat test bench controls
@@ -4951,7 +4962,118 @@ function initSpecupComparator() {
     if (el) el.addEventListener('change', updateSpecupComparison);
   });
 
+  // Init custom sliders and inputs
+  syncQualityStatsToSliders();
+  renderSlotEfficiencyRankingTable();
   updateSpecupComparison();
+}
+
+function switchComparatorMode(mode, btnEl) {
+  specupCompareMode = mode;
+  document.querySelectorAll('.specup-mode-tab').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  const bundleCtrl = document.getElementById('specup-bundle-controls');
+  const partCtrl = document.getElementById('specup-part-controls');
+  const rankingPanel = document.getElementById('specup-ranking-panel');
+  const compareGrid = document.querySelector('.specup-compare-grid');
+  const adviceCard = document.getElementById('specup-advice-card');
+
+  if (mode === 'bundle') {
+    if (bundleCtrl) bundleCtrl.style.display = 'flex';
+    if (partCtrl) partCtrl.style.display = 'none';
+    if (rankingPanel) rankingPanel.style.display = 'none';
+    if (compareGrid) compareGrid.style.display = 'grid';
+    if (adviceCard) adviceCard.style.display = 'block';
+  } else if (mode === 'part') {
+    if (bundleCtrl) bundleCtrl.style.display = 'none';
+    if (partCtrl) partCtrl.style.display = 'block';
+    if (rankingPanel) rankingPanel.style.display = 'none';
+    if (compareGrid) compareGrid.style.display = 'grid';
+    if (adviceCard) adviceCard.style.display = 'block';
+  } else if (mode === 'ranking') {
+    if (bundleCtrl) bundleCtrl.style.display = 'none';
+    if (partCtrl) partCtrl.style.display = 'none';
+    if (rankingPanel) rankingPanel.style.display = 'block';
+    if (compareGrid) compareGrid.style.display = 'none';
+    if (adviceCard) adviceCard.style.display = 'none';
+    renderSlotEfficiencyRankingTable();
+  }
+
+  updateSpecupComparison();
+}
+
+function selectComparatorSlot(slotKey, btnEl) {
+  activeSlotKey = slotKey;
+  document.querySelectorAll('.specup-slot-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  syncQualityStatsToSliders();
+  updateSpecupComparison();
+}
+
+function selectComparatorQuality(qualityKey, btnEl) {
+  activeQualityKey = qualityKey;
+  document.querySelectorAll('.specup-quality-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  syncQualityStatsToSliders();
+  updateSpecupComparison();
+}
+
+function syncQualityStatsToSliders() {
+  if (typeof SLOT_UPGRADE_DATA === 'undefined') return;
+  const slot = SLOT_UPGRADE_DATA[activeSlotKey] || SLOT_UPGRADE_DATA.wings;
+  const q = slot.qualities[activeQualityKey] || slot.qualities.standard;
+
+  customStatBonus.main = q.mainStat;
+  customStatBonus.dex = q.dex;
+
+  const sliderMain = document.getElementById('specup-stat-slider-main');
+  const inputMain = document.getElementById('specup-stat-input-main');
+  const sliderDex = document.getElementById('specup-stat-slider-dex');
+  const inputDex = document.getElementById('specup-stat-input-dex');
+
+  if (sliderMain) sliderMain.value = q.mainStat;
+  if (inputMain) inputMain.value = q.mainStat;
+  if (sliderDex) sliderDex.value = q.dex;
+  if (inputDex) inputDex.value = q.dex;
+}
+
+function onCustomStatSliderChange(statType, val) {
+  const numVal = parseInt(val, 10) || 0;
+  customStatBonus[statType] = numVal;
+
+  if (statType === 'main') {
+    const s = document.getElementById('specup-stat-slider-main');
+    const i = document.getElementById('specup-stat-input-main');
+    if (s && s.value != numVal) s.value = numVal;
+    if (i && i.value != numVal) i.value = numVal;
+  } else if (statType === 'dex') {
+    const s = document.getElementById('specup-stat-slider-dex');
+    const i = document.getElementById('specup-stat-input-dex');
+    if (s && s.value != numVal) s.value = numVal;
+    if (i && i.value != numVal) i.value = numVal;
+  }
+
+  updateSpecupComparison();
+}
+
+function renderSlotEfficiencyRankingTable() {
+  const tbody = document.getElementById('specup-ranking-tbody');
+  if (!tbody || typeof SLOT_EFFICIENCY_RANKING === 'undefined') return;
+
+  tbody.innerHTML = SLOT_EFFICIENCY_RANKING.map(r => `
+    <tr>
+      <td style="font-weight:800; color:#fde68a; text-align:center;">#${r.rank}</td>
+      <td style="font-weight:700; color:#f8fafc;">${r.slot}</td>
+      <td style="color:#6ee7b7; font-weight:700;">${r.gainDmg}</td>
+      <td style="color:#facc15; font-weight:700;">${r.gainDex}</td>
+      <td style="color:#38bdf8;">${r.cost}</td>
+      <td><span class="specup-badge-pill gold">${r.roi}</span></td>
+      <td style="color:#cbd5e1; font-size:0.8rem;">${r.note}</td>
+    </tr>
+  `).join('');
 }
 
 function calculateCombatMetricsHelper(coeff, dex, target, skill, isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey) {
@@ -5005,12 +5127,18 @@ function calculateCombatMetricsHelper(coeff, dex, target, skill, isCrit, isThird
 }
 
 function updateSpecupComparison() {
-  const curSel = document.getElementById('specup-cur-gear-select');
+  if (specupCompareMode === 'ranking') {
+    renderSlotEfficiencyRankingTable();
+    return;
+  }
+
+  const curSel = specupCompareMode === 'part' 
+    ? (document.getElementById('specup-part-cur-gear-select') || document.getElementById('specup-cur-gear-select'))
+    : document.getElementById('specup-cur-gear-select');
   const recSel = document.getElementById('specup-rec-gear-select');
-  if (!curSel || !recSel || typeof EQUIP_UPGRADE_RECOMMENDATIONS === 'undefined') return;
+  if (!curSel) return;
 
   const curId = curSel.value || 'use_active';
-  const recId = recSel.value || 'up_abyss_to_ecl3';
 
   // Determine current baseline Coeff & DEX
   let curCoeff = lastCalculatedCoeff || 45200;
@@ -5028,10 +5156,54 @@ function updateSpecupComparison() {
     }
   }
 
-  // Determine recommended upgrade Delta
-  const rec = EQUIP_UPGRADE_RECOMMENDATIONS.find(r => r.id === recId) || EQUIP_UPGRADE_RECOMMENDATIONS[1];
-  const recCoeff = curCoeff + (rec.coeffGain || 0);
-  const recDex = curDex + (rec.dexGain || 0);
+  let recCoeff = curCoeff;
+  let recDex = curDex;
+  let recTitle = "";
+  let recDesc = "";
+  let recBadge = "";
+  let recBadgeColor = "gold";
+  let recTip = "";
+  let recCostDesc = "";
+
+  if (specupCompareMode === 'part' && typeof SLOT_UPGRADE_DATA !== 'undefined') {
+    const slot = SLOT_UPGRADE_DATA[activeSlotKey] || SLOT_UPGRADE_DATA.wings;
+    const q = slot.qualities[activeQualityKey] || slot.qualities.standard;
+
+    const mainBonus = customStatBonus.main;
+    const dexBonus = customStatBonus.dex;
+
+    // Coeff formula scale: ~54 per main stat point for endgame
+    const coeffDelta = Math.round(mainBonus * 54);
+    recCoeff = curCoeff + coeffDelta;
+    recDex = curDex + dexBonus;
+
+    recTitle = `${slot.slotName} ➔ ${q.name}`;
+    recDesc = `선택 수치: 주스탯 <b>+${mainBonus}</b> · DEX <b>+${dexBonus}</b> (슬라이더 미세조정 반영)`;
+    recBadge = `${q.tag} (${q.efficiencyStar})`;
+    recBadgeColor = q.tagColor === 'budget' ? 'amber' : (q.tagColor === 'limit' ? 'rose' : 'sky');
+    recTip = `<b>[${q.tag} 특징]</b> ${q.desc}<br>💡 <b>실전 가성비 팁:</b> ${q.tip}`;
+    recCostDesc = `예상 시세: <b>${q.costEstimate}</b>`;
+  } else {
+    const recId = recSel ? recSel.value : 'up_abyss_to_ecl3';
+    const rec = (typeof EQUIP_UPGRADE_RECOMMENDATIONS !== 'undefined' ? EQUIP_UPGRADE_RECOMMENDATIONS.find(r => r.id === recId) : null) || {
+      name: "추천 세팅",
+      desc: "추천 세팅 설명",
+      coeffGain: 12500,
+      dexGain: 310,
+      badge: "추천",
+      badgeColor: "sky",
+      tip: "가성비 우수",
+      costDesc: "시드 파밍"
+    };
+    recCoeff = curCoeff + (rec.coeffGain || 0);
+    recDex = curDex + (rec.dexGain || 0);
+    recTitle = rec.name;
+    recDesc = rec.desc;
+    recBadge = rec.badge;
+    recBadgeColor = rec.badgeColor;
+    recTip = rec.tip;
+    recCostDesc = rec.costDesc;
+  }
 
   // Get active combat target and skill
   const monsterSel = document.getElementById('combat-monster-select');
@@ -5158,9 +5330,9 @@ function updateSpecupComparison() {
   if (recCardEl) {
     recCardEl.innerHTML = `
       <div class="specup-compare-card recommended">
-        <div class="specup-card-badge recommended">⭐ 추천 업그레이드 세팅</div>
-        <div class="specup-card-title">${rec.name}</div>
-        <div class="specup-card-desc">${rec.desc}</div>
+        <div class="specup-card-badge recommended">⭐ 추천 업그레이드 (${specupCompareMode === 'part' ? '부위별 세팅' : '로드맵'})</div>
+        <div class="specup-card-title">${recTitle}</div>
+        <div class="specup-card-desc">${recDesc}</div>
         
         <div class="specup-metric-grid">
           <div class="specup-metric-item">
@@ -5200,14 +5372,14 @@ function updateSpecupComparison() {
     adviceEl.innerHTML = `
       <div class="specup-advice-inner">
         <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem; flex-wrap:wrap;">
-          <span class="specup-badge-pill ${rec.badgeColor}">${rec.badge}</span>
-          <span style="font-weight:700; color:#f8fafc; font-size:0.95rem;">💡 선배 모험가의 실전 가성비 분석:</span>
+          <span class="specup-badge-pill ${recBadgeColor}">${recBadge}</span>
+          <span style="font-weight:700; color:#f8fafc; font-size:0.95rem;">💡 선배 모험가의 실전 가성비 & 떡락/한계작 분석:</span>
         </div>
         <div style="font-size:0.86rem; color:#cbd5e1; line-height:1.6; margin-bottom:0.5rem;">
-          ${rec.tip}
+          ${recTip}
         </div>
         <div style="font-size:0.81rem; color:#94a3b8; border-top:1px dashed #334155; padding-top:0.4rem;">
-          ⏱️ <b>소요 자금 및 파밍 경로:</b> ${rec.costDesc}
+          ⏱️ <b>소요 자금 및 파밍 효율:</b> ${recCostDesc}
         </div>
       </div>
     `;

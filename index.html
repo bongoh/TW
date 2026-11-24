@@ -6301,8 +6301,21 @@
               </p>
             </div>
 
-            <!-- Dual Selector Row -->
-            <div class="specup-selectors-row">
+            <!-- Mode Switcher Tabs -->
+            <div class="specup-mode-tabs">
+              <button type="button" class="specup-mode-tab active" data-mode="bundle" onclick="switchComparatorMode('bundle', this)">
+                📦 1. 세트 · 로드맵 묶음 추천
+              </button>
+              <button type="button" class="specup-mode-tab" data-mode="part" onclick="switchComparatorMode('part', this)">
+                🔍 2. 부위별 (떡락 · 국민 · 한계작) 정밀 비교
+              </button>
+              <button type="button" class="specup-mode-tab" data-mode="ranking" onclick="switchComparatorMode('ranking', this)">
+                📊 3. 부위별 가성비 효율 랭킹표
+              </button>
+            </div>
+
+            <!-- MODE 1: Bundle Controls -->
+            <div id="specup-bundle-controls" class="specup-selectors-row">
               <div class="specup-selector-field">
                 <label for="specup-cur-gear-select">📌 [A. 현재 내 장비 선택]</label>
                 <select id="specup-cur-gear-select" class="calc-input">
@@ -6317,6 +6330,111 @@
                 <select id="specup-rec-gear-select" class="calc-input">
                   <!-- Populated dynamically by EQUIP_UPGRADE_RECOMMENDATIONS -->
                 </select>
+              </div>
+            </div>
+
+            <!-- MODE 2: Part-by-Part Controls (떡락작/국민작/한계작 & 수치 미세조정) -->
+            <div id="specup-part-controls" class="specup-part-container" style="display:none;">
+              <div class="specup-part-header-row">
+                <div style="flex:1;">
+                  <label for="specup-part-cur-gear-select" style="font-size:0.8rem; font-weight:700; color:#94a3b8; display:block; margin-bottom:0.35rem;">
+                    📌 [A. 현재 내 장비 기준 선택]
+                  </label>
+                  <select id="specup-part-cur-gear-select" class="calc-input" style="width:100%; font-size:0.85rem; padding:0.45rem;">
+                    <!-- Populated dynamically by CURRENT_GEAR_PRESETS -->
+                  </select>
+                </div>
+              </div>
+
+              <!-- Slot Selector Chips -->
+              <div style="margin-top:0.85rem;">
+                <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1; margin-bottom:0.4rem;">
+                  🎛️ 스펙업할 장비 부위 선택:
+                </div>
+                <div class="specup-slot-bar">
+                  <button type="button" class="specup-slot-btn active" data-slot="wings" onclick="selectComparatorSlot('wings', this)">🪶 날개 (Wings)</button>
+                  <button type="button" class="specup-slot-btn" data-slot="weapon" onclick="selectComparatorSlot('weapon', this)">⚔️ 무기 (Weapon)</button>
+                  <button type="button" class="specup-slot-btn" data-slot="effect" onclick="selectComparatorSlot('effect', this)">✨ 효과 (Effect)</button>
+                  <button type="button" class="specup-slot-btn" data-slot="cuff" onclick="selectComparatorSlot('cuff', this)">💍 라이도 커프 (Cuff)</button>
+                  <button type="button" class="specup-slot-btn" data-slot="artifact" onclick="selectComparatorSlot('artifact', this)">🔮 아티팩트</button>
+                  <button type="button" class="specup-slot-btn" data-slot="wrist" onclick="selectComparatorSlot('wrist', this)">🛡️ 손목 / 서브</button>
+                  <button type="button" class="specup-slot-btn" data-slot="armor" onclick="selectComparatorSlot('armor', this)">🥋 갑옷 (Armor)</button>
+                  <button type="button" class="specup-slot-btn" data-slot="relic" onclick="selectComparatorSlot('relic', this)">☀️ 성소 렐릭</button>
+                </div>
+              </div>
+
+              <!-- Quality Selector (떡락작 vs 국민작 vs 한계작) -->
+              <div style="margin-top:0.85rem;">
+                <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1; margin-bottom:0.4rem;">
+                  💎 작 상태 (인챈트·강화 품질) 3단계 선택:
+                </div>
+                <div class="specup-quality-bar">
+                  <button type="button" class="specup-quality-btn budget" data-quality="budget" onclick="selectComparatorQuality('budget', this)">
+                    📉 떡락작 / 노작 (가성비 입문)
+                  </button>
+                  <button type="button" class="specup-quality-btn standard active" data-quality="standard" onclick="selectComparatorQuality('standard', this)">
+                    ⚖️ 국민작 (실전 표준작 / 8~10강)
+                  </button>
+                  <button type="button" class="specup-quality-btn limit" data-quality="limit" onclick="selectComparatorQuality('limit', this)">
+                    👑 종결 한계작 (한계 돌파 / 11강 / 극마방)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Live Stat Fine-Tuning Sliders -->
+              <div class="specup-tuning-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
+                  <span style="font-size:0.82rem; font-weight:700; color:#fde68a;">
+                    🎚️ 수치에 따른 실시간 대미지 변화 미세조정:
+                  </span>
+                  <span style="font-size:0.75rem; color:#94a3b8;">
+                    슬라이더나 숫자를 조절하면 실시간으로 타당 대미지와 적중률이 즉시 재계산됩니다.
+                  </span>
+                </div>
+                <div class="specup-sliders-grid">
+                  <div class="specup-slider-box">
+                    <div class="specup-slider-label">
+                      <span>주스탯 증가량</span>
+                      <input type="number" id="specup-stat-input-main" class="specup-tuning-num" value="130" min="0" max="400" oninput="onCustomStatSliderChange('main', this.value)">
+                    </div>
+                    <input type="range" id="specup-stat-slider-main" class="specup-range-slider" min="0" max="300" value="130" oninput="onCustomStatSliderChange('main', this.value)">
+                  </div>
+                  <div class="specup-slider-box">
+                    <div class="specup-slider-label">
+                      <span>DEX (명중) 증가량</span>
+                      <input type="number" id="specup-stat-input-dex" class="specup-tuning-num" value="50" min="0" max="200" oninput="onCustomStatSliderChange('dex', this.value)">
+                    </div>
+                    <input type="range" id="specup-stat-slider-dex" class="specup-range-slider" min="0" max="150" value="50" oninput="onCustomStatSliderChange('dex', this.value)">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MODE 3: Efficiency Ranking Panel -->
+            <div id="specup-ranking-panel" class="specup-ranking-panel" style="display:none;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                <h4 style="margin:0; font-size:1.05rem; color:#fde68a; font-weight:800;">
+                  📊 부위별 스펙업 가성비 효율 랭킹표 (ROI 비교)
+                </h4>
+                <span style="font-size:0.78rem; color:#94a3b8;">어느 부위부터 바꿔야 최소 시드로 최대 대미지를 뽑는가?</span>
+              </div>
+              <div class="table-container">
+                <table class="specup-ranking-table">
+                  <thead>
+                    <tr>
+                      <th style="width:7%;">순위</th>
+                      <th style="width:22%;">부위 및 추천 장비</th>
+                      <th style="width:14%;">대미지 상승률</th>
+                      <th style="width:11%;">DEX 상승</th>
+                      <th style="width:14%;">소요 비용</th>
+                      <th style="width:12%;">가성비(ROI)</th>
+                      <th style="width:20%;">선배 모험가의 실전 평가</th>
+                    </tr>
+                  </thead>
+                  <tbody id="specup-ranking-tbody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
               </div>
             </div>
 
