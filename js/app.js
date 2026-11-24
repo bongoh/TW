@@ -1378,6 +1378,15 @@ function applyProfile(id) {
   if (typeof updateSpecupComparison === 'function') {
     updateSpecupComparison();
   }
+  if (p.twEquipState && typeof asIsEquipState !== 'undefined') {
+    asIsEquipState = JSON.parse(JSON.stringify(p.twEquipState));
+    toBeEquipState = JSON.parse(JSON.stringify(asIsEquipState));
+    if (document.getElementById('tw-equip-window-asis')) {
+      renderInGameEquipWindow('asis', asIsEquipState, false);
+      renderInGameEquipWindow('tobe', toBeEquipState, true);
+      updateDualEquipWindowDiff();
+    }
+  }
 
   evaluateStats();
   updateWeeklyProgress();
@@ -5218,13 +5227,768 @@ function syncProfileToRoadmap() {
 // ==================== 26. EQUIPMENT UPGRADE COMPARATOR LOGIC ====================
 let lastCalculatedCoeff = 45200;
 let lastCalculatedDex = 1680;
-let specupCompareMode = 'bundle'; // 'bundle', 'part', 'ranking'
+let specupCompareMode = 'equip_window'; // 'equip_window', 'bundle', 'part', 'ranking'
 let activeSlotKey = 'wings';
 let activeQualityKey = 'standard';
 let customStatBonus = { main: 130, dex: 50 };
 let customEnhanceLevel = 10;
 let customAbilityKey = 'superior';
 let customRandomOpts = { dmg: 3, acc: 15, elem: 10 };
+
+// In-Game Equip Window State Definitions
+const TW_DEFAULT_EQUIP_STATE = {
+  head: { key: "head", label: "REAL HEAD", name: "어비스 헬름", tier: "abyss", enhance: 10, quality: "standard", ability: "superior", optDmg: 0, optAcc: 15, optElem: 10, dur: "(52/52)", isOn: true, stat: 80, dex: 20 },
+  showHead: { key: "showHead", label: "SHOW HEAD", name: "별빛 요정 리본", tier: "avatar", dur: "(100/100)", isOn: true },
+  armor: { key: "armor", label: "REAL ARMOR", name: "+10 예리한 아노마라드 로브", tier: "abyss", enhance: 10, quality: "standard", ability: "superior", optDmg: 0, optAcc: 15, optElem: 10, dur: "(84/84)", isOn: true, stat: 80, dex: 20 },
+  showArmor: { key: "showArmor", label: "SHOW ARMOR", name: "리체 수영복 (화이트)", tier: "avatar", dur: "(100/100)", isOn: true },
+  arms: { key: "arms", label: "REAL ARMS", name: "+10 어비스 아밍소드", tier: "abyss", enhance: 10, quality: "standard", ability: "superior", optDmg: 3, optAcc: 15, optElem: 10, dur: "(87/98)", isOn: true, stat: 240, dex: 40 },
+  showArms: { key: "showArms", label: "SHOW ARMS", name: "빈 슬롯", tier: "empty", dur: "", isOn: false },
+  subArms: { key: "subArms", label: "REAL SUB ARMS", name: "아퀼루스 펜듈럼", tier: "aquilus", enhance: 10, quality: "standard", ability: "superior", optDmg: 0, optAcc: 15, optElem: 10, dur: "(48/52)", isOn: true, stat: 50, dex: 20 },
+  showSubArms: { key: "showSubArms", label: "SHOW SUB ARMS", name: "라이도 심볼릭 커프 (140)", tier: "gold", dur: "(100/100)", isOn: true, stat: 140, dex: 35 },
+  face: { key: "face", label: "REAL FACE", name: "어비스 아뮬렛", tier: "abyss", enhance: 10, quality: "standard", ability: "superior", optDmg: 0, optAcc: 15, optElem: 10, dur: "(30/30)", isOn: true, stat: 80, dex: 20 },
+  showFace: { key: "showFace", label: "SHOW FACE", name: "테트라의 넥타이", tier: "avatar", dur: "(100/100)", isOn: true },
+  back: { key: "back", label: "REAL BACK", name: "어비스 윙", tier: "abyss", enhance: 10, quality: "standard", ability: "superior", optDmg: 0, optAcc: 15, optElem: 10, dur: "(48/48)", isOn: false, stat: 80, dex: 20 },
+  showBack: { key: "showBack", label: "SHOW BACK", name: "별빛 유리 날개", tier: "avatar", dur: "(100/100)", isOn: false },
+  hand: { key: "hand", label: "HAND", name: "어비스 건틀렛", tier: "abyss", enhance: 10, quality: "standard", ability: "superior", optDmg: 0, optAcc: 15, optElem: 10, dur: "(48/48)", isOn: true, stat: 80, dex: 20 },
+  foot: { key: "foot", label: "REAL FOOT", name: "어비스 부츠", tier: "abyss", enhance: 10, quality: "standard", ability: "superior", optDmg: 0, optAcc: 15, optElem: 10, dur: "(52/52)", isOn: true, stat: 80, dex: 20 },
+  showFoot: { key: "showFoot", label: "SHOW FOOT", name: "밀키웨이 발자국", tier: "avatar", dur: "(100/100)", isOn: true },
+  effect: { key: "effect", label: "REAL EFFECT", name: "[넥슨30주년] 빛나는 효과 (60마방)", tier: "gold", dur: "(55/55)", isOn: true, stat: 60, dex: 35 },
+  showEffect: { key: "showEffect", label: "SHOW EFFECT", name: "시오칸하임 마법진", tier: "avatar", dur: "(100/100)", isOn: true },
+  artifact: { key: "artifact", label: "ARTIFACT", name: "아크론의 참력 - 디바인", tier: "purple", dur: "(40/40)", isOn: true, stat: 75, dex: 25 },
+  relicRight: { key: "relicRight", label: "RELIC (RIGHT)", name: "신조의 펜던트 (+4)", tier: "relic", dur: "(100/100)", isOn: true, stat: 40, dex: 20 },
+  relicLeft: { key: "relicLeft", label: "RELIC (LEFT)", name: "태양의 브레이슬릿 (+4)", tier: "relic", dur: "(100/100)", isOn: true, stat: 40, dex: 20 },
+  vehicle: { key: "vehicle", label: "VEHICLE", name: "빈 슬롯 (탈것 미착용)", tier: "empty", dur: "", isOn: false }
+};
+
+let asIsEquipState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
+let toBeEquipState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
+let popoverSlotKey = 'arms';
+let popoverTier = 'abyss';
+let popoverEnhance = 10;
+let popoverQuality = 'standard';
+let popoverAbility = 'superior';
+let popoverRandomOpts = { dmg: 3, acc: 15, elem: 10 };
+
+function initInGameEquipWindows() {
+  const p = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
+  if (p && p.twEquipState) {
+    asIsEquipState = JSON.parse(JSON.stringify(p.twEquipState));
+  } else {
+    asIsEquipState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
+  }
+  toBeEquipState = JSON.parse(JSON.stringify(asIsEquipState));
+
+  renderInGameEquipWindow('asis', asIsEquipState, false);
+  renderInGameEquipWindow('tobe', toBeEquipState, true);
+  updateDualEquipWindowDiff();
+}
+
+function isSlotUpgraded(slotKey) {
+  const asIs = asIsEquipState[slotKey];
+  const toBe = toBeEquipState[slotKey];
+  if (!asIs || !toBe) return false;
+  return (
+    asIs.tier !== toBe.tier ||
+    asIs.enhance !== toBe.enhance ||
+    asIs.quality !== toBe.quality ||
+    asIs.ability !== toBe.ability ||
+    asIs.optDmg !== toBe.optDmg ||
+    asIs.optAcc !== toBe.optAcc ||
+    asIs.stat !== toBe.stat
+  );
+}
+
+function renderInGameEquipWindow(target, equipState, isEditable) {
+  const container = document.getElementById(`tw-equip-window-${target}`);
+  if (!container || typeof TW_INGAME_EQUIP_LAYOUT === 'undefined') return;
+
+  let rowsHtml = '';
+  TW_INGAME_EQUIP_LAYOUT.forEach(rowDef => {
+    if (rowDef.isSingle) {
+      const itemKey = rowDef.real.key;
+      const item = equipState[itemKey] || rowDef.real;
+      const isUpgraded = target === 'tobe' && isSlotUpgraded(itemKey);
+      const tierStyle = (typeof TW_TIER_STYLES !== 'undefined' && TW_TIER_STYLES[item.tier || rowDef.real.rarity]) || { class: 'tw-rarity-abyss' };
+      const dur = item.dur || rowDef.real.defaultDur || '';
+      const isTunable = isEditable && itemKey !== 'vehicle';
+
+      rowsHtml += `
+        <div class="tw-slot-row-group">
+          <div class="tw-slot-subrow ${isTunable ? 'tunable' : ''} ${isUpgraded ? 'slot-upgraded' : ''}" 
+               ${isTunable ? `onclick="onInGameSlotClick('${itemKey}', '${target}')"` : ''}
+               title="${isTunable ? '클릭하여 장비 변경 및 정밀 튜닝' : ''}">
+            <div class="tw-slot-icon-box">${rowDef.real.icon || '📦'}</div>
+            <div class="tw-slot-info-box">
+              <div class="tw-slot-line-top">
+                <span class="tw-slot-tag">${rowDef.real.label}</span>
+                ${isUpgraded ? '<span class="tw-up-badge">⭐ UP</span>' : ''}
+              </div>
+              <div class="tw-slot-line-bottom">
+                <span class="tw-slot-name ${tierStyle.class}">${item.name || rowDef.real.defaultName}</span>
+                ${dur ? `<span class="tw-slot-dur">${dur}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      const realKey = rowDef.real.key;
+      const showKey = rowDef.show.key;
+      const realItem = equipState[realKey] || rowDef.real;
+      const showItem = equipState[showKey] || rowDef.show;
+      const realUpgraded = target === 'tobe' && isSlotUpgraded(realKey);
+      const showUpgraded = target === 'tobe' && isSlotUpgraded(showKey);
+      const realTier = (typeof TW_TIER_STYLES !== 'undefined' && TW_TIER_STYLES[realItem.tier || rowDef.real.rarity]) || { class: 'tw-rarity-abyss' };
+      const showTier = (typeof TW_TIER_STYLES !== 'undefined' && TW_TIER_STYLES[showItem.tier || rowDef.show.rarity]) || { class: 'tw-rarity-avatar' };
+      const realDur = realItem.dur || rowDef.real.defaultDur || '';
+      const showDur = showItem.dur || rowDef.show.defaultDur || '';
+
+      const isRealTunable = isEditable;
+      const isShowTunable = isEditable && (showKey === 'showSubArms' || showKey === 'relicLeft');
+
+      const realOn = realItem.isOn !== undefined ? realItem.isOn : (rowDef.real.defaultOn !== undefined ? rowDef.real.defaultOn : null);
+      const showOn = showItem.isOn !== undefined ? showItem.isOn : (rowDef.show.defaultOn !== undefined ? rowDef.show.defaultOn : null);
+
+      rowsHtml += `
+        <div class="tw-slot-row-group">
+          <!-- Real Item Subrow -->
+          <div class="tw-slot-subrow ${isRealTunable ? 'tunable' : ''} ${realUpgraded ? 'slot-upgraded' : ''}"
+               ${isRealTunable ? `onclick="onInGameSlotClick('${realKey}', '${target}')"` : ''}
+               title="${isRealTunable ? '클릭하여 장비 변경 및 정밀 튜닝' : ''}">
+            <div class="tw-slot-icon-box">${rowDef.real.icon || '⚔️'}</div>
+            <div class="tw-slot-info-box">
+              <div class="tw-slot-line-top">
+                <span class="tw-slot-tag">${rowDef.real.label}</span>
+                <div style="display:flex; align-items:center; gap:4px;">
+                  ${realUpgraded ? '<span class="tw-up-badge">⭐ UP</span>' : ''}
+                  ${realOn !== null ? `<span class="tw-on-badge ${realOn ? 'on' : 'off'}" onclick="toggleSlotOnOff('${realKey}', '${target}', event)">${realOn ? 'ON' : 'OFF'}</span>` : ''}
+                </div>
+              </div>
+              <div class="tw-slot-line-bottom">
+                <span class="tw-slot-name ${realTier.class}">${realItem.name || rowDef.real.defaultName}</span>
+                ${realDur ? `<span class="tw-slot-dur">${realDur}</span>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Show Item Subrow -->
+          <div class="tw-slot-subrow ${isShowTunable ? 'tunable' : ''} ${showUpgraded ? 'slot-upgraded' : ''}"
+               ${isShowTunable ? `onclick="onInGameSlotClick('${showKey}', '${target}')"` : (isEditable ? `onclick="cycleAvatarSlot('${showKey}', '${target}')"` : '')}
+               title="${isShowTunable ? '클릭하여 라이도 커프 / 렐릭 튜닝' : (isEditable ? '클릭하여 아바타 외형 토글' : '')}">
+            <div class="tw-slot-icon-box">${rowDef.show.icon || '🎀'}</div>
+            <div class="tw-slot-info-box">
+              <div class="tw-slot-line-top">
+                <span class="tw-slot-tag show">${rowDef.show.label}</span>
+                <div style="display:flex; align-items:center; gap:4px;">
+                  ${showUpgraded ? '<span class="tw-up-badge">⭐ UP</span>' : ''}
+                  ${showOn !== null ? `<span class="tw-on-badge ${showOn ? 'on' : 'off'}" onclick="toggleSlotOnOff('${showKey}', '${target}', event)">${showOn ? 'ON' : 'OFF'}</span>` : ''}
+                </div>
+              </div>
+              <div class="tw-slot-line-bottom">
+                <span class="tw-slot-name ${showTier.class}">${showItem.name || rowDef.show.defaultName}</span>
+                ${showDur ? `<span class="tw-slot-dur">${showDur}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  });
+
+  container.innerHTML = `
+    <div class="tw-window-header">
+      <div class="tw-win-title">Equip</div>
+      <div class="tw-win-controls">
+        <span class="tw-win-btn plus" title="확장">+</span>
+        <span class="tw-win-btn up" title="최소화">▲</span>
+        <span class="tw-win-btn close" title="닫기">&times;</span>
+      </div>
+    </div>
+    <div class="tw-window-body">
+      ${rowsHtml}
+    </div>
+  `;
+}
+
+function onInGameSlotClick(slotKey, target) {
+  if (target === 'asis') {
+    return;
+  }
+  openSlotTunerModal(slotKey);
+}
+
+function openSlotTunerModal(slotKey) {
+  popoverSlotKey = slotKey;
+  const item = toBeEquipState[slotKey] || {};
+
+  popoverTier = item.tier || 'abyss';
+  popoverEnhance = item.enhance !== undefined ? item.enhance : 10;
+  popoverQuality = item.quality || 'standard';
+  popoverAbility = item.ability || 'superior';
+  popoverRandomOpts = {
+    dmg: item.optDmg !== undefined ? item.optDmg : 3,
+    acc: item.optAcc !== undefined ? item.optAcc : 15,
+    elem: item.optElem !== undefined ? item.optElem : 10
+  };
+
+  const titleEl = document.getElementById('popover-slot-title');
+  const iconEl = document.getElementById('popover-slot-icon');
+  const tierSelect = document.getElementById('popover-tier-select');
+
+  const slotLabels = {
+    arms: { name: "무기 (REAL ARMS)", icon: "⚔️" },
+    subArms: { name: "손목/서브 (REAL SUB ARMS)", icon: "🛡️" },
+    showSubArms: { name: "라이도 커프 (SHOW SUB ARMS)", icon: "💍" },
+    armor: { name: "갑옷 (REAL ARMOR)", icon: "🥋" },
+    head: { name: "투구 (REAL HEAD)", icon: "👑" },
+    face: { name: "얼굴/아뮬렛 (REAL FACE)", icon: "📿" },
+    back: { name: "날개 (REAL BACK)", icon: "🪶" },
+    hand: { name: "건틀렛 (HAND)", icon: "🧤" },
+    foot: { name: "부츠 (REAL FOOT)", icon: "👢" },
+    effect: { name: "효과 (REAL EFFECT)", icon: "🌟" },
+    artifact: { name: "아티팩트 (ARTIFACT)", icon: "🔮" },
+    relicRight: { name: "신조 렐릭 (RELIC RIGHT)", icon: "☀️" },
+    relicLeft: { name: "태양 렐릭 (RELIC LEFT)", icon: "💎" }
+  };
+  const slotInfo = slotLabels[slotKey] || { name: "장비 슬롯", icon: "⚔️" };
+  if (titleEl) titleEl.textContent = `${slotInfo.name} 정밀 튜닝`;
+  if (iconEl) iconEl.textContent = slotInfo.icon;
+
+  if (tierSelect) {
+    if (slotKey === 'showSubArms') {
+      tierSelect.innerHTML = `
+        <option value="cuff80">라이도 심볼릭 커프 (80작)</option>
+        <option value="cuff140" selected>라이도 심볼릭 커프 (140작 국템)</option>
+        <option value="cuff200">라이도 심볼릭 커프 (200작 종결)</option>
+      `;
+      if (item.stat === 80) tierSelect.value = 'cuff80';
+      else if (item.stat === 200) tierSelect.value = 'cuff200';
+      else tierSelect.value = 'cuff140';
+    } else if (slotKey === 'effect') {
+      tierSelect.innerHTML = `
+        <option value="eff30">30 마방 효과 (아일단 기본)</option>
+        <option value="eff60" selected>[넥슨30주년] 빛나는 효과 (60마방 국템)</option>
+        <option value="eff100">100 올스탯 효과 (종결)</option>
+      `;
+      if (item.stat === 30) tierSelect.value = 'eff30';
+      else if (item.stat === 100) tierSelect.value = 'eff100';
+      else tierSelect.value = 'eff60';
+    } else if (slotKey === 'artifact') {
+      tierSelect.innerHTML = `
+        <option value="art40">아크론 혈투 아티팩트</option>
+        <option value="art75" selected>아크론의 참력 - 디바인 (국템)</option>
+        <option value="art120">이클립스 아티팩트 (한계 종결)</option>
+      `;
+      if (item.stat === 40) tierSelect.value = 'art40';
+      else if (item.stat === 120) tierSelect.value = 'art120';
+      else tierSelect.value = 'art75';
+    } else if (slotKey === 'relicRight' || slotKey === 'relicLeft') {
+      tierSelect.innerHTML = `
+        <option value="relic4">+4 성소 렐릭</option>
+        <option value="relic8" selected>+8 성소 렐릭 (실전 국민)</option>
+        <option value="relic10">+10 성소 렐릭 (최상위 종결)</option>
+      `;
+      if (item.stat === 40) tierSelect.value = 'relic4';
+      else if (item.stat === 100) tierSelect.value = 'relic10';
+      else tierSelect.value = 'relic8';
+    } else {
+      tierSelect.innerHTML = `
+        <option value="abyss" ${popoverTier === 'abyss' ? 'selected' : ''}>어비스 장비 (실전 국민 세팅)</option>
+        <option value="eclipse" ${popoverTier === 'eclipse' ? 'selected' : ''}>이클립스 장비 (상위 종결 세팅)</option>
+        <option value="aquilus" ${popoverTier === 'aquilus' ? 'selected' : ''}>眞 아퀼루스 장비 (가성비 입문)</option>
+      `;
+    }
+  }
+
+  syncPopoverModalUI();
+  const modal = document.getElementById('tw-slot-popover-modal');
+  if (modal) modal.classList.add('active');
+}
+
+function closeSlotTunerModal() {
+  const modal = document.getElementById('tw-slot-popover-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+function syncPopoverModalUI() {
+  document.querySelectorAll('#popover-enhance-bar .specup-enhance-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.enhance) === popoverEnhance);
+  });
+  const enhSumEl = document.getElementById('popover-enhance-summary');
+  if (enhSumEl && typeof ENHANCE_STAT_TABLE !== 'undefined') {
+    const isWpn = popoverSlotKey === 'arms';
+    const t = isWpn ? ENHANCE_STAT_TABLE.weapon : ENHANCE_STAT_TABLE.armor;
+    const d = (t && t[popoverEnhance]) || { stat: 45, dex: 10 };
+    enhSumEl.textContent = `${popoverEnhance}강 (+${d.stat}, DEX +${d.dex}, 공식 계수 x32.5)`;
+  }
+  document.querySelectorAll('#popover-quality-bar .specup-quality-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.quality === popoverQuality);
+  });
+  document.querySelectorAll('#popover-ability-chips .specup-chip-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.val === popoverAbility);
+  });
+  document.querySelectorAll('#popover-opt-dmg-chips .specup-chip-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.val) === popoverRandomOpts.dmg);
+  });
+  document.querySelectorAll('#popover-opt-acc-chips .specup-chip-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.val) === popoverRandomOpts.acc);
+  });
+  document.querySelectorAll('#popover-opt-elem-chips .specup-chip-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.val) === popoverRandomOpts.elem);
+  });
+}
+
+function setPopoverEnhance(level, btn) {
+  popoverEnhance = Number(level);
+  syncPopoverModalUI();
+}
+
+function setPopoverQuality(quality, btn) {
+  popoverQuality = quality;
+  syncPopoverModalUI();
+}
+
+function setPopoverAbility(val, btn) {
+  popoverAbility = val;
+  syncPopoverModalUI();
+}
+
+function setPopoverRandomOpt(type, val, btn) {
+  popoverRandomOpts[type] = Number(val);
+  syncPopoverModalUI();
+}
+
+function onPopoverTierChange(tierVal) {
+  popoverTier = tierVal;
+}
+
+function applyQuickPresetToPopover(presetKey) {
+  document.querySelectorAll('.tw-quick-pill').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.tw-quick-pill[onclick*="${presetKey}"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  if (presetKey === 'budget') {
+    popoverEnhance = 5;
+    popoverQuality = 'budget';
+    popoverAbility = 'none';
+    popoverRandomOpts = { dmg: 0, acc: 0, elem: 0 };
+    if (popoverSlotKey !== 'showSubArms' && popoverSlotKey !== 'effect' && popoverSlotKey !== 'artifact' && !popoverSlotKey.startsWith('relic')) {
+      popoverTier = 'aquilus';
+      const tierSel = document.getElementById('popover-tier-select');
+      if (tierSel) tierSel.value = 'aquilus';
+    }
+  } else if (presetKey === 'standard') {
+    popoverEnhance = 10;
+    popoverQuality = 'standard';
+    popoverAbility = 'superior';
+    popoverRandomOpts = { dmg: 3, acc: 15, elem: 10 };
+    if (popoverSlotKey !== 'showSubArms' && popoverSlotKey !== 'effect' && popoverSlotKey !== 'artifact' && !popoverSlotKey.startsWith('relic')) {
+      popoverTier = 'abyss';
+      const tierSel = document.getElementById('popover-tier-select');
+      if (tierSel) tierSel.value = 'abyss';
+    }
+  } else if (presetKey === 'limit') {
+    popoverEnhance = 11;
+    popoverQuality = 'limit';
+    popoverAbility = 'superior';
+    popoverRandomOpts = { dmg: 5, acc: 25, elem: 15 };
+    if (popoverSlotKey !== 'showSubArms' && popoverSlotKey !== 'effect' && popoverSlotKey !== 'artifact' && !popoverSlotKey.startsWith('relic')) {
+      popoverTier = 'eclipse';
+      const tierSel = document.getElementById('popover-tier-select');
+      if (tierSel) tierSel.value = 'eclipse';
+    }
+  }
+  syncPopoverModalUI();
+}
+
+function saveSlotTunerModal() {
+  const cur = toBeEquipState[popoverSlotKey] || {};
+  cur.tier = popoverTier;
+  cur.enhance = popoverEnhance;
+  cur.quality = popoverQuality;
+  cur.ability = popoverAbility;
+  cur.optDmg = popoverRandomOpts.dmg;
+  cur.optAcc = popoverRandomOpts.acc;
+  cur.optElem = popoverRandomOpts.elem;
+
+  if (popoverSlotKey === 'showSubArms') {
+    if (popoverTier === 'cuff80') { cur.name = "라이도 심볼릭 커프 (80)"; cur.stat = 80; cur.dex = 20; cur.tier = "gold"; }
+    else if (popoverTier === 'cuff200') { cur.name = "라이도 심볼릭 커프 (200)"; cur.stat = 200; cur.dex = 50; cur.tier = "eclipse"; }
+    else { cur.name = "라이도 심볼릭 커프 (140)"; cur.stat = 140; cur.dex = 35; cur.tier = "gold"; }
+  } else if (popoverSlotKey === 'effect') {
+    if (popoverTier === 'eff30') { cur.name = "30 마방 효과"; cur.stat = 30; cur.dex = 15; cur.tier = "gold"; }
+    else if (popoverTier === 'eff100') { cur.name = "[넥슨30주년] 찬란한 효과 (100마방)"; cur.stat = 100; cur.dex = 50; cur.tier = "eclipse"; }
+    else { cur.name = "[넥슨30주년] 빛나는 효과 (60마방)"; cur.stat = 60; cur.dex = 35; cur.tier = "gold"; }
+  } else if (popoverSlotKey === 'artifact') {
+    if (popoverTier === 'art40') { cur.name = "아크론 혈투 아티팩트"; cur.stat = 40; cur.dex = 15; cur.tier = "purple"; }
+    else if (popoverTier === 'art120') { cur.name = "이클립스 아티팩트"; cur.stat = 120; cur.dex = 40; cur.tier = "eclipse"; }
+    else { cur.name = "아크론의 참력 - 디바인"; cur.stat = 75; cur.dex = 25; cur.tier = "purple"; }
+  } else if (popoverSlotKey === 'relicRight') {
+    if (popoverTier === 'relic4') { cur.name = "신조의 펜던트 (+4)"; cur.stat = 40; cur.dex = 20; cur.tier = "relic"; }
+    else if (popoverTier === 'relic10') { cur.name = "신조의 펜던트 (+10)"; cur.stat = 100; cur.dex = 40; cur.tier = "relic"; }
+    else { cur.name = "신조의 펜던트 (+8)"; cur.stat = 80; cur.dex = 30; cur.tier = "relic"; }
+  } else if (popoverSlotKey === 'relicLeft') {
+    if (popoverTier === 'relic4') { cur.name = "태양의 브레이슬릿 (+4)"; cur.stat = 40; cur.dex = 20; cur.tier = "relic"; }
+    else if (popoverTier === 'relic10') { cur.name = "태양의 브레이슬릿 (+10)"; cur.stat = 100; cur.dex = 40; cur.tier = "relic"; }
+    else { cur.name = "태양의 브레이슬릿 (+8)"; cur.stat = 80; cur.dex = 30; cur.tier = "relic"; }
+  } else {
+    const tierName = popoverTier === 'eclipse' ? '이클립스' : (popoverTier === 'aquilus' ? '眞 아퀼루스' : '어비스');
+    const slotNames = {
+      arms: "무기",
+      subArms: "리스트 / 펜듈럼",
+      armor: "메일 / 로브",
+      head: "헬름",
+      face: "아뮬렛",
+      back: "윙",
+      hand: "건틀렛",
+      foot: "부츠"
+    };
+    const sName = slotNames[popoverSlotKey] || "장비";
+    cur.name = `+${popoverEnhance} ${tierName} ${sName}`;
+    const baseDurs = { aquilus: "(48/52)", abyss: "(52/52)", eclipse: "(65/65)" };
+    cur.dur = baseDurs[popoverTier] || "(52/52)";
+  }
+
+  toBeEquipState[popoverSlotKey] = cur;
+  closeSlotTunerModal();
+  renderInGameEquipWindow('tobe', toBeEquipState, true);
+  updateDualEquipWindowDiff();
+}
+
+function toggleSlotOnOff(slotKey, target, event) {
+  if (event) event.stopPropagation();
+  const state = target === 'asis' ? asIsEquipState : toBeEquipState;
+  if (!state[slotKey]) return;
+  state[slotKey].isOn = !state[slotKey].isOn;
+  renderInGameEquipWindow(target, state, target === 'tobe');
+}
+
+function cycleAvatarSlot(slotKey, target) {
+  if (target !== 'tobe') return;
+  toggleSlotOnOff(slotKey, target, null);
+}
+
+function calculateEquipStateMetrics(state) {
+  let regularMainSum = 0;
+  let enhanceMainSum = 0;
+  let regularDexSum = 0;
+  let enhanceDexSum = 0;
+  let extraDmgPct = 0;
+
+  let baseCharCoeff = 3800;
+  let baseCharDex = 920;
+
+  const realSlots = ['arms', 'subArms', 'armor', 'head', 'face', 'back', 'hand', 'foot'];
+  realSlots.forEach(sKey => {
+    const it = state[sKey];
+    if (!it) return;
+    const isWpn = sKey === 'arms';
+    const tier = it.tier || 'abyss';
+    const enh = it.enhance !== undefined ? it.enhance : 10;
+    const qKey = it.quality || 'standard';
+    const abKey = it.ability || 'superior';
+
+    let tierMain = 80;
+    let tierDex = 20;
+    if (isWpn) {
+      tierMain = tier === 'eclipse' ? 320 : (tier === 'aquilus' ? 180 : 240);
+      tierDex = tier === 'eclipse' ? 55 : (tier === 'aquilus' ? 30 : 40);
+    } else {
+      tierMain = tier === 'eclipse' ? 130 : (tier === 'aquilus' ? 50 : 80);
+      tierDex = tier === 'eclipse' ? 30 : (tier === 'aquilus' ? 15 : 20);
+    }
+
+    const qData = (typeof ENCHANT_TIER_TABLE !== 'undefined' && ENCHANT_TIER_TABLE[qKey]) || { mainBonus: 15, dexBonus: 10 };
+    const qMain = qData.mainBonus || 15;
+    const qDex = qData.dexBonus || 10;
+
+    const abData = (typeof EQUIP_OPTIONS_DB !== 'undefined' && EQUIP_OPTIONS_DB.abilities[abKey]) || { stat: 25, dex: 12, dmg: 3 };
+    const abMain = abData.stat || 0;
+    const abDex = abData.dex || 0;
+    extraDmgPct += (abData.dmg || 0);
+
+    const optDmg = Number(it.optDmg) || 0;
+    const optAcc = Number(it.optAcc) || 0;
+    extraDmgPct += optDmg;
+
+    const enhTable = isWpn 
+      ? (typeof ENHANCE_STAT_TABLE !== 'undefined' ? ENHANCE_STAT_TABLE.weapon : null)
+      : (typeof ENHANCE_STAT_TABLE !== 'undefined' ? ENHANCE_STAT_TABLE.armor : null);
+    const enhData = (enhTable && enhTable[enh]) || { stat: isWpn ? 64 : 45, dex: isWpn ? 18 : 10 };
+
+    regularMainSum += (tierMain + qMain + abMain);
+    regularDexSum += (tierDex + qDex + abDex + optAcc);
+    enhanceMainSum += enhData.stat;
+    enhanceDexSum += enhData.dex;
+  });
+
+  const cuff = state['showSubArms'];
+  if (cuff) {
+    regularMainSum += (cuff.stat || 140);
+    regularDexSum += (cuff.dex || 35);
+  }
+
+  const eff = state['effect'];
+  if (eff) {
+    regularMainSum += (eff.stat || 60);
+    regularDexSum += (eff.dex || 35);
+  }
+
+  const art = state['artifact'];
+  if (art) {
+    regularMainSum += (art.stat || 75);
+    regularDexSum += (art.dex || 25);
+  }
+
+  ['relicRight', 'relicLeft'].forEach(rKey => {
+    const r = state[rKey];
+    if (r) {
+      regularMainSum += (r.stat || 40);
+      regularDexSum += (r.dex || 20);
+    }
+  });
+
+  // TalesWeaver Official Formula: Regular stats x20.5 + 0~11 Enhancement stats x32.5
+  const regularCoeff = Math.round(regularMainSum * 20.5);
+  const enhanceCoeff = Math.round(enhanceMainSum * 32.5);
+  const totalCoeff = baseCharCoeff + regularCoeff + enhanceCoeff;
+  const totalDex = baseCharDex + regularDexSum + enhanceDexSum;
+
+  return {
+    regularMainSum,
+    enhanceMainSum,
+    regularCoeff,
+    enhanceCoeff,
+    totalCoeff,
+    totalDex,
+    extraDmgPct
+  };
+}
+
+function updateDualEquipWindowDiff() {
+  const asIsMetrics = calculateEquipStateMetrics(asIsEquipState);
+  const toBeMetrics = calculateEquipStateMetrics(toBeEquipState);
+
+  const monsterSel = document.getElementById('combat-monster-select');
+  const skillSel = document.getElementById('combat-skill-select');
+  const monsterId = monsterSel ? monsterSel.value : 'mob_apple';
+  const target = (typeof TARGET_MONSTERS_DATA !== 'undefined' ? TARGET_MONSTERS_DATA.find(m => m.id === monsterId) : null) || {
+    name: "사과의 섬 숲 경비 몬스터",
+    dungeon: "사과의 섬 (Lv.300)",
+    hp: 45000000,
+    pdef: 2400,
+    mdef: 2400,
+    eva: 1350,
+    is1ShotTarget: true
+  };
+
+  const prof = typeof getActiveCoeffProfile === 'function' ? getActiveCoeffProfile() : null;
+  const typeKey = (prof && prof.type) || 'stab';
+  const skills = (typeof CHARACTER_SKILLS_DATA !== 'undefined' && CHARACTER_SKILLS_DATA[typeKey]) ? CHARACTER_SKILLS_DATA[typeKey] : [];
+  const skillId = skillSel ? skillSel.value : null;
+  const skill = skills.find(s => s.id === skillId) || skills[0] || { name: "주력 스킬", hits: 10, mult: 2000 };
+
+  const isCrit = document.getElementById('combat-crit-chk') ? document.getElementById('combat-crit-chk').checked : true;
+  const isThirdSien = document.getElementById('combat-third-sien-chk') ? document.getElementById('combat-third-sien-chk').checked : false;
+  const isPetConc = document.getElementById('combat-pet-conc-chk') ? document.getElementById('combat-pet-conc-chk').checked : true;
+  const dopingBuffPct = (prof && prof.applyDoping) ? 30 : 0;
+
+  const asIsCombat = calculateCombatMetricsHelper(
+    asIsMetrics.totalCoeff, asIsMetrics.totalDex, target, skill,
+    isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey, asIsMetrics.extraDmgPct
+  );
+  const toBeCombat = calculateCombatMetricsHelper(
+    toBeMetrics.totalCoeff, toBeMetrics.totalDex, target, skill,
+    isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey, toBeMetrics.extraDmgPct
+  );
+
+  const hitDmgDiff = toBeCombat.hitDmg - asIsCombat.hitDmg;
+  const hitDmgPct = asIsCombat.hitDmg > 0 ? ((hitDmgDiff / asIsCombat.hitDmg) * 100).toFixed(1) : '0';
+  const totalDmgDiff = toBeCombat.totalDmg - asIsCombat.totalDmg;
+  const hitRateDiff = toBeCombat.hitRate - asIsCombat.hitRate;
+  const coeffDiff = toBeMetrics.totalCoeff - asIsMetrics.totalCoeff;
+  const dexDiff = toBeMetrics.totalDex - asIsMetrics.totalDex;
+
+  const changedSlots = [];
+  const slotNameMap = {
+    arms: "무기", subArms: "서브", showSubArms: "라이도 커프",
+    armor: "갑옷", head: "투구", face: "아뮬렛",
+    back: "날개", hand: "건틀렛", foot: "부츠",
+    effect: "효과", artifact: "아티팩트", relicRight: "신조 렐릭", relicLeft: "태양 렐릭"
+  };
+  Object.keys(slotNameMap).forEach(k => {
+    if (isSlotUpgraded(k)) {
+      const tb = toBeEquipState[k];
+      changedSlots.push(`<b>${slotNameMap[k]}</b>: ${tb.name || tb.tier}`);
+    }
+  });
+
+  let killText = "";
+  if (!asIsCombat.is1Shot && toBeCombat.is1Shot) {
+    killText = `<span class="specup-diff-pill success">🎉 1방 컷 달성 (원샷 원킬)!</span>`;
+  } else if (asIsCombat.shotsNeeded > toBeCombat.shotsNeeded) {
+    killText = `<span class="specup-diff-pill success">스킬 시전 ${asIsCombat.shotsNeeded}회 ➔ ${toBeCombat.shotsNeeded}회 단축</span>`;
+  } else {
+    killText = `<span class="specup-diff-pill info">오버킬 극대화</span>`;
+  }
+
+  const centerDiffEl = document.getElementById('tw-center-diff-content');
+  if (centerDiffEl) {
+    centerDiffEl.innerHTML = `
+      <div class="specup-highlight-banner" style="margin:0;">
+        <div style="font-size:1.05rem; font-weight:800; color:#fde68a; margin-bottom:0.35rem; display:flex; justify-content:space-between; align-items:center;">
+          <span>⚡ [실시간 전투력 & 스펙업 변화]</span>
+          <span style="font-size:0.75rem; color:#94a3b8;">${target.name} 대상</span>
+        </div>
+
+        <div class="specup-diff-main-row" style="margin-bottom:0.75rem;">
+          <div class="specup-diff-kpi">
+            <span class="lbl">타당 대미지 변화</span>
+            <span class="val" style="color:#6ee7b7;">
+              ${hitDmgDiff >= 0 ? '+' : ''}${hitDmgDiff.toLocaleString()}
+              <small style="font-size:0.74rem; color:#fde68a;">(${hitDmgDiff >= 0 ? '+' : ''}${hitDmgPct}%)</small>
+            </span>
+          </div>
+          <div class="specup-diff-kpi">
+            <span class="lbl">스킬 1회 총 대미지</span>
+            <span class="val" style="color:#f472b6;">
+              ${totalDmgDiff >= 0 ? '+' : ''}${totalDmgDiff.toLocaleString()}
+            </span>
+          </div>
+          <div class="specup-diff-kpi">
+            <span class="lbl">보스 명중 적중률</span>
+            <span class="val" style="color:${hitRateDiff > 0 ? '#34d399' : '#38bdf8'};">
+              ${hitRateDiff > 0 ? `+${hitRateDiff}%p 올힛 상승` : `${toBeCombat.hitRate}% 유지`}
+            </span>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.75rem;">
+          <span class="specup-diff-pill">계수 ${coeffDiff >= 0 ? '+' : ''}${coeffDiff.toLocaleString()}</span>
+          <span class="specup-diff-pill">DEX ${dexDiff >= 0 ? '+' : ''}${dexDiff}</span>
+          ${killText}
+        </div>
+
+        <!-- Comparative Quick Table -->
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:6px; padding:0.6rem 0.8rem; font-size:0.78rem;">
+          <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding-bottom:0.3rem; margin-bottom:0.3rem; font-weight:800;">
+            <span style="color:#94a3b8;">지표 항목</span>
+            <span style="color:#38bdf8;">[As-Is] 현재</span>
+            <span style="color:#fde68a;">➔ [To-Be] 변경 후</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:2px 0;">
+            <span style="color:#cbd5e1;">종합 계수:</span>
+            <span style="color:#94a3b8;">${asIsMetrics.totalCoeff.toLocaleString()}</span>
+            <span style="color:#fde68a; font-weight:700;">${toBeMetrics.totalCoeff.toLocaleString()}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:2px 0;">
+            <span style="color:#cbd5e1;">최종 DEX (명중):</span>
+            <span style="color:#94a3b8;">${asIsMetrics.totalDex}</span>
+            <span style="color:#facc15; font-weight:700;">${toBeMetrics.totalDex}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:2px 0;">
+            <span style="color:#cbd5e1;">타당 실대미지:</span>
+            <span style="color:#94a3b8;">${asIsCombat.hitDmg.toLocaleString()}</span>
+            <span style="color:#34d399; font-weight:800;">${toBeCombat.hitDmg.toLocaleString()}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:2px 0;">
+            <span style="color:#cbd5e1;">보스 처치 소요:</span>
+            <span style="color:${asIsCombat.is1Shot ? '#34d399' : '#f87171'};">${asIsCombat.is1Shot ? '1방 컷' : `스킬 ${asIsCombat.shotsNeeded}회`}</span>
+            <span style="color:${toBeCombat.is1Shot ? '#34d399' : '#fde68a'}; font-weight:800;">${toBeCombat.is1Shot ? '🎉 1방 컷 달성!' : `스킬 ${toBeCombat.shotsNeeded}회`}</span>
+          </div>
+        </div>
+
+        <!-- Changed Slots Pill List -->
+        <div style="margin-top:0.6rem; padding-top:0.5rem; border-top:1px dashed #334155; font-size:0.75rem;">
+          <div style="color:#94a3b8; font-weight:700; margin-bottom:0.3rem;">
+            🎯 교체 튜닝된 장비 (${changedSlots.length}부위):
+          </div>
+          ${changedSlots.length > 0 
+            ? `<div style="display:flex; gap:0.35rem; flex-wrap:wrap;">${changedSlots.map(s => `<span class="specup-badge-pill gold" style="font-size:0.72rem;">${s}</span>`).join('')}</div>`
+            : `<span style="color:#64748b; font-style:italic;">오른쪽 [To-Be] 장비창의 슬롯을 클릭하여 다음 장비(예: 11강 이클립스)로 바꿔보세요!</span>`
+          }
+        </div>
+      </div>
+    `;
+  }
+
+  const adviceEl = document.getElementById('tw-senior-advice-box');
+  if (adviceEl) {
+    let adviceTitle = "선배 모험가의 실전 가성비 조언";
+    let adviceContent = "";
+
+    if (isSlotUpgraded('arms')) {
+      adviceContent = "무기 강화는 공식 계수 <b>x32.5</b>가 적용되어 10강(+64, 계수 +2,080) 및 11강(+102, 계수 +3,315) 업그레이드 시 타당 대미지 상한선을 확실하게 뚫어냅니다.";
+    } else if (isSlotUpgraded('back') || isSlotUpgraded('artifact')) {
+      adviceContent = "날개와 아티팩트는 이클립스 3신기의 핵심으로, 기본 마방과 계수 상승폭이 매우 커 가장 1순위로 추천되는 고효율 부위입니다.";
+    } else if (isSlotUpgraded('showSubArms')) {
+      adviceContent = "라이도 심볼릭 커프(발굴지 140작)는 시드 소모 없이 1~2주 파밍만으로 대미지와 명중을 대폭 챙길 수 있는 필수 가성비 부위입니다.";
+    } else {
+      adviceContent = "현재 세팅은 테일즈위버 실전 표준 국템(어비스 10강 국민작) 기준이며, 어비스 코어마스터 파티 진입 및 주간 7억 시드 파밍이 안정적으로 가능합니다.";
+    }
+
+    adviceEl.innerHTML = `
+      <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.3rem;">
+        <span style="font-size:1rem;">💡</span>
+        <span style="font-weight:800; color:#fde68a; font-size:0.86rem;">${adviceTitle}</span>
+      </div>
+      <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.5;">
+        ${adviceContent}
+      </div>
+    `;
+  }
+}
+
+function resetToBeToAsIs() {
+  toBeEquipState = JSON.parse(JSON.stringify(asIsEquipState));
+  renderInGameEquipWindow('tobe', toBeEquipState, true);
+  updateDualEquipWindowDiff();
+  alert("To-Be 템창이 현재 [As-Is] 장비 상태와 동일하게 복구되었습니다.");
+}
+
+function applyKoreanStandardToToBe() {
+  const realSlots = ['arms', 'subArms', 'armor', 'head', 'face', 'back', 'hand', 'foot'];
+  realSlots.forEach(k => {
+    if (toBeEquipState[k]) {
+      toBeEquipState[k].tier = 'abyss';
+      toBeEquipState[k].enhance = 10;
+      toBeEquipState[k].quality = 'standard';
+      toBeEquipState[k].ability = 'superior';
+      toBeEquipState[k].optDmg = k === 'arms' ? 3 : 0;
+      toBeEquipState[k].optAcc = 15;
+      toBeEquipState[k].optElem = 10;
+      const sMap = { arms: "무기", subArms: "리스트", armor: "로브", head: "헬름", face: "아뮬렛", back: "윙", hand: "건틀렛", foot: "부츠" };
+      toBeEquipState[k].name = `+10 어비스 ${sMap[k] || '장비'}`;
+    }
+  });
+  if (toBeEquipState['showSubArms']) {
+    toBeEquipState['showSubArms'].stat = 140;
+    toBeEquipState['showSubArms'].dex = 35;
+    toBeEquipState['showSubArms'].name = "라이도 심볼릭 커프 (140)";
+  }
+  if (toBeEquipState['effect']) {
+    toBeEquipState['effect'].stat = 60;
+    toBeEquipState['effect'].dex = 35;
+    toBeEquipState['effect'].name = "[넥슨30주년] 빛나는 효과 (60마방)";
+  }
+  renderInGameEquipWindow('tobe', toBeEquipState, true);
+  updateDualEquipWindowDiff();
+  alert("To-Be 템창에 10강 국민작 실전 국템 표준 세팅이 일괄 적용되었습니다!");
+}
+
+function saveToBeToProfile() {
+  const p = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
+  if (!p) return;
+  p.twEquipState = JSON.parse(JSON.stringify(toBeEquipState));
+  asIsEquipState = JSON.parse(JSON.stringify(toBeEquipState));
+  try {
+    localStorage.setItem('tw_companion_profiles_v3', JSON.stringify(profiles));
+    renderInGameEquipWindow('asis', asIsEquipState, false);
+    renderInGameEquipWindow('tobe', toBeEquipState, true);
+    updateDualEquipWindowDiff();
+    alert(`'${p.name}' 캐릭터 프로필에 To-Be 템창 세팅이 영구 저장되었으며, 현재 [As-Is] 장비로 확정되었습니다!`);
+  } catch (e) {}
+}
 
 function initSpecupComparator() {
   const curSel = document.getElementById('specup-cur-gear-select');
@@ -5259,13 +6023,20 @@ function initSpecupComparator() {
   ];
   combatInputs.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('change', updateSpecupComparison);
+    if (el) el.addEventListener('change', () => {
+      if (specupCompareMode === 'equip_window') {
+        updateDualEquipWindowDiff();
+      } else {
+        updateSpecupComparison();
+      }
+    });
   });
 
   // Init custom sliders and inputs
   calculateSlotStatBreakdown();
   renderSlotEfficiencyRankingTable();
-  updateSpecupComparison();
+  initInGameEquipWindows();
+  switchComparatorMode('equip_window', document.querySelector('.specup-mode-tab[data-mode="equip_window"]'));
 }
 
 function switchComparatorMode(mode, btnEl) {
@@ -5273,11 +6044,27 @@ function switchComparatorMode(mode, btnEl) {
   document.querySelectorAll('.specup-mode-tab').forEach(b => b.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
 
+  const dualGrid = document.getElementById('specup-tw-dual-grid');
   const bundleCtrl = document.getElementById('specup-bundle-controls');
   const partCtrl = document.getElementById('specup-part-controls');
   const rankingPanel = document.getElementById('specup-ranking-panel');
   const compareGrid = document.querySelector('.specup-compare-grid');
   const adviceCard = document.getElementById('specup-advice-card');
+
+  if (mode === 'equip_window') {
+    if (dualGrid) dualGrid.style.display = 'grid';
+    if (bundleCtrl) bundleCtrl.style.display = 'none';
+    if (partCtrl) partCtrl.style.display = 'none';
+    if (rankingPanel) rankingPanel.style.display = 'none';
+    if (compareGrid) compareGrid.style.display = 'none';
+    if (adviceCard) adviceCard.style.display = 'none';
+    renderInGameEquipWindow('asis', asIsEquipState, false);
+    renderInGameEquipWindow('tobe', toBeEquipState, true);
+    updateDualEquipWindowDiff();
+    return;
+  }
+
+  if (dualGrid) dualGrid.style.display = 'none';
 
   if (mode === 'bundle') {
     if (bundleCtrl) bundleCtrl.style.display = 'flex';

@@ -6374,3 +6374,403 @@
 .btn-korean-std:hover {
   background: rgba(245, 158, 11, 0.35);
 }
+
+/* ==================== In-Game TalesWeaver Dual Equip Window UI ==================== */
+.tw-dual-grid {
+  display: grid;
+  grid-template-columns: 295px minmax(320px, 1fr) 295px;
+  gap: 1.1rem;
+  align-items: start;
+  margin-top: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .tw-dual-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tw-center-col {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .tw-dual-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tw-dual-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tw-col-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+}
+
+.badge-asis {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+.badge-tobe {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #fde68a;
+}
+
+.tw-col-subtext {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+/* TalesWeaver In-Game Equip Window Frame */
+.tw-equip-window {
+  background: #1b2039;
+  border: 2px solid #4a568c;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  user-select: none;
+}
+
+.tw-window-header {
+  background: linear-gradient(180deg, #5c69aa 0%, #3d4678 100%);
+  border-bottom: 2px solid #282f54;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+}
+
+.tw-win-title {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.88rem;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.tw-win-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tw-win-btn {
+  width: 17px;
+  height: 17px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #7c8bd9 0%, #434e87 100%);
+  border: 1px solid #9aa7e8;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.tw-win-btn.close {
+  background: linear-gradient(180deg, #a85870 0%, #6d283c 100%);
+  border-color: #d88ca0;
+}
+
+.tw-window-body {
+  padding: 3px;
+  background: #131627;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Slot Row Group */
+.tw-slot-row-group {
+  display: flex;
+  flex-direction: column;
+  background: #232948;
+  border: 1px solid #363e66;
+  border-radius: 3px;
+  overflow: hidden;
+  transition: all 0.15s ease;
+}
+
+.tw-slot-subrow {
+  display: flex;
+  align-items: center;
+  padding: 3px 6px 3px 3px;
+  min-height: 38px;
+  gap: 5px;
+  border-bottom: 1px solid rgba(54, 62, 102, 0.6);
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.tw-slot-subrow:last-child {
+  border-bottom: none;
+}
+
+.tw-equip-window.interactive .tw-slot-subrow.tunable:hover {
+  background: #2e3763;
+  cursor: pointer;
+}
+
+.tw-slot-icon-box {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  background: linear-gradient(135deg, #181d33 0%, #0e1120 100%);
+  border: 1px solid #4a568c;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.tw-slot-info-box {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tw-slot-line-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+
+.tw-slot-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #93c5fd;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+.tw-slot-tag.show {
+  color: #cbd5e1;
+}
+
+.tw-on-badge {
+  font-size: 0.58rem;
+  font-weight: 900;
+  padding: 0 4px;
+  border-radius: 2px;
+  line-height: 14px;
+  height: 14px;
+  display: inline-block;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+}
+
+.tw-on-badge.on {
+  background: #2563eb;
+  color: #ffffff;
+  border: 1px solid #60a5fa;
+  box-shadow: 0 0 4px rgba(37, 99, 235, 0.8);
+}
+
+.tw-on-badge.off {
+  background: #334155;
+  color: #94a3b8;
+  border: 1px solid #475569;
+}
+
+.tw-slot-line-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.tw-slot-name {
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.tw-slot-dur {
+  font-size: 0.67rem;
+  color: #94a3b8;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* TalesWeaver Rarity Colors */
+.tw-rarity-abyss { color: #c084fc; text-shadow: 0 0 4px rgba(192, 132, 252, 0.4); }
+.tw-rarity-eclipse { color: #fb923c; text-shadow: 0 0 4px rgba(251, 146, 60, 0.4); }
+.tw-rarity-aquilus { color: #38bdf8; text-shadow: 0 0 4px rgba(56, 189, 248, 0.4); }
+.tw-rarity-gold { color: #fde68a; text-shadow: 0 0 4px rgba(253, 230, 138, 0.4); }
+.tw-rarity-purple { color: #e879f9; text-shadow: 0 0 4px rgba(232, 121, 249, 0.4); }
+.tw-rarity-avatar { color: #f8fafc; }
+.tw-rarity-relic { color: #93c5fd; text-shadow: 0 0 4px rgba(147, 197, 253, 0.4); }
+.tw-rarity-empty { color: #64748b; font-style: italic; }
+
+/* Upgraded Slot Highlight in To-Be Window */
+.tw-slot-subrow.slot-upgraded {
+  background: linear-gradient(90deg, rgba(234, 179, 8, 0.18) 0%, rgba(35, 41, 72, 0.95) 100%) !important;
+  box-shadow: inset 0 0 6px rgba(250, 204, 21, 0.4);
+}
+
+.tw-slot-subrow.slot-upgraded .tw-slot-icon-box {
+  border-color: #facc15;
+  box-shadow: 0 0 6px rgba(250, 204, 21, 0.6);
+}
+
+.tw-up-badge {
+  font-size: 0.58rem;
+  font-weight: 900;
+  background: #eab308;
+  color: #000000;
+  padding: 0 4px;
+  border-radius: 2px;
+  margin-left: 4px;
+  line-height: 13px;
+  display: inline-block;
+}
+
+/* Center Column Styling */
+.tw-center-col {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.tw-center-btn-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tw-btn-action {
+  flex: 1;
+  min-width: 130px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.tw-btn-action.btn-save-prof {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  border-color: #10b981;
+}
+.tw-btn-action.btn-save-prof:hover {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.tw-btn-action.btn-sync-asis {
+  background: #1e293b;
+  color: #cbd5e1;
+  border-color: #475569;
+}
+.tw-btn-action.btn-sync-asis:hover {
+  background: #334155;
+  color: #ffffff;
+  border-color: #64748b;
+}
+
+.tw-btn-action.btn-korean-std {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #ffffff;
+  border-color: #f59e0b;
+}
+.tw-btn-action.btn-korean-std:hover {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+.tw-advice-box {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.85rem;
+}
+
+/* Popover Modal Styles */
+.tw-popover-box {
+  max-width: 520px;
+  background: #181d33;
+  border: 2px solid #4a568a;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+}
+
+.tw-popover-header {
+  background: linear-gradient(180deg, #3e487b 0%, #2b335c 100%);
+  border-bottom: 1px solid #4d5890;
+  padding: 0.75rem 1rem;
+}
+
+.tw-popover-quick-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.tw-quick-pill {
+  flex: 1;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: #0f172a;
+  border: 1px solid #475569;
+  color: #94a3b8;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.tw-quick-pill:hover {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.tw-quick-pill.active {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+}
+
+.tw-quick-pill.limit.active {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #f59e0b;
+  color: #fde68a;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}

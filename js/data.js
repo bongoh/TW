@@ -3228,3 +3228,79 @@ const KOREAN_STANDARD_TEMPLATE = {
   artifact:{ tier: "abyss", enhance: 10, quality: "standard", customStat: 15, customDex: 10, ability: "superior", optDmg: 0, optAcc: 15, optElem: 10 },
   relic:  { tier: "relic8",   enhance: 8, quality: "standard", customStat: 80, customDex: 30, ability: "none", optDmg: 0, optAcc: 0, optElem: 0 }
 };
+
+
+// ==================== 29. 테일즈위버 인게임 장비창(Equip Window) 슬롯 구조 정의 ====================
+const TW_INGAME_EQUIP_LAYOUT = [
+  {
+    rowKey: "head",
+    real: { key: "head", label: "REAL HEAD", defaultName: "어비스 헬름", defaultDur: "(52/52)", rarity: "abyss", icon: "👑" },
+    show: { key: "showHead", label: "SHOW HEAD", defaultName: "별빛 요정 리본", defaultDur: "(100/100)", rarity: "avatar", icon: "🎀", defaultOn: true }
+  },
+  {
+    rowKey: "armor",
+    real: { key: "armor", label: "REAL ARMOR", defaultName: "+10 어비스 메일/로브", defaultDur: "(84/84)", rarity: "abyss", icon: "🥋" },
+    show: { key: "showArmor", label: "SHOW ARMOR", defaultName: "아바타 수영복 (화이트)", defaultDur: "(100/100)", rarity: "avatar", icon: "👗", defaultOn: true }
+  },
+  {
+    rowKey: "arms",
+    real: { key: "arms", label: "REAL ARMS", defaultName: "+10 어비스 무기", defaultDur: "(87/98)", rarity: "abyss", icon: "⚔️" },
+    show: { key: "showArms", label: "SHOW ARMS", defaultName: "빈 슬롯", defaultDur: "", rarity: "empty", icon: "🗡️", defaultOn: false }
+  },
+  {
+    rowKey: "subArms",
+    real: { key: "subArms", label: "REAL SUB ARMS", defaultName: "어비스 리스트 / 펜듈럼", defaultDur: "(48/52)", rarity: "abyss", icon: "🛡️" },
+    show: { key: "showSubArms", label: "SHOW SUB ARMS", defaultName: "라이도 심볼릭 커프 (140)", defaultDur: "(100/100)", rarity: "gold", icon: "💍", defaultOn: true }
+  },
+  {
+    rowKey: "face",
+    real: { key: "face", label: "REAL FACE", defaultName: "어비스 아뮬렛", defaultDur: "(30/30)", rarity: "abyss", icon: "📿" },
+    show: { key: "showFace", label: "SHOW FACE", defaultName: "테트라의 넥타이", defaultDur: "(100/100)", rarity: "avatar", icon: "👔", defaultOn: true }
+  },
+  {
+    rowKey: "back",
+    real: { key: "back", label: "REAL BACK", defaultName: "어비스 윙", defaultDur: "(48/48)", rarity: "abyss", icon: "🪶" },
+    show: { key: "showBack", label: "SHOW BACK", defaultName: "별빛 유리 날개", defaultDur: "(100/100)", rarity: "avatar", icon: "🪽", defaultOn: false }
+  },
+  {
+    rowKey: "hand",
+    isSingle: true,
+    real: { key: "hand", label: "HAND", defaultName: "어비스 건틀렛", defaultDur: "(48/48)", rarity: "abyss", icon: "🧤" }
+  },
+  {
+    rowKey: "foot",
+    real: { key: "foot", label: "REAL FOOT", defaultName: "어비스 부츠", defaultDur: "(52/52)", rarity: "abyss", icon: "👢" },
+    show: { key: "showFoot", label: "SHOW FOOT", defaultName: "밀키웨이 발자국", defaultDur: "(100/100)", rarity: "avatar", icon: "✨", defaultOn: true }
+  },
+  {
+    rowKey: "effect",
+    real: { key: "effect", label: "REAL EFFECT", defaultName: "[넥슨30주년] 빛나는 효과 (60마방)", defaultDur: "(55/55)", rarity: "gold", icon: "🌟" },
+    show: { key: "showEffect", label: "SHOW EFFECT", defaultName: "시오칸하임 마법진", defaultDur: "(100/100)", rarity: "avatar", icon: "🌀", defaultOn: true }
+  },
+  {
+    rowKey: "artifact",
+    isSingle: true,
+    real: { key: "artifact", label: "ARTIFACT", defaultName: "아크론의 참력 / 디바인", defaultDur: "(40/40)", rarity: "purple", icon: "🔮" }
+  },
+  {
+    rowKey: "relic",
+    real: { key: "relicRight", label: "RELIC (RIGHT)", defaultName: "신조의 펜던트 (+4)", defaultDur: "(100/100)", rarity: "relic", icon: "☀️" },
+    show: { key: "relicLeft", label: "RELIC (LEFT)", defaultName: "태양의 브레이슬릿 (+4)", defaultDur: "(100/100)", rarity: "relic", icon: "💎", defaultOn: true }
+  },
+  {
+    rowKey: "vehicle",
+    isSingle: true,
+    real: { key: "vehicle", label: "VEHICLE", defaultName: "빈 슬롯 (탈것 미착용)", defaultDur: "", rarity: "empty", icon: "🐎" }
+  }
+];
+
+const TW_TIER_STYLES = {
+  aquilus: { name: "眞 아퀼루스", color: "#38bdf8", class: "tw-rarity-aquilus", baseDur: "(48/52)" },
+  abyss:   { name: "어비스",     color: "#c084fc", class: "tw-rarity-abyss",   baseDur: "(52/52)" },
+  eclipse: { name: "이클립스",   color: "#fb923c", class: "tw-rarity-eclipse", baseDur: "(65/65)" },
+  gold:    { name: "명품/스페셜", color: "#fde68a", class: "tw-rarity-gold",    baseDur: "(55/55)" },
+  purple:  { name: "특화 장비",  color: "#d8b4fe", class: "tw-rarity-purple",  baseDur: "(40/40)" },
+  avatar:  { name: "아바타",     color: "#f8fafc", class: "tw-rarity-avatar",  baseDur: "(100/100)" },
+  relic:   { name: "성소 렐릭",  color: "#93c5fd", class: "tw-rarity-relic",   baseDur: "(100/100)" },
+  empty:   { name: "빈 슬롯",    color: "#64748b", class: "tw-rarity-empty",   baseDur: "" }
+};
