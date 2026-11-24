@@ -6263,8 +6263,8 @@
 
 /* Profile Modal Extended Styles */
 .profile-modal-box {
-  max-width: 620px !important;
-  width: 92vw;
+  max-width: 820px !important;
+  width: 95vw;
 }
 .profile-modal-tabs {
   display: flex;
@@ -6298,7 +6298,7 @@
 }
 .profile-modal-body {
   padding: 1.15rem;
-  max-height: 70vh;
+  max-height: 80vh;
   overflow-y: auto;
 }
 .prof-stats-grid {
@@ -6914,4 +6914,72 @@
 .modal-gear-card-sub .badge-pill.limit {
   background: rgba(245, 158, 11, 0.18);
   color: #fde68a;
+}
+
+/* In-Game Equip Window inside Profile Modal Tab 3 */
+#tw-slot-popover-modal {
+  z-index: 1050;
+}
+
+.modal-tw-equip-container {
+  display: flex;
+  gap: 1.15rem;
+  align-items: flex-start;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .modal-tw-equip-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.modal-tw-equip-col {
+  width: 305px;
+  min-width: 295px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .modal-tw-equip-col {
+    width: 100%;
+    max-width: 330px;
+    margin: 0 auto;
+  }
+}
+
+.modal-tw-equip-side {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.modal-gear-guide-card {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.85rem;
+}
+
+.modal-gear-quick-chip {
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #e2e8f0;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.73rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.modal-gear-quick-chip:hover {
+  background: #334155;
+  border-color: #38bdf8;
+  color: #38bdf8;
 }

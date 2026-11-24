@@ -1452,9 +1452,55 @@ function switchProfileModalTab(tabKey, btnEl) {
   if (tabStats) tabStats.style.display = tabKey === 'stats' ? 'block' : 'none';
   if (tabGear)  tabGear.style.display  = tabKey === 'gear'  ? 'block' : 'none';
   if (tabBonus) tabBonus.style.display = tabKey === 'bonus' ? 'block' : 'none';
+
+  if (tabKey === 'gear') {
+    if (!modalGearState) {
+      const cur = (typeof profiles !== 'undefined' && profiles.find(x => x.id === currentProfileId)) || (typeof profiles !== 'undefined' ? profiles[0] : null);
+      modalGearState = JSON.parse(JSON.stringify(cur?.twEquipState || asIsEquipState || TW_DEFAULT_EQUIP_STATE));
+    }
+    renderInGameEquipWindow('modal', modalGearState, true);
+    updateModalGearKpiBanner(modalGearState);
+    renderModalGearQuickChips(modalGearState);
+    if (typeof renderModalGearGrid === 'function') {
+      renderModalGearGrid(modalGearState);
+    }
+  }
 }
 
 let modalGearState = null;
+
+function renderModalGearQuickChips(state) {
+  const container = document.getElementById('modal-gear-quick-chips');
+  if (!container || !state) return;
+
+  const quickSlots = [
+    { key: 'arms', label: '⚔️ 무기' },
+    { key: 'armor', label: '🥋 갑옷' },
+    { key: 'subArms', label: '🛡️ 손목' },
+    { key: 'showSubArms', label: '💍 커프' },
+    { key: 'head', label: '👑 투구' },
+    { key: 'face', label: '📿 얼굴' },
+    { key: 'back', label: '🪶 날개' },
+    { key: 'hand', label: '🧤 손' },
+    { key: 'foot', label: '👢 발' },
+    { key: 'effect', label: '🌟 효과' },
+    { key: 'artifact', label: '🔮 아티팩트' },
+    { key: 'relicRight', label: '☀️ 신조렐릭' },
+    { key: 'relicLeft', label: '💎 태양렐릭' }
+  ];
+
+  container.innerHTML = quickSlots.map(s => {
+    const it = state[s.key] || {};
+    const name = it.name || s.label;
+    const shortName = name.replace(/\[넥슨30주년\]\s*/, '').replace(/\(100\/100\)|\(52\/52\)/g, '').trim();
+    return `
+      <button type="button" class="modal-gear-quick-chip" onclick="openSlotTunerModal('${s.key}', 'modal')" title="${name} 클릭하여 튜닝">
+        <span style="font-weight:700; color:#38bdf8;">${s.label}:</span>
+        <span style="color:#e2e8f0;">${shortName}</span>
+      </button>
+    `;
+  }).join('');
+}
 
 function renderModalGearGrid(state) {
   const gridEl = document.getElementById('modal-gear-item-grid');
@@ -1655,17 +1701,25 @@ function onModalGearPresetChange(val) {
     }
   }
 
-  renderModalGearGrid(modalGearState);
+  renderInGameEquipWindow('modal', modalGearState, true);
   updateModalGearKpiBanner(modalGearState);
   updateModalStatLiveSummary();
+  renderModalGearQuickChips(modalGearState);
+  if (typeof renderModalGearGrid === 'function') {
+    renderModalGearGrid(modalGearState);
+  }
+}
+
+function applyPresetToModal(val) {
+  const presetSel = document.getElementById('modal-gear-preset');
+  if (presetSel) {
+    presetSel.value = val;
+  }
+  onModalGearPresetChange(val);
 }
 
 function applyKoreanStandardToModal() {
-  const presetSel = document.getElementById('modal-gear-preset');
-  if (presetSel) {
-    presetSel.value = 'abyss_10_std';
-    onModalGearPresetChange('abyss_10_std');
-  }
+  applyPresetToModal('abyss_10_std');
   const job = document.getElementById('modal-char-job') ? document.getElementById('modal-char-job').value : 'anais_biho';
   const isMagicDef = job === 'anais_biho' || job === 'tichiel_white';
   const isHack = job === 'yepnen' || job === 'boris' || job === 'benya';
@@ -1748,9 +1802,13 @@ function openProfileModal(mode) {
     if (document.getElementById('modal-gear-preset')) {
       document.getElementById('modal-gear-preset').value = preset;
     }
-    renderModalGearGrid(modalGearState);
+    renderInGameEquipWindow('modal', modalGearState, true);
     updateModalGearKpiBanner(modalGearState);
     updateModalStatLiveSummary();
+    renderModalGearQuickChips(modalGearState);
+    if (typeof renderModalGearGrid === 'function') {
+      renderModalGearGrid(modalGearState);
+    }
   }
 
   // Cross-bind stats inputs to live summary
@@ -5488,6 +5546,7 @@ const TW_DEFAULT_EQUIP_STATE = {
 let asIsEquipState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
 let toBeEquipState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
 let popoverSlotKey = 'arms';
+let popoverTarget = 'tobe';
 let popoverTier = 'abyss';
 let popoverEnhance = 10;
 let popoverQuality = 'standard';
@@ -5639,12 +5698,14 @@ function onInGameSlotClick(slotKey, target) {
   if (target === 'asis') {
     return;
   }
-  openSlotTunerModal(slotKey);
+  openSlotTunerModal(slotKey, target);
 }
 
-function openSlotTunerModal(slotKey) {
+function openSlotTunerModal(slotKey, target = 'tobe') {
   popoverSlotKey = slotKey;
-  const item = toBeEquipState[slotKey] || {};
+  popoverTarget = target || 'tobe';
+  const state = popoverTarget === 'modal' ? (modalGearState || TW_DEFAULT_EQUIP_STATE) : toBeEquipState;
+  const item = state[slotKey] || {};
 
   popoverTier = item.tier || 'abyss';
   popoverEnhance = item.enhance !== undefined ? item.enhance : 10;
@@ -5874,22 +5935,39 @@ function saveSlotTunerModal() {
     cur.dur = baseDurs[popoverTier] || "(52/52)";
   }
 
-  toBeEquipState[popoverSlotKey] = cur;
-  closeSlotTunerModal();
-  renderInGameEquipWindow('tobe', toBeEquipState, true);
-  updateDualEquipWindowDiff();
+  if (popoverTarget === 'modal') {
+    if (!modalGearState) modalGearState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
+    modalGearState[popoverSlotKey] = cur;
+    const presetSel = document.getElementById('modal-gear-preset');
+    if (presetSel) presetSel.value = 'custom';
+    closeSlotTunerModal();
+    renderInGameEquipWindow('modal', modalGearState, true);
+    updateModalGearKpiBanner(modalGearState);
+    updateModalStatLiveSummary();
+    renderModalGearQuickChips(modalGearState);
+    if (typeof renderModalGearGrid === 'function') renderModalGearGrid(modalGearState);
+  } else {
+    toBeEquipState[popoverSlotKey] = cur;
+    closeSlotTunerModal();
+    renderInGameEquipWindow('tobe', toBeEquipState, true);
+    updateDualEquipWindowDiff();
+  }
 }
 
 function toggleSlotOnOff(slotKey, target, event) {
   if (event) event.stopPropagation();
-  const state = target === 'asis' ? asIsEquipState : toBeEquipState;
-  if (!state[slotKey]) return;
+  const state = target === 'asis' ? asIsEquipState : (target === 'modal' ? modalGearState : toBeEquipState);
+  if (!state || !state[slotKey]) return;
   state[slotKey].isOn = !state[slotKey].isOn;
-  renderInGameEquipWindow(target, state, target === 'tobe');
+  renderInGameEquipWindow(target, state, target !== 'asis');
+  if (target === 'modal') {
+    updateModalGearKpiBanner(modalGearState);
+    updateModalStatLiveSummary();
+  }
 }
 
 function cycleAvatarSlot(slotKey, target) {
-  if (target !== 'tobe') return;
+  if (target === 'asis') return;
   toggleSlotOnOff(slotKey, target, null);
 }
 

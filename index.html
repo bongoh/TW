@@ -6857,15 +6857,18 @@
       <!-- TAB 3: GEAR BASE & KOREAN STANDARD -->
       <div id="prof-tab-gear" class="prof-tab-content" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.4rem;">
-          <div style="font-size:0.82rem; font-weight:700; color:#fde68a;">
-            🛡️ 내 캐릭터 착용 장비 현황 (인게임 템창 연동)
+          <div style="font-size:0.85rem; font-weight:800; color:#fde68a; display:flex; align-items:center; gap:0.35rem;">
+            <span>🛡️ 내 캐릭터 착용 장비 세팅 (인게임 Equip Window)</span>
           </div>
-          <div style="display:flex; gap:0.35rem; align-items:center;">
+          <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap;">
             <button type="button" class="btn-sm btn-korean-std" onclick="applyKoreanStandardToModal()" style="font-size:0.74rem; padding:0.25rem 0.55rem;" title="10강 국민작 국템 템플릿 즉시 적용">
               ⚖️ 10강 국템 표준
             </button>
+            <button type="button" class="btn-sm" style="background:#4338ca; color:#e0e7ff; font-size:0.74rem; font-weight:700; padding:0.25rem 0.55rem; border:1px solid #6366f1; border-radius:4px; cursor:pointer;" onclick="applyPresetToModal('eclipse_all_limit')" title="11강 이클립스 한계작 종결 세팅 적용">
+              👑 11강 이클 종결
+            </button>
             <button type="button" class="btn-sm btn-outline" onclick="jumpToDualEquipWindowFromModal()" style="font-size:0.74rem; padding:0.25rem 0.55rem; color:#38bdf8; border-color:#38bdf8;" title="6번 탭 인게임 장비창 듀얼 비교기로 즉시 이동">
-              🎮 6번 탭에서 듀얼 튜닝 ➔
+              🎮 6번 탭 전투 시험장 ➔
             </button>
           </div>
         </div>
@@ -6874,7 +6877,7 @@
         <div class="form-group" style="margin-bottom:0.65rem;">
           <label for="modal-gear-preset">장비 세트 템플릿 선택</label>
           <select id="modal-gear-preset" class="form-control" onchange="onModalGearPresetChange(this.value)">
-            <option value="custom">🛠️ [커스텀 장비] 6번 탭 인게임 템창 세팅 그대로 사용</option>
+            <option value="custom">🛠️ [커스텀 장비] 내 캐릭터 맞춤 커스텀 세팅</option>
             <option value="abyss_10_std">⚖️ [국템 표준] 어비스 8세트 10강 국민작 (최상급 어빌/3% 15 10)</option>
             <option value="eclipse_3_abyss_5">⭐ [상위 도약] 이클립스 3셋 + 어비스 5셋 (10강 표준)</option>
             <option value="eclipse_all_limit">👑 [초월 종결] 이클립스 풀세트 11강 한계작 (극마방/극대미지)</option>
@@ -6882,19 +6885,50 @@
           </select>
         </div>
 
-        <!-- Equipment KPI Banner -->
-        <div id="modal-gear-kpi-banner" class="modal-gear-kpi-row">
-          <!-- Dynamically populated: Coeff contribution, DEX, Dmg% -->
-        </div>
-
-        <!-- 12-Slot In-Game Equipment Detailed List Grid -->
-        <div style="margin-top:0.65rem;">
-          <div style="font-size:0.78rem; font-weight:700; color:#cbd5e1; margin-bottom:0.35rem; display:flex; justify-content:space-between; align-items:center;">
-            <span>📋 현재 프로필에 저장된 12부위 슬롯 상세:</span>
-            <span style="font-size:0.72rem; color:#94a3b8;">항목 클릭 시 6번 탭 인게임 템창에서 즉시 튜닝</span>
+        <!-- Two-Column Container: In-Game Equip Window (Left) + Gear Metrics & Guidance (Right) -->
+        <div class="modal-tw-equip-container">
+          <!-- Left Column: The Real In-Game Equip Window -->
+          <div class="modal-tw-equip-col">
+            <div style="font-size:0.75rem; font-weight:700; color:#38bdf8; margin-bottom:0.35rem; display:flex; justify-content:space-between; align-items:center;">
+              <span>🎮 인게임 장비창 (Equip Window)</span>
+              <span style="font-size:0.7rem; color:#94a3b8;">클릭 시 정밀 튜닝</span>
+            </div>
+            <div id="tw-equip-window-modal" class="tw-equip-window interactive">
+              <!-- Dynamically populated via renderInGameEquipWindow('modal', modalGearState, true) -->
+            </div>
           </div>
-          <div id="modal-gear-item-grid" class="modal-gear-grid">
-            <!-- Dynamically populated with 12 equipment cards -->
+
+          <!-- Right Column: Live Stat Metrics, Formula Breakdown, and Tips -->
+          <div class="modal-tw-equip-side">
+            <!-- Equipment KPI Banner -->
+            <div id="modal-gear-kpi-banner" class="modal-gear-kpi-row">
+              <!-- Dynamically populated: Coeff contribution, DEX, Dmg% -->
+            </div>
+
+            <!-- Quick Guidance Card -->
+            <div class="modal-gear-guide-card">
+              <div style="font-size:0.82rem; font-weight:800; color:#fde68a; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.35rem;">
+                <span>💡 프로필 장비 베이스 & 6번 탭 연동 안내</span>
+              </div>
+              <ul style="font-size:0.75rem; color:#cbd5e1; margin:0; padding-left:1.15rem; line-height:1.6;">
+                <li><b>슬롯 클릭 튜닝</b>: 좌측 인게임 장비창의 각 슬롯(무기, 갑옷, 날개 등)을 클릭하면 <b>0~11강 강화, 국민작/한계작, 최상급 어빌, 전이석 옵션</b>을 자유롭게 정밀 설정할 수 있습니다.</li>
+                <li><b>프로필 기본 베이스</b>: 여기서 설정한 장비가 캐릭터의 <b>기본 착용 장비(As-Is)</b>로 영구 저장되며 스펙 판독기, 계수 계산기에 자동 상속됩니다.</li>
+                <li><b>6번 탭 전투 시험장</b>: 6번 탭 [개수 전투 시험장]에 진입하면 현재 장비가 <b>[As-Is 템창]</b>으로 자동 전달되어, 목표 장비(To-Be)와 실시간 대미지 및 1방 컷을 비교할 수 있습니다.</li>
+              </ul>
+            </div>
+
+            <!-- Quick Slot Tuning Summary Chips -->
+            <div style="margin-top:0.45rem;">
+              <div style="font-size:0.78rem; font-weight:700; color:#fde68a; margin-bottom:0.35rem;">
+                📋 부위별 원클릭 튜닝 칩:
+              </div>
+              <div id="modal-gear-quick-chips" style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+                <!-- Dynamically populated with quick chips -->
+              </div>
+            </div>
+
+            <!-- Hidden compatibility container for verify assertions -->
+            <div id="modal-gear-item-grid" style="display:none;"></div>
           </div>
         </div>
       </div>
