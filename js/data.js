@@ -434,6 +434,11 @@ const conflictMap = {
 
 // 3. One-Click Doping Presets
 const dopingPresets = {
+  content_core: [
+    'snowman_potion', 'awakening_potion', 'trust_potion',
+    'isabelle_fixed', 'isabelle_percent', 'isabelle_damage',
+    'purified_ampoule', 'haste_potion', 'attendance_buff', 'equip_reinforce_stone'
+  ],
   hunt: ['snowman_potion', 'awakening_potion', 'trust_potion', 'isabelle_fixed', 'purified_ampoule', 'haste_potion'],
   raid: [
     'snowman_potion', 'awakening_potion', 'trust_potion', 'isabelle_fixed', 'isabelle_percent', 'isabelle_damage',
