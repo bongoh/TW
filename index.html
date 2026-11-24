@@ -3000,6 +3000,105 @@
       </div>
     </div>
 
+      <!-- ==================== SERVERLESS PARTY RECRUITMENT & ALARM HUB ==================== -->
+      <div class="party-hub-card" id="party-hub">
+        <div class="party-hub-header">
+          <div class="party-hub-title">
+            <span>⚔️ 무서버 스마트 파티 모집 & 레이드 출발 알람 센터</span>
+            <span style="font-size:0.75rem; font-weight:normal; color:#94a3b8;">(별도 서버 없는 웹 표준 기반 실시간 알람)</span>
+          </div>
+          <div class="party-countdown-wrap">
+            <span id="party-status-badge" class="party-status-badge party-status-recruiting">🟡 모집 중 (1/5)</span>
+            <div id="party-countdown-display" class="party-countdown-box">출발 대기: 설정 필요</div>
+          </div>
+        </div>
+
+        <!-- Party Configuration Bar -->
+        <div class="party-config-bar">
+          <div>
+            <label style="display:block; font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">🎯 대상 던전 / 숙제 콘텐츠</label>
+            <select id="party-dungeon-select" class="party-slot-select" onchange="onPartyDungeonChange()">
+              <option value="이클립스 6보스 토벌">👑 이클립스 6보스 연전</option>
+              <option value="심연의 어비스 5단 파티">🔥 심연의 어비스 5단 (지하)</option>
+              <option value="신조의 둥지 지옥 난이도">🦅 신조의 둥지 (지옥)</option>
+              <option value="오클리 방어전">🛡️ 오클리 방어전 (나르비크)</option>
+              <option value="베스티지 보급품·별동대">⚔️ 베스티지 보급품 & 별동대</option>
+              <option value="아페티리아 일반 파티">❄️ 아페티리아 일반 던전</option>
+              <option value="시오칸하임 주간 파티">🏰 시오칸하임 오딘/보스 연전</option>
+              <option value="custom">✏️ 직접 입력 (커스텀 파티)</option>
+            </select>
+            <input type="text" id="party-custom-title" class="party-slot-input" style="display:none; margin-top:5px;" placeholder="파티명 입력" oninput="onPartyDataChange()">
+          </div>
+
+          <div>
+            <label style="display:block; font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">⏰ 출발 예정 시간</label>
+            <input type="datetime-local" id="party-depart-time" class="party-slot-input" onchange="onPartyTimeChange()">
+            <div style="display:flex; gap:4px; margin-top:5px; flex-wrap:wrap;">
+              <button type="button" class="party-btn party-btn-secondary" style="padding:0.18rem 0.45rem; font-size:0.72rem;" onclick="setPartyTimeOffset(15)">+15분</button>
+              <button type="button" class="party-btn party-btn-secondary" style="padding:0.18rem 0.45rem; font-size:0.72rem;" onclick="setPartyTimeOffset(30)">+30분</button>
+              <button type="button" class="party-btn party-btn-secondary" style="padding:0.18rem 0.45rem; font-size:0.72rem;" onclick="setPartyTimeOffset(60)">+1시간</button>
+              <button type="button" class="party-btn party-btn-secondary" style="padding:0.18rem 0.45rem; font-size:0.72rem;" onclick="setPartyTimePreset(21,0)">오늘 21:00</button>
+              <button type="button" class="party-btn party-btn-secondary" style="padding:0.18rem 0.45rem; font-size:0.72rem;" onclick="setPartyTimePreset(22,0)">오늘 22:00</button>
+            </div>
+          </div>
+
+          <div>
+            <label style="display:block; font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">📋 최소 스펙 / 참가 안내 메모</label>
+            <input type="text" id="party-min-spec" class="party-slot-input" placeholder="예: 합인챈 350+ / 속성 160+ / 마방 3500+" oninput="onPartyDataChange()">
+            <div style="display:flex; align-items:center; gap:8px; margin-top:6px; font-size:0.75rem; color:#cbd5e1;">
+              <label style="cursor:pointer;"><input type="checkbox" id="party-sound-toggle" checked> 🔊 WebAudio 사운드 알람</label>
+              <button type="button" class="party-btn party-btn-secondary" style="padding:0.18rem 0.45rem; font-size:0.72rem;" onclick="testPartySound()">🔔 사운드 테스트</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Party Recruitment Progress Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:#94a3b8;">
+          <span>👥 파티 충원율 (<span id="party-ratio-text" style="color:#38bdf8; font-weight:700;">1 / 5</span>)</span>
+          <span id="party-auto-alarm-info" style="color:#a7f3d0;">💡 인원 충족 시 팡파레 & 출발 10분/5분/정시 자동 알림 발송</span>
+        </div>
+        <div class="party-progress-track">
+          <div id="party-progress-fill" class="party-progress-fill" style="width: 20%;"></div>
+        </div>
+
+        <!-- Party Member Slots (5 Slots) -->
+        <div class="party-slots-grid" id="party-slots-container">
+          <!-- Slots dynamically rendered via renderPartySlots() -->
+        </div>
+
+        <!-- Action Bar: Share, Invite URL, Discord Webhook, Reset -->
+        <div class="party-actions-bar">
+          <button type="button" class="party-btn party-btn-primary" onclick="copyPartyRecruitmentText()">
+            📋 인게임 외치기/채팅 양식 복사
+          </button>
+          <button type="button" class="party-btn party-btn-success" onclick="copyPartyShareUrl()">
+            🔗 무서버 파티 초대 링크 복사 (해시 기반)
+          </button>
+          <button type="button" class="party-btn party-btn-secondary" onclick="requestBrowserNotificationPermission()">
+            🔔 데스크톱 팝업 알림 허용
+          </button>
+          <button type="button" class="party-btn party-btn-secondary" onclick="togglePartyDiscordModal()">
+            💬 디스코드 웹훅 알림 연동
+          </button>
+          <button type="button" class="party-btn party-btn-secondary" style="margin-left:auto; color:#f87171;" onclick="resetPartyHub()">
+            🔄 파티 초기화
+          </button>
+        </div>
+
+        <!-- Discord Webhook Input Collapsible -->
+        <div id="party-discord-panel" style="display:none; margin-top:0.85rem; padding:0.75rem; background:rgba(30,41,59,0.7); border-radius:8px; border:1px solid rgba(99,102,241,0.4);">
+          <div style="font-size:0.82rem; font-weight:700; color:#a5b4fc; margin-bottom:4px;">💬 디스코드 채널 웹훅 연동 (선택 사항)</div>
+          <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px;">디스코드 채널 설정 > 연동 > 웹훅 URL을 입력하면, 파티 충원 완료 및 출발 시간에 디스코드 봇 메시지가 전송됩니다. (서버 없이 브라우저에서 직접 발송)</div>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="party-webhook-url" class="party-slot-input" placeholder="https://discord.com/api/webhooks/..." style="flex:1;">
+            <button type="button" class="party-btn party-btn-primary" onclick="saveAndTestDiscordWebhook()">연동 및 테스트 전송</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Popup for Alarms and Feedback -->
+      <div id="party-toast" class="party-toast"></div>
+
       <div class="checklist-header">
         <h2>비호정령 주간 · 일일 숙제 체크리스트 (최소 컷 · 보상 활용법)</h2>
         <div class="progress-wrap">

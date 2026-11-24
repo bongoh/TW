@@ -1358,6 +1358,7 @@ function bootCompanion() {
   initCharacterSelectors();
   initProfiles();
   setInterval(updateThursdayCountdown, 1000);
+  setInterval(updatePartyCountdown, 1000);
   updateThursdayCountdown();
   renderWasteTable();
   renderAbendonTable();
@@ -1366,6 +1367,7 @@ function bootCompanion() {
   loadWeeklyTasks();
   initCoeffCalculator();
   initGrowthMilestones();
+  initPartyHub();
 }
 
 // ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
@@ -2286,7 +2288,629 @@ function initCoeffCalculator() {
 
 
 
-if (document.readyState === 'loading') {
+
+// ==================== 10. SERVERLESS PARTY RECRUITMENT & ALARM HUB ====================
+const PARTY_STORAGE_KEY = 'tw_party_hub_data_v1';
+const DEFAULT_PARTY_ROLES = [
+  '비호정령 (버퍼/서폿)',
+  '찌르기 딜러 (루시안/이스핀 등)',
+  '베기 딜러 (보리스/막시민/나야 등)',
+  '마법공격 딜러 (티치엘/클로에/조슈아 등)',
+  '물리복합 딜러 (시벨린/나야/막시민 등)',
+  '디버퍼/서포터 (리체/로아미니 등)',
+  '자유 포지션 (모집 중)'
+];
+
+let partyAudioCtx = null;
+function getPartyAudioContext() {
+  if (!partyAudioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      partyAudioCtx = new AudioContextClass();
+    }
+  }
+  if (partyAudioCtx && partyAudioCtx.state === 'suspended') {
+    partyAudioCtx.resume();
+  }
+  return partyAudioCtx;
+}
+
+function playPartySynthTone(freq, duration, type, startTimeOffset, gainLevel) {
+  try {
+    const soundToggle = document.getElementById('party-sound-toggle');
+    if (soundToggle && !soundToggle.checked) return;
+
+    const ctx = getPartyAudioContext();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sine';
+    const st = ctx.currentTime + (startTimeOffset || 0);
+    osc.frequency.setValueAtTime(freq, st);
+
+    gain.gain.setValueAtTime(0.001, st);
+    gain.gain.exponentialRampToValueAtTime(gainLevel || 0.15, st + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, st + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(st);
+    osc.stop(st + duration + 0.05);
+  } catch (e) {
+    console.warn('Audio synthesis notice:', e);
+  }
+}
+
+function playPartyFullChime() {
+  const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+  notes.forEach((freq, idx) => {
+    playPartySynthTone(freq, 0.35, 'triangle', idx * 0.11, 0.22);
+  });
+}
+
+function playPartyWarningChime(minutes) {
+  const f1 = minutes === 10 ? 880 : 987.77;
+  const f2 = minutes === 10 ? 1174.66 : 1318.51;
+  playPartySynthTone(f1, 0.4, 'sine', 0, 0.22);
+  playPartySynthTone(f2, 0.6, 'sine', 0.18, 0.25);
+}
+
+function playPartyDepartureAlarm() {
+  const sequence = [
+    { freq: 523.25, dur: 0.2, time: 0 },
+    { freq: 659.25, dur: 0.2, time: 0.16 },
+    { freq: 783.99, dur: 0.25, time: 0.32 },
+    { freq: 1046.50, dur: 0.65, time: 0.52 },
+    { freq: 1318.51, dur: 0.85, time: 0.78 }
+  ];
+  sequence.forEach(n => {
+    playPartySynthTone(n.freq, n.dur, 'triangle', n.time, 0.25);
+  });
+}
+
+function testPartySound() {
+  playPartyDepartureAlarm();
+  showPartyToast('🔊 사운드 테스트 실행', 'Web Audio API 기반 팡파레 알람 사운드가 재생되었습니다.');
+}
+
+function requestBrowserNotificationPermission() {
+  if (!('Notification' in window)) {
+    showPartyToast('⚠️ 브라우저 알림 미지원', '사용 중인 웹 브라우저가 데스크톱 팝업 알림을 지원하지 않습니다.');
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    showPartyToast('🔔 알림 활성화 완료', '이미 브라우저 데스크톱 알림이 허용되어 있습니다.');
+    return;
+  }
+  Notification.requestPermission().then(permission => {
+    if (permission === 'granted') {
+      showPartyToast('✅ 알림 허용 완료', '백그라운드에서도 파티 충원 및 레이드 출발 알람을 팝업으로 수신합니다.');
+      sendDesktopNotification('테일즈위버 파티 알림 활성화', '파티 충원 및 레이드 출발 알람이 데스크톱 팝업으로 전달됩니다.');
+    } else {
+      showPartyToast('⚠️ 알림 권한 거부됨', '브라우저 주소창 설정에서 알림 권한을 허용해 주세요.');
+    }
+  });
+}
+
+function sendDesktopNotification(title, body) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification(title, {
+        body: body,
+        icon: 'favicon.ico',
+        tag: 'tw-party-alert'
+      });
+    } catch (e) {
+      console.warn('Desktop notification notice:', e);
+    }
+  }
+  showPartyToast(title, body);
+}
+
+function showPartyToast(title, body, durationMs = 4500) {
+  const toast = document.getElementById('party-toast');
+  if (!toast) return;
+  toast.innerHTML = `<div style="font-weight:700; color:#38bdf8; margin-bottom:3px;">${escapeHtml(title)}</div><div>${escapeHtml(body)}</div>`;
+  toast.style.display = 'block';
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => {
+    toast.style.display = 'none';
+  }, durationMs);
+}
+
+const DEFAULT_PARTY_MEMBERS = [
+  { id: 1, name: '파티장 (본인)', role: '비호정령 (버퍼/서폿)', spec: '신조 5셋 / 마방 3800', ready: true },
+  { id: 2, name: '', role: '찌르기 딜러 (루시안/이스핀 등)', spec: '', ready: false },
+  { id: 3, name: '', role: '베기 딜러 (보리스/막시민/나야 등)', spec: '', ready: false },
+  { id: 4, name: '', role: '마법공격 딜러 (티치엘/클로에/조슈아 등)', spec: '', ready: false },
+  { id: 5, name: '', role: '디버퍼/서포터 (리체/로아미니 등)', spec: '', ready: false }
+];
+
+let partyState = {
+  dungeon: '이클립스 6보스 토벌',
+  customTitle: '',
+  departTime: '',
+  minSpec: '합인챈 350+ / 주력 속성 160+ / 마방 3500+',
+  soundEnabled: true,
+  members: JSON.parse(JSON.stringify(DEFAULT_PARTY_MEMBERS)),
+  webhookUrl: '',
+  alarmsTriggered: {
+    full: false,
+    m10: false,
+    m5: false,
+    depart: false
+  }
+};
+
+function savePartyState() {
+  try {
+    localStorage.setItem(PARTY_STORAGE_KEY, JSON.stringify(partyState));
+  } catch (e) {
+    console.error('Failed to save party state', e);
+  }
+}
+
+function loadPartyState() {
+  try {
+    const raw = localStorage.getItem(PARTY_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      partyState = Object.assign(partyState, parsed);
+      if (!Array.isArray(partyState.members) || partyState.members.length === 0) {
+        partyState.members = JSON.parse(JSON.stringify(DEFAULT_PARTY_MEMBERS));
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load party state', e);
+  }
+}
+
+function initPartyHub() {
+  loadPartyState();
+  checkPartyHashImport();
+  syncPartyInputsFromState();
+  renderPartySlots();
+  updatePartyProgressAndStatus();
+  updatePartyCountdown();
+}
+
+function syncPartyInputsFromState() {
+  const dSel = document.getElementById('party-dungeon-select');
+  const cInp = document.getElementById('party-custom-title');
+  const tInp = document.getElementById('party-depart-time');
+  const mInp = document.getElementById('party-min-spec');
+  const sChk = document.getElementById('party-sound-toggle');
+  const wInp = document.getElementById('party-webhook-url');
+
+  if (dSel) {
+    dSel.value = partyState.dungeon || '이클립스 6보스 토벌';
+    if (dSel.value === 'custom' || (!['이클립스 6보스 토벌', '심연의 어비스 5단 파티', '신조의 둥지 지옥 난이도', '오클리 방어전', '베스티지 보급품·별동대', '아페티리아 일반 파티', '시오칸하임 주간 파티'].includes(partyState.dungeon))) {
+      dSel.value = 'custom';
+      if (cInp) {
+        cInp.style.display = 'block';
+        cInp.value = partyState.customTitle || partyState.dungeon;
+      }
+    } else {
+      if (cInp) cInp.style.display = 'none';
+    }
+  }
+
+  if (tInp && partyState.departTime) {
+    tInp.value = partyState.departTime;
+  }
+  if (mInp && partyState.minSpec) {
+    mInp.value = partyState.minSpec;
+  }
+  if (sChk && typeof partyState.soundEnabled === 'boolean') {
+    sChk.checked = partyState.soundEnabled;
+  }
+  if (wInp && partyState.webhookUrl) {
+    wInp.value = partyState.webhookUrl;
+  }
+}
+
+function onPartyDungeonChange() {
+  const dSel = document.getElementById('party-dungeon-select');
+  const cInp = document.getElementById('party-custom-title');
+  if (!dSel) return;
+  if (dSel.value === 'custom') {
+    if (cInp) {
+      cInp.style.display = 'block';
+      cInp.focus();
+    }
+    partyState.dungeon = cInp && cInp.value ? cInp.value : '커스텀 파티';
+  } else {
+    if (cInp) cInp.style.display = 'none';
+    partyState.dungeon = dSel.value;
+  }
+  savePartyState();
+}
+
+function onPartyTimeChange() {
+  const tInp = document.getElementById('party-depart-time');
+  if (tInp) {
+    partyState.departTime = tInp.value;
+    partyState.alarmsTriggered.m10 = false;
+    partyState.alarmsTriggered.m5 = false;
+    partyState.alarmsTriggered.depart = false;
+    savePartyState();
+    updatePartyCountdown();
+  }
+}
+
+function setPartyTimeOffset(minutes) {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + minutes);
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const mins = String(now.getMinutes()).padStart(2, '0');
+  const str = `${year}-${month}-${day}T${hours}:${mins}`;
+
+  const tInp = document.getElementById('party-depart-time');
+  if (tInp) {
+    tInp.value = str;
+    onPartyTimeChange();
+  }
+}
+
+function setPartyTimePreset(hour, minute) {
+  const now = new Date();
+  now.setHours(hour, minute, 0, 0);
+  if (now.getTime() < Date.now()) {
+    now.setDate(now.getDate() + 1);
+  }
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const mins = String(now.getMinutes()).padStart(2, '0');
+  const str = `${year}-${month}-${day}T${hours}:${mins}`;
+
+  const tInp = document.getElementById('party-depart-time');
+  if (tInp) {
+    tInp.value = str;
+    onPartyTimeChange();
+  }
+}
+
+function onPartyDataChange() {
+  const cInp = document.getElementById('party-custom-title');
+  const mInp = document.getElementById('party-min-spec');
+  const sChk = document.getElementById('party-sound-toggle');
+  const dSel = document.getElementById('party-dungeon-select');
+
+  if (dSel && dSel.value === 'custom' && cInp) {
+    partyState.customTitle = cInp.value;
+    partyState.dungeon = cInp.value || '커스텀 파티';
+  }
+  if (mInp) partyState.minSpec = mInp.value;
+  if (sChk) partyState.soundEnabled = sChk.checked;
+
+  savePartyState();
+}
+
+function renderPartySlots() {
+  const container = document.getElementById('party-slots-container');
+  if (!container) return;
+
+  container.innerHTML = partyState.members.map((m, idx) => {
+    const isFilled = m.name && m.name.trim() !== '';
+    const isReady = m.ready;
+    const cardClass = `party-slot-card ${isFilled ? 'filled' : ''} ${isReady ? 'ready' : ''}`;
+    const slotLabel = idx === 0 ? '👑 파티장' : `슬롯 ${idx + 1}`;
+
+    const roleOptions = DEFAULT_PARTY_ROLES.map(r => {
+      const selected = m.role === r ? 'selected' : '';
+      return `<option value="${escapeHtml(r)}" ${selected}>${escapeHtml(r)}</option>`;
+    }).join('');
+
+    return `
+      <div class="${cardClass}">
+        <div class="party-slot-top">
+          <span>${slotLabel}</span>
+          <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:0.75rem; color:${isReady ? '#34d399' : '#94a3b8'};">
+            <input type="checkbox" ${isReady ? 'checked' : ''} onchange="updatePartyMemberReady(${m.id}, this.checked)">
+            <span>준비 완료</span>
+          </label>
+        </div>
+        <div>
+          <input type="text" class="party-slot-input" placeholder="캐릭터명 / 닉네임 입력" value="${escapeHtml(m.name || '')}" onchange="updatePartyMemberName(${m.id}, this.value)">
+        </div>
+        <div>
+          <select class="party-slot-select" onchange="updatePartyMemberRole(${m.id}, this.value)">
+            ${roleOptions}
+          </select>
+        </div>
+        <div>
+          <input type="text" class="party-slot-input" placeholder="스펙 / 메모 (선택)" value="${escapeHtml(m.spec || '')}" onchange="updatePartyMemberSpec(${m.id}, this.value)" style="font-size:0.75rem; color:#94a3b8;">
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updatePartyMemberName(id, val) {
+  const member = partyState.members.find(m => m.id === id);
+  if (member) {
+    const prevCount = partyState.members.filter(m => m.name && m.name.trim() !== '').length;
+    member.name = val.trim();
+    savePartyState();
+    updatePartyProgressAndStatus();
+    renderPartySlots();
+
+    const newCount = partyState.members.filter(m => m.name && m.name.trim() !== '').length;
+    if (newCount === partyState.members.length && prevCount < partyState.members.length) {
+      triggerPartyFullAlarm();
+    }
+  }
+}
+
+function updatePartyMemberRole(id, val) {
+  const member = partyState.members.find(m => m.id === id);
+  if (member) {
+    member.role = val;
+    savePartyState();
+  }
+}
+
+function updatePartyMemberSpec(id, val) {
+  const member = partyState.members.find(m => m.id === id);
+  if (member) {
+    member.spec = val.trim();
+    savePartyState();
+  }
+}
+
+function updatePartyMemberReady(id, val) {
+  const member = partyState.members.find(m => m.id === id);
+  if (member) {
+    member.ready = !!val;
+    savePartyState();
+    renderPartySlots();
+  }
+}
+
+function updatePartyProgressAndStatus() {
+  const total = partyState.members.length;
+  const filled = partyState.members.filter(m => m.name && m.name.trim() !== '').length;
+
+  const ratioText = document.getElementById('party-ratio-text');
+  if (ratioText) ratioText.textContent = `${filled} / ${total}`;
+
+  const fillBar = document.getElementById('party-progress-fill');
+  if (fillBar) fillBar.style.width = `${Math.round((filled / total) * 100)}%`;
+
+  const badge = document.getElementById('party-status-badge');
+  if (badge) {
+    if (filled === total) {
+      badge.className = 'party-status-badge party-status-full';
+      badge.innerHTML = '🟢 모집 완료 (5/5 풀파티)';
+    } else {
+      badge.className = 'party-status-badge party-status-recruiting';
+      badge.innerHTML = `🟡 모집 중 (${filled}/${total})`;
+    }
+  }
+}
+
+function triggerPartyFullAlarm() {
+  if (partyState.alarmsTriggered.full) return;
+  partyState.alarmsTriggered.full = true;
+  savePartyState();
+
+  playPartyFullChime();
+  const partyTitle = partyState.dungeon || '테일즈위버 레이드';
+  const msg = `[${partyTitle}] 파티원 5명 충원이 완료되었습니다! 출발 준비를 시작하세요.`;
+  sendDesktopNotification('🎉 파티원 5명 충원 완료!', msg);
+
+  if (partyState.webhookUrl) {
+    sendDiscordWebhook('🎉 파티 충원 완료 알림', msg, [
+      { name: '🎯 던전', value: partyState.dungeon, inline: true },
+      { name: '⏰ 출발 예정', value: partyState.departTime ? partyState.departTime.replace('T', ' ') : '즉시 출발 대기', inline: true }
+    ]);
+  }
+}
+
+function updatePartyCountdown() {
+  const disp = document.getElementById('party-countdown-display');
+  if (!disp) return;
+
+  if (!partyState.departTime) {
+    disp.textContent = '출발 시간: 미설정';
+    disp.style.color = '#94a3b8';
+    return;
+  }
+
+  const target = new Date(partyState.departTime).getTime();
+  if (isNaN(target)) {
+    disp.textContent = '시간 형식 오류';
+    return;
+  }
+
+  const now = Date.now();
+  const diffSec = Math.floor((target - now) / 1000);
+
+  if (diffSec > 0) {
+    const hours = Math.floor(diffSec / 3600);
+    const mins = Math.floor((diffSec % 3600) / 60);
+    const secs = diffSec % 60;
+    disp.textContent = `⏰ 출발 D-${hours > 0 ? hours + 'h ' : ''}${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+    disp.style.color = diffSec <= 300 ? '#f87171' : (diffSec <= 600 ? '#fcd34d' : '#38bdf8');
+
+    // 10-minute warning check
+    if (diffSec <= 600 && diffSec > 540 && !partyState.alarmsTriggered.m10) {
+      partyState.alarmsTriggered.m10 = true;
+      savePartyState();
+      playPartyWarningChime(10);
+      sendDesktopNotification('⏰ 출발 10분 전 알림', `[${partyState.dungeon}] 출발까지 10분 남았습니다. 버프 및 소모품을 점검해 주세요!`);
+    }
+
+    // 5-minute warning check
+    if (diffSec <= 300 && diffSec > 240 && !partyState.alarmsTriggered.m5) {
+      partyState.alarmsTriggered.m5 = true;
+      savePartyState();
+      playPartyWarningChime(5);
+      sendDesktopNotification('⚠️ 출발 5분 전 최종 알림', `[${partyState.dungeon}] 출발 5분 전입니다! 집결지로 이동해 파티에 합류하세요.`);
+    }
+  } else {
+    disp.textContent = '🚀 출발 시간 도달 (집결 완료)';
+    disp.style.color = '#34d399';
+
+    if (!partyState.alarmsTriggered.depart) {
+      partyState.alarmsTriggered.depart = true;
+      savePartyState();
+      playPartyDepartureAlarm();
+      const msg = `[${partyState.dungeon}] 약속된 출발 시간입니다! 던전으로 입장하세요.`;
+      sendDesktopNotification('🚀 레이드 출발 시간입니다!', msg);
+      if (partyState.webhookUrl) {
+        sendDiscordWebhook('🚀 레이드 출발 정시 알림', msg, [
+          { name: '🎯 콘텐츠', value: partyState.dungeon, inline: true }
+        ]);
+      }
+    }
+  }
+}
+
+function copyPartyRecruitmentText() {
+  const dName = partyState.dungeon || '테일즈위버 숙제/레이드';
+  const filled = partyState.members.filter(m => m.name && m.name.trim() !== '').length;
+  const timeStr = partyState.departTime ? partyState.departTime.replace('T', ' ') : '인원 모집 즉시 출발';
+
+  const slotStatus = partyState.members.map((m, idx) => {
+    const isFilled = m.name && m.name.trim() !== '';
+    return `[${idx + 1}] ${m.role}: ${isFilled ? m.name : '모집 중'}`;
+  }).join(' | ');
+
+  const text = `[테일즈위버 파티 모집] ⚔️ ${dName} (${filled}/5)\n⏰ 출발 시간: ${timeStr}\n📋 최소 스펙: ${partyState.minSpec || '자유 스펙'}\n👥 구성: ${slotStatus}\n※ 함께 하실 분 귓속말이나 댓글 주세요!`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    showPartyToast('📋 인게임 양식 복사 완료', '게임 내 확성기나 채팅창, 디스코드에 붙여넣기(Ctrl+V) 하세요.');
+  }).catch(() => {
+    showPartyToast('⚠️ 복사 실패', '클립보드 접근 권한을 확인해 주세요.');
+  });
+}
+
+function copyPartyShareUrl() {
+  try {
+    const payload = {
+      d: partyState.dungeon,
+      t: partyState.departTime,
+      s: partyState.minSpec,
+      m: partyState.members.map(m => ({ i: m.id, n: m.name, r: m.role, s: m.spec, y: m.ready }))
+    };
+    const jsonStr = JSON.stringify(payload);
+    const encoded = encodeURIComponent(btoa(unescape(encodeURIComponent(jsonStr))));
+    const url = `${window.location.origin}${window.location.pathname}#party=${encoded}`;
+
+    navigator.clipboard.writeText(url).then(() => {
+      showPartyToast('🔗 무서버 초대 링크 복사 완료', '이 링크를 파티원들에게 공유하면 별도 서버 없이도 동일한 파티 현황을 함께 확인하고 신청할 수 있습니다.');
+    }).catch(() => {
+      showPartyToast('⚠️ 복사 실패', '초대 링크 생성 중 오류가 발생했습니다.');
+    });
+  } catch (e) {
+    console.error('Share URL error', e);
+    showPartyToast('⚠️ 오류', '초대 링크를 생성하지 못했습니다.');
+  }
+}
+
+function checkPartyHashImport() {
+  try {
+    const hash = window.location.hash;
+    if (hash && hash.includes('party=')) {
+      const match = hash.match(/party=([^&]+)/);
+      if (match && match[1]) {
+        const decodedStr = decodeURIComponent(escape(atob(decodeURIComponent(match[1]))));
+        const data = JSON.parse(decodedStr);
+        if (data && data.m) {
+          partyState.dungeon = data.d || partyState.dungeon;
+          partyState.departTime = data.t || partyState.departTime;
+          partyState.minSpec = data.s || partyState.minSpec;
+          partyState.members = data.m.map(item => ({
+            id: item.i,
+            name: item.n || '',
+            role: item.r || '',
+            spec: item.s || '',
+            ready: !!item.y
+          }));
+          savePartyState();
+          showPartyToast('📥 공유된 파티 정보 불러오기 완료', `[${partyState.dungeon}] 파티 설정이 실시간 동기화되었습니다.`);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Hash import error:', e);
+  }
+}
+
+function togglePartyDiscordModal() {
+  const panel = document.getElementById('party-discord-panel');
+  if (!panel) return;
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function saveAndTestDiscordWebhook() {
+  const inp = document.getElementById('party-webhook-url');
+  if (!inp) return;
+  const url = inp.value.trim();
+  if (!url || !url.startsWith('https://discord.com/api/webhooks/')) {
+    showPartyToast('⚠️ 유효하지 않은 웹훅', '올바른 디스코드 웹훅 URL (https://discord.com/api/webhooks/...)을 입력하세요.');
+    return;
+  }
+  partyState.webhookUrl = url;
+  savePartyState();
+
+  sendDiscordWebhook('테스트 알림: 테일즈위버 파티 센터', '디스코드 웹훅 연동이 성공적으로 활성화되었습니다! 파티원 충원 및 출발 시간에 알람이 자동 발송됩니다.', [
+    { name: '상태', value: '정상 작동 중', inline: true }
+  ]);
+  showPartyToast('✅ 웹훅 저장 및 테스트 완료', '디스코드 채널로 테스트 알림 메시지를 전송했습니다.');
+}
+
+function sendDiscordWebhook(title, description, fields) {
+  if (!partyState.webhookUrl) return;
+  const payload = {
+    username: '테일즈위버 레이드 알리미',
+    avatar_url: 'https://cdn-icons-png.flaticon.com/512/864/864685.png',
+    embeds: [
+      {
+        title: title,
+        description: description,
+        color: 3722232, // Cyan / Sky blue
+        fields: fields || [],
+        footer: {
+          text: '테일즈위버 비호정령 가이드 · 무서버 알람 엔진'
+        },
+        timestamp: new Date().toISOString()
+      }
+    ]
+  };
+
+  fetch(partyState.webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(err => {
+    console.warn('Discord webhook notice:', err);
+  });
+}
+
+function resetPartyHub() {
+  if (!confirm('현재 파티 모집 정보와 명단을 초기화하시겠습니까?')) return;
+  partyState.dungeon = '이클립스 6보스 토벌';
+  partyState.customTitle = '';
+  partyState.departTime = '';
+  partyState.minSpec = '합인챈 350+ / 주력 속성 160+ / 마방 3500+';
+  partyState.members = JSON.parse(JSON.stringify(DEFAULT_PARTY_MEMBERS));
+  partyState.alarmsTriggered = { full: false, m10: false, m5: false, depart: false };
+  savePartyState();
+  syncPartyInputsFromState();
+  renderPartySlots();
+  updatePartyProgressAndStatus();
+  updatePartyCountdown();
+  showPartyToast('🔄 파티 초기화 완료', '새로운 파티를 모집할 준비가 완료되었습니다.');
+}
+\n\nif (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bootCompanion);
 } else {
   bootCompanion();
