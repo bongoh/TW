@@ -32,14 +32,16 @@
     </div>
   </div>
 
-  <!-- Category Navigation Tabs -->
+  <!-- Category Navigation Tabs (8-Tabs Responsive 2x4 Grid) -->
   <nav class="nav-tabs" role="tablist">
-    <button class="tab-btn" data-tab="tab-growth" onclick="switchTab('tab-growth', this)">🌱 0. 초보자 버닝 가이드</button>
-    <button class="tab-btn active" data-tab="tab-spec" onclick="switchTab('tab-spec', this)">📊 1. 스펙 판독 & 버프</button>
-    <button class="tab-btn" data-tab="tab-rokagos" onclick="switchTab('tab-rokagos', this)">⚔️ 2. 보스 패턴 도감</button>
-    <button class="tab-btn" data-tab="tab-weekly" onclick="switchTab('tab-weekly', this)">✅ 3. 비호 주간 숙제</button>
-    <button class="tab-btn" data-tab="tab-coeff" onclick="switchTab('tab-coeff', this)">🧮 4. 계수 & 명중 계산기</button>
-    <button class="tab-btn" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">💰 5. 시드 · 재료 계산기</button>
+    <button class="tab-btn" data-tab="tab-growth" onclick="switchTab('tab-growth', this)">🌱 0. 버닝 육성 가이드</button>
+    <button class="tab-btn" data-tab="tab-glossary" onclick="switchTab('tab-glossary', this)">📖 1. 필수 용어 사전</button>
+    <button class="tab-btn active" data-tab="tab-spec" onclick="switchTab('tab-spec', this)">📊 2. 스펙 판독 & 버프</button>
+    <button class="tab-btn" data-tab="tab-rokagos" onclick="switchTab('tab-rokagos', this)">⚔️ 3. 보스 패턴 도감</button>
+    <button class="tab-btn" data-tab="tab-weekly" onclick="switchTab('tab-weekly', this)">✅ 4. 주간 숙제 & 득템</button>
+    <button class="tab-btn" data-tab="tab-craft" onclick="switchTab('tab-craft', this)">🔨 5. 제련 · 조합 · 공방</button>
+    <button class="tab-btn" data-tab="tab-coeff" onclick="switchTab('tab-coeff', this)">🧮 6. 계수 & 명중 계산기</button>
+    <button class="tab-btn" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">💰 7. 시드 · 재료 계산기</button>
   </nav>
 
   <!-- ==================== TAB 0: BEGINNER BURNING GROWTH GUIDE ==================== -->
@@ -463,6 +465,50 @@
             <label class="milestone-item"><input type="checkbox" data-milestone="m12"> <span><b>Step 12.</b> Tab 2 패턴 도감 숙지 후 이클립스 6보스 토벌 성공!</span></label>
           </div>
         </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== TAB 1: ESSENTIAL GLOSSARY & SLANG DICTIONARY ==================== -->
+  <div id="tab-glossary" class="tab-panel">
+    <section>
+      <!-- Hero Banner -->
+      <div class="glossary-hero-card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem;">
+          <div>
+            <span class="badge" style="background:rgba(139, 92, 246, 0.15); color:#c4b5fd; border-color:rgba(139, 92, 246, 0.4);">
+              📖 테일즈위버 실전 축약어 · 은어 · 시스템 백과사전
+            </span>
+            <h2 style="font-size:1.45rem; color:#c4b5fd; margin:0.4rem 0 0.3rem;">
+              📖 초보자를 위한 테일즈위버 필수 용어 & 줄임말 사전
+            </h2>
+            <p style="font-size:0.88rem; color:#cbd5e1; line-height:1.6;">
+              게임 내 외치기나 파티 모집 글에서 자주 쓰이는 생소한 줄임말(신어헬, 오방, 사과섬, 1괴, 마방작 등)을 실시간으로 검색하고 카테고리별로 확인하세요!
+            </p>
+          </div>
+        </div>
+
+        <!-- Live Search Bar -->
+        <div class="glossary-search-wrap">
+          <input type="text" id="glossary-search-input" class="glossary-search-input" placeholder="🔍 용어·줄임말·내용 검색 (예: 신어헬, 림보, 1괴, 마방작, 홀필, 각성...)" oninput="handleGlossarySearch(this.value)">
+          <button type="button" class="btn-sm btn-outline" onclick="clearGlossarySearch()" style="white-space:nowrap;">🔄 초기화</button>
+        </div>
+
+        <!-- Category Filter Chips -->
+        <div class="glossary-cat-chips" id="glossary-category-chips">
+          <button type="button" class="glossary-chip active" data-cat="all" onclick="filterGlossaryCategory('all', this)">📋 전체 보기 (<span id="glossary-count-all">0</span>)</button>
+          <button type="button" class="glossary-chip" data-cat="raid" onclick="filterGlossaryCategory('raid', this)">⚔️ 던전·레이드 약어</button>
+          <button type="button" class="glossary-chip" data-cat="spec" onclick="filterGlossaryCategory('spec', this)">✨ 스펙·시스템 용어</button>
+          <button type="button" class="glossary-chip" data-cat="equip" onclick="filterGlossaryCategory('equip', this)">🛡️ 장비·티어 약어</button>
+          <button type="button" class="glossary-chip" data-cat="economy" onclick="filterGlossaryCategory('economy', this)">🧪 도핑·재화·경제</button>
+          <button type="button" class="glossary-chip" data-cat="skill" onclick="filterGlossaryCategory('skill', this)">🧙 비호·전투 스킬</button>
+          <button type="button" class="glossary-chip" data-cat="tips" onclick="filterGlossaryCategory('tips', this)">💡 실수 방지 꿀팁</button>
+        </div>
+      </div>
+
+      <!-- Glossary Result Cards Container -->
+      <div id="glossary-cards-container" class="glossary-grid">
+        <!-- Rendered via js/app.js renderGlossaryCards() -->
       </div>
     </section>
   </div>
@@ -3008,7 +3054,19 @@
           </div>
           <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#94a3b8; margin-top:4px;">
             <span>진행률: <b id="weekly-task-ratio" style="color:#38bdf8;">0 / 28 완료</b></span>
-            <span>주간 기대 총합: <b style="color:#e2e8f0;">약 9.0억 Seed</b></span>
+            <span>주간 고정 기대: <b style="color:#e2e8f0;">약 9.0억 Seed</b></span>
+          </div>
+        </div>
+
+        <!-- Weekly Loot Drop Revenue Box -->
+        <div class="seed-revenue-box" style="border-color: rgba(52, 211, 153, 0.45); background: rgba(6, 78, 59, 0.25);">
+          <div class="seed-revenue-header">
+            <span style="color:#34d399;">🎁 이번 주 득템 가치 합산</span>
+            <b id="weekly-total-loot-seed" style="color:#34d399;">+0.00억 Seed</b>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.74rem; color:#cbd5e1; margin-top:6px;">
+            <span>등록 득템: <b id="weekly-loot-count" style="color:#6ee7b7;">0건</b></span>
+            <span>총 수익(고정+득템): <b id="weekly-combined-total-seed" style="color:#fde047;">0.00억 Seed</b></span>
           </div>
         </div>
       </div>
@@ -3952,6 +4010,251 @@
     </section>
   </div>
 
+
+  <!-- ==================== TAB 5: CRAFTING, COMBINATION & REFINEMENT HUB ==================== -->
+  <div id="tab-craft" class="tab-panel">
+    <section>
+      <!-- Hero Banner -->
+      <div class="growth-hero-card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(30, 27, 75, 0.75), rgba(15, 23, 42, 0.9));">
+        <span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#fbbf24; border-color:rgba(245, 158, 11, 0.4);">
+          🔨 제련 · 조합 · 인챈트 · 코어 30작 종합 공방
+        </span>
+        <h2 style="font-size:1.45rem; color:#fbbf24; margin:0.4rem 0 0.3rem;">
+          🔨 장비 제련 · 5각 조합 · 테시스 코어 & 인챈트 공방
+        </h2>
+        <p style="font-size:0.88rem; color:#cbd5e1; line-height:1.6;">
+          비호정령의 핵심인 마방 인챈트, 5차 각성 개별 조합 수칙, 테시스 코어 30작 가성비 완성 트리 및 최상위 장비(眞아퀼/어비스/이클립스) 제작 레시피를 한곳에서 확인하세요!
+        </p>
+      </div>
+
+      <!-- Craft Sub Navigation -->
+      <div class="craft-nav">
+        <button type="button" class="craft-sub-btn active" onclick="switchCraftSubTab('craft-enchant', this)">🛡️ 제련 & 마방 인챈트</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-awakening', this)">⚠️ 5차 각성 개별 조합</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-core', this)">👑 테시스 코어 30작</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-recipe', this)">📜 최상위 장비 제작식</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-ability', this)">✨ 어빌리티 & 옵션 전이</button>
+      </div>
+
+      <!-- Sub-panel 1: Enchant & Refining -->
+      <div id="craft-enchant" class="craft-panel active">
+        <div class="craft-card-grid">
+          <div class="craft-card" style="border-top:3px solid #38bdf8;">
+            <div class="craft-card-title">
+              <span>일회용 마방 인챈트 주문서</span>
+              <span class="craft-badge-type">초보자 1순위</span>
+            </div>
+            <div style="font-size:0.83rem; color:#94a3b8; margin-bottom:0.45rem;">시세: 약 500만~1,000만 Seed | 상승치: MR +6 ~ +12</div>
+            <div style="font-size:0.86rem; color:#e2e8f0; line-height:1.55;">
+              거래소에서 저렴하게 구매 가능하며, 기간제 眞 아퀼루스 장비에 발라 <b>마을 마방 1,400+</b>를 달성하는 핵심 주문서입니다.
+            </div>
+          </div>
+
+          <div class="craft-card" style="border-top:3px solid #818cf8;">
+            <div class="craft-card-title">
+              <span>축복받은 마법방어력 인챈트</span>
+              <span class="craft-badge-type" style="color:#a5b4fc; border-color:rgba(129,140,248,0.4);">정규 상위작</span>
+            </div>
+            <div style="font-size:0.83rem; color:#94a3b8; margin-bottom:0.45rem;">시세: 약 3,000만~5,000만 Seed | 상승치: MR +10 ~ +18</div>
+            <div style="font-size:0.86rem; color:#e2e8f0; line-height:1.55;">
+              영구제 아퀼루스나 어비스 장비 종결 세팅 시 사용합니다. 고강화 시도 시 내구도 보호제를 적극 권장합니다.
+            </div>
+          </div>
+
+          <div class="craft-card" style="border-top:3px solid #f59e0b;">
+            <div class="craft-card-title">
+              <span>하이퍼 인챈트 주문서</span>
+              <span class="craft-badge-type" style="color:#fcd34d; border-color:rgba(245,158,11,0.4);">최상위 극옵</span>
+            </div>
+            <div style="font-size:0.83rem; color:#94a3b8; margin-bottom:0.45rem;">시세: 고액 시드 / 캐시샵 | 상승치: MR +15 ~ +25</div>
+            <div style="font-size:0.86rem; color:#e2e8f0; line-height:1.55;">
+              이클립스 종결 장비에 바르는 최고급 주문서로, 극한의 마방 수치를 끌어올릴 때 사용합니다.
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box" style="border-color:rgba(56,189,248,0.45);">
+          <strong>📌 비호정령 종결 마방 세팅 실전 수칙</strong>
+          <ul style="margin-top:0.45rem; font-size:0.86rem; color:#cbd5e1; line-height:1.6;">
+            <li><b>방패(손목) & 로브(갑옷) 최우선:</b> 비호정령은 손목과 갑옷 부위에 마방이 가장 크게 붙으므로 마방작 1순위로 투자하세요.</li>
+            <li><b>안전 강화 구간:</b> 1~6강은 안전하게 성공하나, 7강 이상 시 실패 페널티(수치 하락/내구도 손상)가 있으니 보호제를 지참하세요.</li>
+            <li><b>기간제 장비 절약:</b> 버닝 지원 기간제 장비에는 값비싼 축복 인챈트 대신 가성비 일회용 마방 주문서로 알뜰하게 도배하세요.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sub-panel 2: 5th Awakening -->
+      <div id="craft-awakening" class="craft-panel">
+        <div class="warning-alert-card">
+          <div class="warning-alert-title">
+            <span>🚨 [초특급 주의] 5차 각성 재료는 반드시 '1개씩 개별 조합'하세요!</span>
+          </div>
+          <div style="font-size:0.88rem; color:#fecaca; line-height:1.6;">
+            5차 각성 재료(윤기나는 정수, 수호자의 영석 등)를 조합창에 한꺼번에 겹쳐 넣으면, <b>재료는 몽땅 사라지고 결과물은 딱 1개만 나오는 치명적인 시스템 손실</b>이 발생합니다!<br>
+            반드시 <b>1회 조합 시 재료를 1세트(정수 1개 + 영석 1개)씩만 올려놓고</b> 개별 조합을 진행하세요!
+          </div>
+        </div>
+
+        <div class="growth-roadmap-grid">
+          <div class="roadmap-step-card" style="border-top:3px solid #38bdf8;">
+            <div class="roadmap-step-num">STEP 01</div>
+            <div class="roadmap-step-title">재료 수급</div>
+            <div class="roadmap-step-desc">
+              젤리삐 가이드 11단계 보상 및 이클립스/어비스 보스 파밍으로 <b>윤기나는 정수</b>와 <b>수호자의 영석</b>을 준비합니다.
+            </div>
+          </div>
+
+          <div class="roadmap-step-card" style="border-top:3px solid #ef4444;">
+            <div class="roadmap-step-num" style="color:#f87171;">STEP 02 (핵심)</div>
+            <div class="roadmap-step-title">1개씩 낱개 조합</div>
+            <div class="roadmap-step-desc">
+              조합창에 재료를 1세트씩만 넣고 조합하여 <b>융합된 수호자의 영석</b>을 차례대로 완성합니다.
+            </div>
+          </div>
+
+          <div class="roadmap-step-card" style="border-top:3px solid #818cf8;">
+            <div class="roadmap-step-num">STEP 03</div>
+            <div class="roadmap-step-title">NPC 리라 전달</div>
+            <div class="roadmap-step-desc">
+              완성된 융합된 수호자의 영석을 <b>아크론 요새 NPC 리라</b>에게 가져가 퀘스트를 제출합니다.
+            </div>
+          </div>
+
+          <div class="roadmap-step-card" style="border-top:3px solid #34d399;">
+            <div class="roadmap-step-num">STEP 04</div>
+            <div class="roadmap-step-title">에타의 의지 해금</div>
+            <div class="roadmap-step-desc">
+              연계 퀘스트로 <b>엔디미온</b>을 찾아가 5차 각성을 최종 완료하고 <b>에타의 의지(Eta)</b> 시스템을 개방합니다!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-panel 3: Tesis Core -->
+      <div id="craft-core" class="craft-panel">
+        <div class="info-box" style="border-color:rgba(245,158,11,0.45); margin-bottom:1.15rem;">
+          <strong style="color:#fbbf24;">👑 테시스 코어 가성비 30작 완성 핵심 공식 (+30작 달성 시 마방 +32 & 최종 뎀증)</strong>
+          <p style="font-size:0.86rem; color:#cbd5e1; margin-top:0.4rem; line-height:1.6;">
+            비싼 비용을 들이지 않고도 거래소의 저가 아이템을 활용해 3부위 코어를 +10강씩 총 +30작으로 단숨에 완성하는 초보자 필승 가성비 세팅입니다.
+          </p>
+        </div>
+
+        <div class="growth-roadmap-grid">
+          <div class="roadmap-step-card" style="border-top:3px solid #38bdf8;">
+            <div class="roadmap-step-num">1단계</div>
+            <div class="roadmap-step-title">코어 조각 수급</div>
+            <div class="roadmap-step-desc">
+              코어 던전(TP 소모) 및 주간 숙제로 획득한 테시스 코어 상자를 분해하여 <b>코어 조각</b>을 모읍니다.
+            </div>
+          </div>
+
+          <div class="roadmap-step-card" style="border-top:3px solid #818cf8;">
+            <div class="roadmap-step-num">2단계</div>
+            <div class="roadmap-step-title">기본 1강화</div>
+            <div class="roadmap-step-desc">
+              모아둔 코어 조각을 사용하여 코어 3부위를 각각 <b>기본 1단계 강화</b> 상태로 만듭니다.
+            </div>
+          </div>
+
+          <div class="roadmap-step-card" style="border-top:3px solid #fbbf24;">
+            <div class="roadmap-step-num">3단계</div>
+            <div class="roadmap-step-title">이클 진화권 점핑</div>
+            <div class="roadmap-step-desc">
+              거래소에서 매우 저렴한 <b>이클립스 코어 진화권</b>을 구매하여 1강 코어를 즉시 4진화로 점핑시킵니다.
+            </div>
+          </div>
+
+          <div class="roadmap-step-card" style="border-top:3px solid #34d399;">
+            <div class="roadmap-step-num">4단계</div>
+            <div class="roadmap-step-title">+30작 종결 완성</div>
+            <div class="roadmap-step-desc">
+              3부위 모두 +10강까지 달성하면 <b>총 +30작</b>이 완성되어 마방 +32 및 폭발적인 피해량 증폭을 획득합니다!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-panel 4: Recipes -->
+      <div id="craft-recipe" class="craft-panel">
+        <div class="craft-card-grid">
+          <div class="craft-card" style="border-top:3px solid #34d399;">
+            <div class="craft-card-title">
+              <span>眞 아퀼루스 장비 세트 (Lv.300)</span>
+              <span class="craft-badge-type" style="color:#34d399; border-color:rgba(52,211,153,0.4);">국민 상위</span>
+            </div>
+            <div style="font-size:0.83rem; color:#94a3b8; margin-bottom:0.5rem;">제작 장소: 사과의 섬 제작소 NPC</div>
+            <ul style="font-size:0.85rem; color:#cbd5e1; line-height:1.6; margin-left:1.1rem;">
+              <li>아퀼루스 장비 파편 5개</li>
+              <li>머큐리얼 정수 10개</li>
+              <li>아퀼루스 변환석 1개</li>
+              <li>기본 제작비: 5,000만 Seed</li>
+            </ul>
+            <div style="font-size:0.8rem; color:#38bdf8; margin-top:0.5rem;">💡 사과의 섬 퀘스트 완료 시 2주 기간제 풀세트 무료 제작 지원</div>
+          </div>
+
+          <div class="craft-card" style="border-top:3px solid #818cf8;">
+            <div class="craft-card-title">
+              <span>어비스 장비 세트 (Lv.310)</span>
+              <span class="craft-badge-type" style="color:#a5b4fc; border-color:rgba(129,140,248,0.4);">상위 레이드</span>
+            </div>
+            <div style="font-size:0.83rem; color:#94a3b8; margin-bottom:0.5rem;">제작 장소: 심연의 틈 NPC</div>
+            <ul style="font-size:0.85rem; color:#cbd5e1; line-height:1.6; margin-left:1.1rem;">
+              <li>어비스 코어 상자 10개</li>
+              <li>심연의 가루 50개</li>
+              <li>융합 촉매 5개</li>
+              <li>기본 제작비: 1억 Seed</li>
+            </ul>
+            <div style="font-size:0.8rem; color:#818cf8; margin-top:0.5rem;">💡 신조의 둥지와 어비스 심층 파티 순회로 재료 파밍</div>
+          </div>
+
+          <div class="craft-card" style="border-top:3px solid #f59e0b;">
+            <div class="craft-card-title">
+              <span>이클립스 장비 세트 (최상위 엔드)</span>
+              <span class="craft-badge-type" style="color:#fbbf24; border-color:rgba(245,158,11,0.4);">종결 엔드</span>
+            </div>
+            <div style="font-size:0.83rem; color:#94a3b8; margin-bottom:0.5rem;">제작 장소: 달의 섬 이클립스 제단</div>
+            <ul style="font-size:0.85rem; color:#cbd5e1; line-height:1.6; margin-left:1.1rem;">
+              <li>이클립스 정수 20개</li>
+              <li>고유 에타 가루 100개</li>
+              <li>달의 파편 10개</li>
+              <li>기본 제작비: 2억 Seed</li>
+            </ul>
+            <div style="font-size:0.8rem; color:#fbbf24; margin-top:0.5rem;">💡 사과의 섬 6보스 토벌 시 완제 직드랍 잭팟을 노리는 것이 효율적</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-panel 5: Ability & Transfer -->
+      <div id="craft-ability" class="craft-panel">
+        <div class="info-box" style="border-color:rgba(167,139,250,0.45); margin-bottom:1.15rem;">
+          <strong style="color:#c4b5fd;">✨ 상실의 백마법 증폭 어빌리티 & 카탈리스트 옵션 전이 매뉴얼</strong>
+        </div>
+
+        <div class="craft-card-grid">
+          <div class="craft-card" style="border-top:3px solid #a78bfa;">
+            <div class="craft-card-title">상실의 백마법 증폭 (비호 필수 어빌)</div>
+            <div style="font-size:0.86rem; color:#e2e8f0; line-height:1.6;">
+              무기 및 갑옷 부위에 장착할 수 있는 핵심 어빌리티로, 비호정령의 백마법 공격 대미지와 힐량을 <b>퍼센트(%) 단위로 직접 증폭</b>시켜 줍니다.
+            </div>
+          </div>
+
+          <div class="craft-card" style="border-top:3px solid #38bdf8;">
+            <div class="craft-card-title">카탈리스트 옵션 전이 (비용 절약)</div>
+            <div style="font-size:0.86rem; color:#e2e8f0; line-height:1.6;">
+              인퍼널 장비에 완성해 둔 고수치 마방 인챈트를 아퀼루스 장비로 이전할 때 <b>카탈리스트</b>를 사용하면 인챈트 비용을 수억 시드 절약할 수 있습니다.
+            </div>
+          </div>
+
+          <div class="craft-card" style="border-top:3px solid #f87171;">
+            <div class="craft-card-title" style="color:#fca5a5;">⚠️ 옵션 전이 시 주의사항</div>
+            <div style="font-size:0.86rem; color:#e2e8f0; line-height:1.6;">
+              옵션 전이가 완료되면 <b>베이스(기존) 장비는 영구 소멸</b>합니다. 대상 장비와 이전할 장비의 위치를 반드시 두 번 확인하고 진행하세요.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <!-- ==================== TAB 4: COEFFICIENT & ACCURACY CALCULATOR ==================== -->
   <div id="tab-coeff" class="tab-panel">

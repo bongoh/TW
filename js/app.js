@@ -1071,6 +1071,9 @@ function applyProfile(id) {
 
   evaluateStats();
   updateWeeklyProgress();
+  loadWeeklyLootData();
+  renderAllTaskLootBadges();
+  updateTotalLootSeed();
 }
 
 function saveCurrentStateToProfile() {
@@ -1372,6 +1375,8 @@ updateWeeklyProgress = function() {
     applyWeeklyFilterDisplay();
   }
 
+  updateTotalLootSeed(earnedSeed);
+
   saveCurrentStateToProfile();
 };
 
@@ -1515,6 +1520,8 @@ function bootCompanion() {
   initGrowthMilestones();
   initPartyHub();
   initBackToTopButton();
+  renderGlossaryCards();
+  initWeeklyTaskLootTracker();
 }
 
 // ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
@@ -3294,6 +3301,354 @@ function resetPartyHub() {
   updatePartyProgressAndStatus();
   updatePartyCountdown();
   showPartyToast('🔄 파티 초기화 완료', '새로운 파티를 모집할 준비가 완료되었습니다.');
+}
+
+
+
+// ==================== 12. GLOSSARY LOGIC ====================
+let activeGlossaryCategory = 'all';
+let glossarySearchQuery = '';
+
+function renderGlossaryCards(filterCat, query) {
+  if (filterCat !== undefined) activeGlossaryCategory = filterCat;
+  if (query !== undefined) glossarySearchQuery = query;
+
+  const container = document.getElementById('glossary-cards-container');
+  if (!container) return;
+
+  const q = (glossarySearchQuery || '').trim().toLowerCase();
+  const cat = activeGlossaryCategory || 'all';
+
+  const countAllEl = document.getElementById('glossary-count-all');
+  if (countAllEl && typeof GLOSSARY_DATA !== 'undefined') {
+    countAllEl.textContent = GLOSSARY_DATA.length;
+  }
+
+  if (typeof GLOSSARY_DATA === 'undefined' || !Array.isArray(GLOSSARY_DATA)) {
+    container.innerHTML = '<div style="color:#94a3b8; padding:2rem; text-align:center;">용어 데이터를 불러오는 중입니다...</div>';
+    return;
+  }
+
+  const filtered = GLOSSARY_DATA.filter(item => {
+    const matchCat = (cat === 'all' || item.category === cat);
+    if (!matchCat) return false;
+
+    if (!q) return true;
+
+    const inTerm = item.term.toLowerCase().includes(q);
+    const inOfficial = (item.officialName || '').toLowerCase().includes(q);
+    const inSummary = (item.summary || '').toLowerCase().includes(q);
+    const inExample = (item.example || '').toLowerCase().includes(q);
+    const inTags = Array.isArray(item.tags) && item.tags.some(t => t.toLowerCase().includes(q));
+
+    return inTerm || inOfficial || inSummary || inExample || inTags;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align:center; padding:3rem 1rem; color:#94a3b8; background:rgba(15,23,42,0.6); border-radius:10px; border:1px dashed rgba(51,65,85,0.7);">
+        <div style="font-size:1.6rem; margin-bottom:0.5rem;">🔍</div>
+        <div style="font-size:1rem; font-weight:700; color:#cbd5e1; margin-bottom:0.3rem;">일치하는 테일즈위버 용어를 찾을 수 없습니다.</div>
+        <div style="font-size:0.84rem; color:#64748b;">다른 검색어나 초성을 입력하시거나 상단 카테고리 칩을 변경해 보세요.</div>
+      </div>
+    `;
+    return;
+  }
+
+  const categoryNames = {
+    raid: '⚔️ 던전·레이드 약어',
+    spec: '✨ 스펙·시스템 용어',
+    equip: '🛡️ 장비·티어 약어',
+    economy: '🧪 도핑·재화·경제',
+    skill: '🧙 비호·전투 스킬',
+    tips: '💡 실수 방지 꿀팁'
+  };
+
+  container.innerHTML = filtered.map(item => {
+    const catLabel = categoryNames[item.category] || '기타';
+    const tagHtml = Array.isArray(item.tags)
+      ? item.tags.map(t => `<span class="glossary-tag-pill">#${escapeHtml(t)}</span>`).join('')
+      : '';
+
+    return `
+      <div class="glossary-card">
+        <div>
+          <div class="glossary-card-top">
+            <span class="glossary-term-badge">${escapeHtml(item.term)}</span>
+            <span class="glossary-cat-badge">${escapeHtml(catLabel)}</span>
+          </div>
+          <div class="glossary-official-name">${escapeHtml(item.officialName)}</div>
+          <div class="glossary-summary">${escapeHtml(item.summary)}</div>
+          ${item.example ? `<div class="glossary-example-box">${escapeHtml(item.example)}</div>` : ''}
+        </div>
+        <div class="glossary-tags">${tagHtml}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function handleGlossarySearch(val) {
+  glossarySearchQuery = val;
+  renderGlossaryCards(activeGlossaryCategory, glossarySearchQuery);
+}
+
+function filterGlossaryCategory(cat, btnEl) {
+  activeGlossaryCategory = cat;
+  const chips = document.querySelectorAll('#glossary-category-chips .glossary-chip');
+  chips.forEach(c => c.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  renderGlossaryCards(activeGlossaryCategory, glossarySearchQuery);
+}
+
+function clearGlossarySearch() {
+  glossarySearchQuery = '';
+  const input = document.getElementById('glossary-search-input');
+  if (input) input.value = '';
+  renderGlossaryCards(activeGlossaryCategory, '');
+}
+
+
+// ==================== 13. CRAFTING & COMBINATION LOGIC ====================
+function switchCraftSubTab(subId, btnEl) {
+  document.querySelectorAll('.craft-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.craft-sub-btn').forEach(b => b.classList.remove('active'));
+
+  const el = document.getElementById(subId);
+  if (el) el.classList.add('active');
+  if (btnEl) btnEl.classList.add('active');
+}
+
+
+// ==================== 14. WEEKLY TASK LOOT TRACKER LOGIC ====================
+let weeklyLootData = {};
+
+function getLootStorageKey() {
+  return 'tw_weekly_loot_' + (typeof currentProfileId !== 'undefined' && currentProfileId ? currentProfileId : 'default');
+}
+
+function loadWeeklyLootData() {
+  try {
+    const raw = localStorage.getItem(getLootStorageKey());
+    weeklyLootData = raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    weeklyLootData = {};
+  }
+}
+
+function saveWeeklyLootData() {
+  try {
+    localStorage.setItem(getLootStorageKey(), JSON.stringify(weeklyLootData));
+  } catch (e) {}
+  updateTotalLootSeed();
+}
+
+function initWeeklyTaskLootTracker() {
+  loadWeeklyLootData();
+
+  const taskItems = document.querySelectorAll('#tab-weekly .task-item');
+  taskItems.forEach(item => {
+    const chk = item.querySelector('.weekly-chk');
+    if (!chk) return;
+    const taskId = chk.dataset.id || chk.dataset.task;
+    if (!taskId) return;
+
+    const body = item.querySelector('.task-body');
+    if (!body) return;
+
+    if (body.querySelector('.task-loot-section')) return;
+
+    const presets = (typeof LOOT_PRESETS !== 'undefined' && LOOT_PRESETS[taskId])
+      ? LOOT_PRESETS[taskId]
+      : (typeof LOOT_PRESETS !== 'undefined' && LOOT_PRESETS['default'] ? LOOT_PRESETS['default'] : []);
+
+    const chipsHtml = presets.map(p => {
+      const seedLabel = (p.defaultSeed >= 100000000)
+        ? (p.defaultSeed / 100000000).toFixed(1) + '억'
+        : (p.defaultSeed / 10000).toLocaleString() + '만';
+      return `<button type="button" class="loot-preset-chip" onclick="addPresetLoot(event, '${taskId}', '${escapeHtml(p.name)}', ${p.defaultSeed})">+ ${escapeHtml(p.name)} (${seedLabel})</button>`;
+    }).join('');
+
+    const lootSection = document.createElement('div');
+    lootSection.className = 'task-loot-section';
+    lootSection.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+        <button type="button" class="loot-toggle-btn" onclick="toggleTaskLootDrawer(event, '${taskId}')">
+          🎁 득템 기록하기 ▾
+        </button>
+        <span id="loot-task-sum-${taskId}" style="font-size:0.75rem; font-weight:700; color:#34d399;"></span>
+      </div>
+
+      <!-- Loot Badges List -->
+      <div class="loot-badges-container" id="loot-badges-${taskId}"></div>
+
+      <!-- Expandable Loot Input Drawer -->
+      <div class="loot-drawer" id="loot-drawer-${taskId}" onclick="event.stopPropagation()">
+        <div style="font-size:0.75rem; font-weight:700; color:#a7f3d0; margin-bottom:0.35rem;">
+          ✨ 대표 드랍템 1클릭 추가:
+        </div>
+        <div class="loot-chips-wrap">
+          ${chipsHtml}
+        </div>
+        <div class="loot-custom-row">
+          <input type="text" id="loot-custom-name-${taskId}" class="loot-input-name" placeholder="직접 아이템명 입력 (예: 희귀 완제)" onclick="event.stopPropagation()">
+          <input type="number" id="loot-custom-seed-${taskId}" class="loot-input-seed" placeholder="만 Seed 단위 (예: 5000)" onclick="event.stopPropagation()">
+          <button type="button" class="loot-add-btn" onclick="addCustomLoot(event, '${taskId}')">➕ 기록</button>
+        </div>
+      </div>
+    `;
+
+    body.appendChild(lootSection);
+    renderTaskLootBadges(taskId);
+  });
+
+  updateTotalLootSeed();
+}
+
+function toggleTaskLootDrawer(e, taskId) {
+  if (e) {
+    if (e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+  }
+  const drawer = document.getElementById(`loot-drawer-${taskId}`);
+  if (!drawer) return;
+  drawer.classList.toggle('open');
+}
+
+function addPresetLoot(e, taskId, name, seed) {
+  if (e) {
+    if (e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+  }
+  if (!weeklyLootData[taskId]) weeklyLootData[taskId] = [];
+  weeklyLootData[taskId].push({
+    id: Date.now() + Math.random(),
+    name: name,
+    seed: Number(seed) || 0
+  });
+  saveWeeklyLootData();
+  renderTaskLootBadges(taskId);
+}
+
+function addCustomLoot(e, taskId) {
+  if (e) {
+    if (e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+  }
+  const nameInput = document.getElementById(`loot-custom-name-${taskId}`);
+  const seedInput = document.getElementById(`loot-custom-seed-${taskId}`);
+  if (!nameInput) return;
+
+  const name = nameInput.value.trim();
+  if (!name) {
+    alert('아이템명을 입력해 주세요.');
+    return;
+  }
+  const seedValMan = Number(seedInput ? seedInput.value : 0) || 0;
+  const seed = seedValMan * 10000;
+
+  if (!weeklyLootData[taskId]) weeklyLootData[taskId] = [];
+  weeklyLootData[taskId].push({
+    id: Date.now() + Math.random(),
+    name: name,
+    seed: seed
+  });
+
+  nameInput.value = '';
+  if (seedInput) seedInput.value = '';
+
+  saveWeeklyLootData();
+  renderTaskLootBadges(taskId);
+}
+
+function deleteLootItem(e, taskId, lootId) {
+  if (e) {
+    if (e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+  }
+  if (!weeklyLootData[taskId]) return;
+  weeklyLootData[taskId] = weeklyLootData[taskId].filter(x => x.id !== lootId);
+  saveWeeklyLootData();
+  renderTaskLootBadges(taskId);
+}
+
+function renderTaskLootBadges(taskId) {
+  const container = document.getElementById(`loot-badges-${taskId}`);
+  const sumEl = document.getElementById(`loot-task-sum-${taskId}`);
+  if (!container) return;
+
+  const items = weeklyLootData[taskId] || [];
+  if (items.length === 0) {
+    container.innerHTML = '';
+    if (sumEl) sumEl.textContent = '';
+    return;
+  }
+
+  let taskTotalSeed = 0;
+  container.innerHTML = items.map(item => {
+    taskTotalSeed += Number(item.seed) || 0;
+    const seedText = (item.seed >= 100000000)
+      ? (item.seed / 100000000).toFixed(2) + '억'
+      : (item.seed / 10000).toLocaleString() + '만';
+
+    return `
+      <span class="loot-item-badge">
+        🏷️ ${escapeHtml(item.name)} (+${seedText})
+        <span class="loot-item-del" onclick="deleteLootItem(event, '${taskId}', ${item.id})" title="삭제">✕</span>
+      </span>
+    `;
+  }).join('');
+
+  if (sumEl) {
+    sumEl.textContent = `득템합: +${(taskTotalSeed / 100000000).toFixed(2)}억 Seed`;
+  }
+}
+
+function renderAllTaskLootBadges() {
+  const taskItems = document.querySelectorAll('#tab-weekly .task-item');
+  taskItems.forEach(item => {
+    const chk = item.querySelector('.weekly-chk');
+    if (!chk) return;
+    const taskId = chk.dataset.id || chk.dataset.task;
+    if (taskId) renderTaskLootBadges(taskId);
+  });
+}
+
+function updateTotalLootSeed(earnedGuaranteedSeed) {
+  let totalLoot = 0;
+  let totalCount = 0;
+
+  Object.values(weeklyLootData).forEach(list => {
+    if (Array.isArray(list)) {
+      list.forEach(item => {
+        totalLoot += Number(item.seed) || 0;
+        totalCount++;
+      });
+    }
+  });
+
+  const lootTotalEl = document.getElementById('weekly-total-loot-seed');
+  if (lootTotalEl) {
+    lootTotalEl.textContent = `+${(totalLoot / 100000000).toFixed(2)}억 Seed`;
+  }
+
+  const countEl = document.getElementById('weekly-loot-count');
+  if (countEl) {
+    countEl.textContent = `${totalCount}건`;
+  }
+
+  if (typeof earnedGuaranteedSeed !== 'number') {
+    let earned = 0;
+    document.querySelectorAll('.weekly-chk').forEach(chk => {
+      if (chk.checked) earned += Number(chk.dataset.seed) || 0;
+    });
+    earnedGuaranteedSeed = earned;
+  }
+
+  const combinedTotal = (Number(earnedGuaranteedSeed) || 0) + totalLoot;
+  const combinedEl = document.getElementById('weekly-combined-total-seed');
+  if (combinedEl) {
+    combinedEl.textContent = `${(combinedTotal / 100000000).toFixed(2)}억 Seed`;
+  }
 }
 
 
