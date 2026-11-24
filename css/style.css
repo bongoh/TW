@@ -2952,3 +2952,80 @@
     color: #e2e8f0;
     line-height: 1.5;
   }
+
+  /* Additional Styles for Capacity & Member Join & Discord Enhancement */
+  .party-capacity-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 5px;
+  }
+  .party-capacity-btn {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(71, 85, 105, 0.7);
+    color: #e2e8f0;
+    padding: 0.18rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .party-capacity-btn:hover {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #38bdf8;
+  }
+  .party-capacity-btn.active {
+    background: rgba(56, 189, 248, 0.25);
+    border-color: #38bdf8;
+    color: #38bdf8;
+  }
+  .party-join-btn {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(52, 211, 153, 0.25));
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    color: #7dd3fc;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.35rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .party-join-btn:hover {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.4), rgba(52, 211, 153, 0.4));
+    border-color: #34d399;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  }
+  .party-share-banner {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(56, 189, 248, 0.15));
+    border: 1px solid rgba(52, 211, 153, 0.45);
+    border-radius: 8px;
+    padding: 0.65rem 0.95rem;
+    margin-bottom: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: #a7f3d0;
+  }
+  .party-btn-discord {
+    background: rgba(88, 101, 242, 0.25);
+    color: #c7d2fe;
+    border-color: rgba(88, 101, 242, 0.5);
+  }
+  .party-btn-discord:hover {
+    background: rgba(88, 101, 242, 0.45);
+    border-color: #818cf8;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(88, 101, 242, 0.35);
+  }

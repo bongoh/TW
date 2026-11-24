@@ -3002,10 +3002,18 @@
 
       <!-- ==================== SERVERLESS PARTY RECRUITMENT & ALARM HUB ==================== -->
       <div class="party-hub-card" id="party-hub">
+        <!-- Shared Invite Banner (Activated when opening via shared link) -->
+        <div id="party-invite-banner" class="party-share-banner" style="display:none;">
+          <div>
+            <span>📥 <b>공유받은 파티 초대장 도착!</b> 아래 빈 슬롯의 <b>[✋ 내 캐릭터로 참가]</b> 버튼을 눌러 파티에 합류하세요.</span>
+          </div>
+          <button type="button" class="party-btn party-btn-secondary" style="padding:0.18rem 0.5rem; font-size:0.75rem;" onclick="dismissPartyInviteBanner()">닫기 ✕</button>
+        </div>
+
         <div class="party-hub-header">
           <div class="party-hub-title">
             <span>⚔️ 무서버 스마트 파티 모집 & 레이드 출발 알람 센터</span>
-            <span style="font-size:0.75rem; font-weight:normal; color:#94a3b8;">(별도 서버 없는 웹 표준 기반 실시간 알람)</span>
+            <span style="font-size:0.75rem; font-weight:normal; color:#94a3b8;">(별도 서버 없는 웹 표준 기반 실시간 알람 & 슬롯 공유)</span>
           </div>
           <div class="party-countdown-wrap">
             <span id="party-status-badge" class="party-status-badge party-status-recruiting">🟡 모집 중 (1/5)</span>
@@ -3013,21 +3021,39 @@
           </div>
         </div>
 
-        <!-- Party Configuration Bar -->
-        <div class="party-config-bar">
+        <!-- Party Configuration Bar (4 Columns) -->
+        <div class="party-config-bar" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));">
           <div>
             <label style="display:block; font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">🎯 대상 던전 / 숙제 콘텐츠</label>
             <select id="party-dungeon-select" class="party-slot-select" onchange="onPartyDungeonChange()">
-              <option value="이클립스 6보스 토벌">👑 이클립스 6보스 연전</option>
-              <option value="심연의 어비스 5단 파티">🔥 심연의 어비스 5단 (지하)</option>
-              <option value="신조의 둥지 지옥 난이도">🦅 신조의 둥지 (지옥)</option>
-              <option value="오클리 방어전">🛡️ 오클리 방어전 (나르비크)</option>
-              <option value="베스티지 보급품·별동대">⚔️ 베스티지 보급품 & 별동대</option>
-              <option value="아페티리아 일반 파티">❄️ 아페티리아 일반 던전</option>
-              <option value="시오칸하임 주간 파티">🏰 시오칸하임 오딘/보스 연전</option>
+              <option value="이클립스 6보스 토벌">👑 이클립스 6보스 연전 (기본 5인)</option>
+              <option value="심연의 어비스 5단 파티">🔥 심연의 어비스 5단 (기본 5인)</option>
+              <option value="신조의 둥지 지옥 난이도">🦅 신조의 둥지 지옥 (기본 5인)</option>
+              <option value="아페티리아 일반 파티">❄️ 아페티리아 일반 (기본 2인 듀오/파티)</option>
+              <option value="베스티지 보급품·별동대">⚔️ 베스티지 보급품 & 별동대 (기본 4인)</option>
+              <option value="오클리 방어전">🛡️ 오클리 방어전 (기본 1인/4인)</option>
+              <option value="시오칸하임 주간 파티">🏰 시오칸하임 오딘 연전 (기본 4~5인)</option>
               <option value="custom">✏️ 직접 입력 (커스텀 파티)</option>
             </select>
             <input type="text" id="party-custom-title" class="party-slot-input" style="display:none; margin-top:5px;" placeholder="파티명 입력" oninput="onPartyDataChange()">
+          </div>
+
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <label style="font-size:0.78rem; color:#94a3b8;">👥 레이드 모집 정원</label>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <button type="button" class="party-capacity-btn" style="padding:0 0.35rem;" onclick="adjustPartyMaxMembers(-1)">➖</button>
+                <b id="party-capacity-display" style="color:#38bdf8; font-size:0.85rem; min-width:26px; text-align:center;">5명</b>
+                <button type="button" class="party-capacity-btn" style="padding:0 0.35rem;" onclick="adjustPartyMaxMembers(1)">➕</button>
+              </div>
+            </div>
+            <div class="party-capacity-wrap">
+              <button type="button" class="party-capacity-btn" data-cap="1" onclick="setPartyMaxMembers(1)">1인</button>
+              <button type="button" class="party-capacity-btn" data-cap="2" onclick="setPartyMaxMembers(2)">2인(듀오)</button>
+              <button type="button" class="party-capacity-btn" data-cap="4" onclick="setPartyMaxMembers(4)">4인</button>
+              <button type="button" class="party-capacity-btn active" data-cap="5" onclick="setPartyMaxMembers(5)">5인(기본)</button>
+              <button type="button" class="party-capacity-btn" data-cap="8" onclick="setPartyMaxMembers(8)">8인(공대)</button>
+            </div>
           </div>
 
           <div>
@@ -3046,7 +3072,7 @@
             <label style="display:block; font-size:0.78rem; color:#94a3b8; margin-bottom:4px;">📋 최소 스펙 / 참가 안내 메모</label>
             <input type="text" id="party-min-spec" class="party-slot-input" placeholder="예: 합인챈 350+ / 속성 160+ / 마방 3500+" oninput="onPartyDataChange()">
             <div style="display:flex; align-items:center; gap:8px; margin-top:6px; font-size:0.75rem; color:#cbd5e1;">
-              <label style="cursor:pointer;"><input type="checkbox" id="party-sound-toggle" checked> 🔊 WebAudio 사운드 알람</label>
+              <label style="cursor:pointer;"><input type="checkbox" id="party-sound-toggle" checked> 🔊 WebAudio 알람</label>
               <button type="button" class="party-btn party-btn-secondary" style="padding:0.18rem 0.45rem; font-size:0.72rem;" onclick="testPartySound()">🔔 사운드 테스트</button>
             </div>
           </div>
@@ -3061,7 +3087,7 @@
           <div id="party-progress-fill" class="party-progress-fill" style="width: 20%;"></div>
         </div>
 
-        <!-- Party Member Slots (5 Slots) -->
+        <!-- Party Member Slots (1 to 8 Slots Dynamically Rendered) -->
         <div class="party-slots-grid" id="party-slots-container">
           <!-- Slots dynamically rendered via renderPartySlots() -->
         </div>
@@ -3072,26 +3098,35 @@
             📋 인게임 외치기/채팅 양식 복사
           </button>
           <button type="button" class="party-btn party-btn-success" onclick="copyPartyShareUrl()">
-            🔗 무서버 파티 초대 링크 복사 (해시 기반)
+            🔗 무서버 파티 초대 링크 복사 (해시 딥링크)
           </button>
           <button type="button" class="party-btn party-btn-secondary" onclick="requestBrowserNotificationPermission()">
             🔔 데스크톱 팝업 알림 허용
           </button>
-          <button type="button" class="party-btn party-btn-secondary" onclick="togglePartyDiscordModal()">
-            💬 디스코드 웹훅 알림 연동
+          <button type="button" class="party-btn party-btn-discord" onclick="togglePartyDiscordModal()">
+            💬 디스코드 웹훅 연동 & 공지
           </button>
           <button type="button" class="party-btn party-btn-secondary" style="margin-left:auto; color:#f87171;" onclick="resetPartyHub()">
             🔄 파티 초기화
           </button>
         </div>
 
-        <!-- Discord Webhook Input Collapsible -->
-        <div id="party-discord-panel" style="display:none; margin-top:0.85rem; padding:0.75rem; background:rgba(30,41,59,0.7); border-radius:8px; border:1px solid rgba(99,102,241,0.4);">
-          <div style="font-size:0.82rem; font-weight:700; color:#a5b4fc; margin-bottom:4px;">💬 디스코드 채널 웹훅 연동 (선택 사항)</div>
-          <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px;">디스코드 채널 설정 > 연동 > 웹훅 URL을 입력하면, 파티 충원 완료 및 출발 시간에 디스코드 봇 메시지가 전송됩니다. (서버 없이 브라우저에서 직접 발송)</div>
-          <div style="display:flex; gap:6px;">
-            <input type="text" id="party-webhook-url" class="party-slot-input" placeholder="https://discord.com/api/webhooks/..." style="flex:1;">
-            <button type="button" class="party-btn party-btn-primary" onclick="saveAndTestDiscordWebhook()">연동 및 테스트 전송</button>
+        <!-- Discord Webhook Input & Interactive Broadcast Collapsible -->
+        <div id="party-discord-panel" style="display:none; margin-top:0.85rem; padding:0.85rem; background:rgba(30,41,59,0.85); border-radius:8px; border:1px solid rgba(88,101,242,0.5);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div style="font-size:0.86rem; font-weight:700; color:#c7d2fe;">💬 디스코드 채널 웹훅 연동 & 실시간 공지 발송</div>
+            <span id="party-discord-status-badge" style="font-size:0.75rem; color:#94a3b8;">⚪ 미연동 (웹훅 URL 입력 필요)</span>
+          </div>
+          <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px; line-height:1.4;">
+            디스코드 채널 설정 > 연동 > 웹훅 URL을 등록하면 <b>별도 백엔드 서버 없이도 브라우저가 디스코드 API로 직접</b> 메시지를 전송합니다.<br>
+            • 파티원이 슬롯에 참가할 때마다 채널에 실시간 참가 알림 발송<br>
+            • 정원(1~8명) 충원 완료 시 즉시 <code>@everyone</code> 또는 팡파레 알림 자동 발송<br>
+            • 출발 10분 전 / 5분 전 / 출발 정시 알림 자동 발송
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+            <input type="text" id="party-webhook-url" class="party-slot-input" placeholder="https://discord.com/api/webhooks/..." style="flex:1; min-width:240px;">
+            <button type="button" class="party-btn party-btn-primary" onclick="saveAndTestDiscordWebhook()">💾 웹훅 저장 & 테스트</button>
+            <button type="button" class="party-btn party-btn-discord" onclick="broadcastPartyToDiscord()">📢 현재 파티 공지 발송</button>
           </div>
         </div>
       </div>
