@@ -792,6 +792,237 @@ const bossContentGuide = [
   { id: "mercurial_norm", name: "머큐리얼 / 신조·어비스 일반", reqCoeff: 35000, reqDex: 800, desc: "루미너스·신조일반·어비스 1~2층 일반 난이도" }
 ];
 
+// ==================== 9-1. TARGET MONSTERS & DUNGEONS DATABASE (전투 시험장 타겟 DB) ====================
+const TARGET_MONSTERS_DATA = [
+  // 1. Dummies (훈련용 샌드백 허수아비)
+  {
+    id: "dummy_zero",
+    category: "dummy",
+    categoryName: "🎯 훈련용 허수아비",
+    name: "방어력 0 허수아비 (순수 딜량 측정)",
+    dungeon: "네냐플 연무장",
+    level: 310,
+    hp: 50000000,
+    pdef: 0,
+    mdef: 0,
+    eva: 0,
+    is1ShotTarget: true,
+    desc: "방어력과 회피가 없는 순수 스탯 및 스킬 계수 측정용 샌드백입니다."
+  },
+  {
+    id: "dummy_std",
+    category: "dummy",
+    categoryName: "🎯 훈련용 허수아비",
+    name: "정예 방어 허수아비 (표준 방어력)",
+    dungeon: "네냐플 연무장",
+    level: 310,
+    hp: 100000000,
+    pdef: 2500,
+    mdef: 2500,
+    eva: 1000,
+    is1ShotTarget: true,
+    desc: "평균적인 필드 방어력과 회피치를 보유한 표준 테스트 허수아비입니다."
+  },
+
+  // 2. Farming Mobs (일반 사냥터 / 던전 잡몹 - 1방 컷 검증 특화)
+  {
+    id: "mob_arcadia",
+    category: "farming",
+    categoryName: "🌾 일반 사냥터 (1방 컷 검증)",
+    name: "아르카디아 일반 몬스터",
+    dungeon: "아르카디아 중심부 (Lv.285)",
+    level: 285,
+    hp: 8000000,
+    pdef: 800,
+    mdef: 800,
+    eva: 600,
+    is1ShotTarget: true,
+    desc: "초반 파밍 던전의 1방 컷(원킬 원샷) 달성 여부 검증용 몬스터입니다."
+  },
+  {
+    id: "mob_prava",
+    category: "farming",
+    categoryName: "🌾 일반 사냥터 (1방 컷 검증)",
+    name: "프라바 전초기지 거인 병사",
+    dungeon: "프라바 전초기지 (Lv.290)",
+    level: 290,
+    hp: 20000000,
+    pdef: 1500,
+    mdef: 1500,
+    eva: 950,
+    is1ShotTarget: true,
+    desc: "중급 사냥터의 튼튼한 거인 몬스터로 2천만 이상 1방 컷을 검증합니다."
+  },
+  {
+    id: "mob_apple",
+    category: "farming",
+    categoryName: "🌾 일반 사냥터 (1방 컷 검증)",
+    name: "사과의 섬 숲 경비 몬스터",
+    dungeon: "사과의 섬 (Lv.300)",
+    level: 300,
+    hp: 45000000,
+    pdef: 2400,
+    mdef: 2400,
+    eva: 1350,
+    is1ShotTarget: true,
+    desc: "버닝 졸업 후 주력 파밍터로 4,500만 이상 화력으로 1방 컷이 나는지 검증합니다."
+  },
+  {
+    id: "mob_golgotha",
+    category: "farming",
+    categoryName: "🌾 일반 사냥터 (1방 컷 검증)",
+    name: "골고다 협곡 선봉대 잡몹",
+    dungeon: "골고다 협곡 (Lv.310)",
+    level: 310,
+    hp: 80000000,
+    pdef: 3800,
+    mdef: 3800,
+    eva: 2100,
+    is1ShotTarget: true,
+    desc: "최상위 사냥터 고스펙 잡몹으로 8천만 원킬 및 명중(DEX 2,100+)을 시험합니다."
+  },
+
+  // 3. Raid Bosses (주간 레이드 보스 - 실대미지 & 적중도 검증)
+  {
+    id: "boss_mercurial",
+    category: "raid",
+    categoryName: "⚔️ 주간 레이드 보스",
+    name: "루미에라 / 셀레나 (머큐리얼)",
+    dungeon: "머큐리얼 케이브 (Lv.300)",
+    level: 300,
+    hp: 3000000000,
+    pdef: 3800,
+    mdef: 3800,
+    eva: 800,
+    is1ShotTarget: false,
+    desc: "입문용 주간 레이드 보스로 타당 실대미지와 처치 속도를 시험합니다."
+  },
+  {
+    id: "boss_shinjo",
+    category: "raid",
+    categoryName: "⚔️ 주간 레이드 보스",
+    name: "신조 (Shinjo 하드)",
+    dungeon: "신조의 둥지 어려움 (Lv.305)",
+    level: 305,
+    hp: 6000000000,
+    pdef: 5500,
+    mdef: 5500,
+    eva: 1300,
+    is1ShotTarget: false,
+    desc: "중자본 국민 보스로 마방 1,400+ 및 타당 수천만 딜량을 점검합니다."
+  },
+  {
+    id: "boss_abyss",
+    category: "raid",
+    categoryName: "⚔️ 주간 레이드 보스",
+    name: "어비스 심층 군주 (Hell)",
+    dungeon: "어비스 지옥 심층 (Lv.310)",
+    level: 310,
+    hp: 15000000000,
+    pdef: 7800,
+    mdef: 7800,
+    eva: 1350,
+    is1ShotTarget: false,
+    desc: "어비스 헬 지옥 난이도 보스로 고방어력 관통력과 올힛 여부를 검증합니다."
+  },
+  {
+    id: "boss_eclipse",
+    category: "raid",
+    categoryName: "⚔️ 주간 레이드 보스",
+    name: "로카고스 / 에토스 / 체리아",
+    dungeon: "달의 섬 이클립스 6보스전",
+    level: 310,
+    hp: 35000000000,
+    pdef: 9200,
+    mdef: 9200,
+    eva: 1650,
+    is1ShotTarget: false,
+    desc: "이클립스 주간 보스군으로 명중 1,650+ 및 최상위 실대미지를 검증합니다."
+  },
+  {
+    id: "boss_apetiria",
+    category: "raid",
+    categoryName: "⚔️ 주간 레이드 보스",
+    name: "아페테리아 심연 수호자",
+    dungeon: "아페테리아 어려움/EX",
+    level: 310,
+    hp: 50000000000,
+    pdef: 11000,
+    mdef: 11000,
+    eva: 2400,
+    is1ShotTarget: false,
+    desc: "명중 컷 2,400을 요구하는 고난도 보스로 펫 집중 스킬 효과를 즉시 체감 가능합니다."
+  },
+  {
+    id: "boss_golgotha_leader",
+    category: "raid",
+    categoryName: "⚔️ 주간 레이드 보스",
+    name: "골고다 선봉대 부대장",
+    dungeon: "골고다 협곡 정예 레이드",
+    level: 310,
+    hp: 65000000000,
+    pdef: 12500,
+    mdef: 12500,
+    eva: 2450,
+    is1ShotTarget: false,
+    desc: "명중 컷 2,450 요구, 극강의 방어력을 뚫어내는 종결 DPS를 측정합니다."
+  },
+  {
+    id: "boss_final",
+    category: "raid",
+    categoryName: "⚔️ 주간 레이드 보스",
+    name: "최후의 결전 (End Boss)",
+    dungeon: "달의 섬 최후의 결전",
+    level: 310,
+    hp: 100000000000,
+    pdef: 14000,
+    mdef: 14000,
+    eva: 2500,
+    is1ShotTarget: false,
+    desc: "명중 컷 2,500 및 최고위 대미지 배율을 요구하는 테일즈위버 최종 관문입니다."
+  }
+];
+
+// ==================== 9-2. CHARACTER ARCHETYPE SKILLS DATABASE (캐릭터 계열별 실전 스킬 DB) ====================
+const CHARACTER_SKILLS_DATA = {
+  // 1. 마법방어 (아나이스 비호정령, 티치엘 백법)
+  magic_def: [
+    { id: "sk_mdef_judge", name: "저지먼트 (Judgement)", hits: 12, mult: 1900, type: "single", desc: "비호정령의 대표 주력 단일 타격기 (12타 / 1,900%)" },
+    { id: "sk_mdef_square", name: "스퀘어 가든 (Square Garden)", hits: 8, mult: 2400, type: "area", desc: "성역 형성 주변 몬스터 섬멸 광역기 (8타 / 2,400%)" },
+    { id: "sk_mdef_holy", name: "홀리 블래스트 (Holy Blast)", hits: 10, mult: 2100, type: "single", desc: "마법방어력 비례 극딜 단일 마법 (10타 / 2,100%)" }
+  ],
+  // 2. 찌르기 (루시안, 이스핀, 나야, 시벨린)
+  stab: [
+    { id: "sk_stab_wonmu", name: "원무 (Dance of Blades)", hits: 12, mult: 2200, type: "single", desc: "초고속 연속 찌르기 대표 주력기 (12타 / 2,200%)" },
+    { id: "sk_stab_pearl", name: "펄스핀 (Pearl Spin)", hits: 14, mult: 2500, type: "single", desc: "회전 폭풍 극딜 연속 찌르기 (14타 / 2,500%)" },
+    { id: "sk_stab_charge", name: "충뢰 (Lightning Thrust)", hits: 8, mult: 2700, type: "area", desc: "번개 관통 광역 찌르기 (8타 / 2,700%)" }
+  ],
+  // 3. 베기 (보리스, 막시민, 루시안, 나야, 이스핀)
+  hack: [
+    { id: "sk_hack_smash", name: "스매시 (Smash)", hits: 10, mult: 2500, type: "single", desc: "묵직한 1방 베기 극딜기 (10타 / 2,500%)" },
+    { id: "sk_hack_yeon", name: "연 (Continuous Slash)", hits: 12, mult: 2300, type: "single", desc: "쾌속 12연타 베기 주력기 (12타 / 2,300%)" },
+    { id: "sk_hack_moon", name: "오화월광참 (Five Flowers)", hits: 10, mult: 2600, type: "area", desc: "광역 달빛 물리 베기 (10타 / 2,600%)" }
+  ],
+  // 4. 물리복합 (보리스, 나야, 시벨린, 밀라, 루시안, 곰나이스)
+  composite: [
+    { id: "sk_comp_crash", name: "크래시 버스트 (Crash Burst)", hits: 10, mult: 2600, type: "single", desc: "물리와 마력이 융합된 폭발 타격 (10타 / 2,600%)" },
+    { id: "sk_comp_ninja", name: "인술 폭 (Ninja Burst)", hits: 8, mult: 2400, type: "area", desc: "화약과 수리검 광역 폭파 (8타 / 2,400%)" },
+    { id: "sk_comp_red", name: "홍원단 (Red Circle)", hits: 12, mult: 2300, type: "single", desc: "봉을 이용한 연속 타격기 (12타 / 2,300%)" }
+  ],
+  // 5. 마법공격 (티치엘 흑법, 파괴정령, 조슈아, 클로에, 란지에)
+  magic_atk: [
+    { id: "sk_matk_meteor", name: "메테오 스트라이크 (Meteor)", hits: 10, mult: 2700, type: "area", desc: "초고화력 운석 낙하 광역 마법 (10타 / 2,700%)" },
+    { id: "sk_matk_ghost", name: "고스트 버스트 (Ghost Burst)", hits: 12, mult: 2300, type: "single", desc: "영혼 마력 집중 단일 투사 (12타 / 2,300%)" },
+    { id: "sk_matk_ice", name: "아이스 임팩트 (Ice Impact)", hits: 10, mult: 2500, type: "single", desc: "빙결 마법 집중 타격 (10타 / 2,500%)" }
+  ],
+  // 6. 마법베기 (보리스 마검, 막시민 마검, 이스핀 마검, 로아미니)
+  magic_slash: [
+    { id: "sk_mslash_frozen", name: "프로즌 브레이크 (Frozen Break)", hits: 10, mult: 2600, type: "single", desc: "빙한의 마검으로 적을 분쇄 (10타 / 2,600%)" },
+    { id: "sk_mslash_ori", name: "오리플람 (Oriflamme)", hits: 8, mult: 2500, type: "area", desc: "화염 마검 광역 베기 (8타 / 2,500%)" },
+    { id: "sk_mslash_sylph", name: "실피드 랜스 (Sylphid Lance)", hits: 12, mult: 2400, type: "single", desc: "바람의 칼날 관통 베기 (12타 / 2,400%)" }
+  ]
+};
+
 // 도핑 프리셋 정의 (계수 및 명중 계산기 연동용)
 const coeffDopingPresets = {
   none: {

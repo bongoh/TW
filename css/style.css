@@ -4309,3 +4309,375 @@
     border-radius: 4px;
     margin-bottom: 0.4rem;
   }
+
+  /* ==================== COMBAT TEST BENCH (전투 시험장 & 1방 컷 시뮬레이터) ==================== */
+  .combat-bench-wrapper {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 27, 75, 0.85));
+    border: 2px solid rgba(239, 68, 68, 0.45);
+    border-radius: 12px;
+    padding: 1.3rem;
+    margin-top: 1.6rem;
+    margin-bottom: 1.6rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+  .combat-bench-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+  }
+  .combat-bench-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .combat-bench-title {
+    margin: 0;
+    font-size: 1.22rem;
+    font-weight: 800;
+    color: #fca5a5;
+  }
+  .combat-test-mode-badge {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    animation: pulseGlow 2s infinite ease-in-out;
+  }
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.4); }
+    50% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.8); }
+  }
+  .combat-bench-desc {
+    font-size: 0.86rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin-bottom: 1.15rem;
+  }
+
+  /* Control Grid */
+  .combat-control-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0.85rem;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(51, 65, 85, 0.75);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .combat-control-field label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 0.35rem;
+  }
+  .combat-control-field select {
+    width: 100%;
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(100, 116, 139, 0.6);
+    color: #f8fafc;
+    border-radius: 6px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    box-sizing: border-box;
+  }
+  .combat-control-field select:focus {
+    outline: none;
+    border-color: #ef4444;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+  }
+  .combat-toggles-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    grid-column: 1 / -1;
+    margin-top: 0.2rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid rgba(51, 65, 85, 0.5);
+  }
+  .combat-toggle-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(30, 41, 59, 0.65);
+    border: 1px solid rgba(71, 85, 105, 0.6);
+    border-radius: 6px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+    color: #e2e8f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .combat-toggle-chip:hover {
+    background: rgba(51, 65, 85, 0.8);
+    border-color: #cbd5e1;
+  }
+  .combat-toggle-chip input[type="checkbox"] {
+    accent-color: #ef4444;
+    cursor: pointer;
+  }
+
+  /* Main 2-Col Combat Arena Panel */
+  .combat-arena-panel {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(340px, 1.25fr);
+    gap: 1.15rem;
+    margin-bottom: 1.25rem;
+  }
+  @media (max-width: 900px) {
+    .combat-arena-panel {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Left: Monster Target Card */
+  .combat-monster-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(71, 85, 105, 0.7);
+    border-radius: 10px;
+    padding: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .combat-monster-card.hit-animation {
+    animation: monsterHitFlash 0.35s ease;
+  }
+  @keyframes monsterHitFlash {
+    0% { transform: scale(1); filter: brightness(1); }
+    25% { transform: scale(0.97) translateX(-4px); filter: brightness(1.7) sepia(1) hue-rotate(-50deg); border-color: #ef4444; }
+    50% { transform: scale(1.02) translateX(4px); filter: brightness(1.4); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+  .monster-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .monster-name-wrap {
+    display: flex;
+    flex-direction: column;
+  }
+  .monster-name-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #f8fafc;
+  }
+  .monster-dungeon-subtitle {
+    font-size: 0.78rem;
+    color: #94a3b8;
+  }
+  .monster-category-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    white-space: nowrap;
+  }
+
+  /* Monster HP Progress Bar */
+  .monster-hp-container {
+    margin: 0.85rem 0 1rem;
+  }
+  .monster-hp-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #cbd5e1;
+    margin-bottom: 0.35rem;
+  }
+  .monster-hp-track {
+    height: 18px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(100, 116, 139, 0.6);
+    border-radius: 9px;
+    overflow: hidden;
+    position: relative;
+  }
+  .monster-hp-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .monster-hp-fill.dead {
+    background: #475569;
+  }
+  .monster-stat-tags {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.45rem;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 6px;
+    padding: 0.55rem;
+    margin-bottom: 0.9rem;
+    text-align: center;
+  }
+  .monster-stat-tag-item .lbl {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    display: block;
+  }
+  .monster-stat-tag-item .val {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #f1f5f9;
+  }
+  .monster-action-buttons {
+    display: flex;
+    gap: 0.6rem;
+  }
+  .combat-attack-btn {
+    flex: 2;
+    background: linear-gradient(135deg, #b91c1c, #dc2626);
+    border: 1px solid #ef4444;
+    color: #fff;
+    font-size: 0.94rem;
+    font-weight: 800;
+    padding: 0.65rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .combat-attack-btn:hover {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    transform: translateY(-1px);
+  }
+  .combat-attack-btn:active {
+    transform: translateY(1px);
+  }
+  .combat-reset-btn {
+    flex: 1;
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(100, 116, 139, 0.6);
+    color: #cbd5e1;
+    font-size: 0.83rem;
+    font-weight: 700;
+    padding: 0.65rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .combat-reset-btn:hover {
+    background: rgba(51, 65, 85, 0.8);
+    color: #fff;
+  }
+
+  /* Right: Combat Analysis Metrics */
+  .combat-analysis-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(71, 85, 105, 0.7);
+    border-radius: 10px;
+    padding: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .combat-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.65rem;
+    margin-bottom: 0.85rem;
+  }
+  .combat-kpi-box {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(71, 85, 105, 0.6);
+    border-radius: 8px;
+    padding: 0.7rem 0.85rem;
+  }
+  .combat-kpi-box.hit { border-color: rgba(16, 185, 129, 0.5); background: rgba(6, 78, 59, 0.25); }
+  .combat-kpi-box.dmg { border-color: rgba(56, 189, 248, 0.5); background: rgba(12, 74, 110, 0.25); }
+  .combat-kpi-box.total { border-color: rgba(168, 85, 247, 0.5); background: rgba(88, 28, 135, 0.25); }
+  .combat-kpi-lbl {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+  }
+  .combat-kpi-val {
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 1.15;
+  }
+  .combat-kpi-box.hit .combat-kpi-val { color: #34d399; }
+  .combat-kpi-box.dmg .combat-kpi-val { color: #38bdf8; }
+  .combat-kpi-box.total .combat-kpi-val { color: #c084fc; }
+
+  /* 1-Shot Kill Verdict Banner */
+  .combat-verdict-banner {
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.85rem;
+    border: 2px solid transparent;
+  }
+  .combat-verdict-banner.success {
+    background: rgba(6, 78, 59, 0.35);
+    border-color: #10b981;
+  }
+  .combat-verdict-banner.fail {
+    background: rgba(127, 29, 29, 0.35);
+    border-color: #ef4444;
+  }
+  .combat-verdict-banner.boss {
+    background: rgba(30, 58, 138, 0.35);
+    border-color: #3b82f6;
+  }
+  .combat-verdict-title {
+    font-size: 1.05rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.3rem;
+  }
+  .combat-verdict-banner.success .combat-verdict-title { color: #34d399; }
+  .combat-verdict-banner.fail .combat-verdict-title { color: #f87171; }
+  .combat-verdict-banner.boss .combat-verdict-title { color: #60a5fa; }
+  .combat-verdict-desc {
+    font-size: 0.84rem;
+    color: #e2e8f0;
+    line-height: 1.5;
+  }
+
+  /* Battle Log Console */
+  .combat-log-wrapper {
+    background: #090d16;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    max-height: 130px;
+    overflow-y: auto;
+  }
+  .combat-log-line {
+    margin-bottom: 0.25rem;
+    line-height: 1.45;
+  }
+  .combat-log-line.hit { color: #e2e8f0; }
+  .combat-log-line.crit { color: #fbbf24; font-weight: 700; }
+  .combat-log-line.kill { color: #34d399; font-weight: 800; }
+  .combat-log-line.miss { color: #f87171; font-weight: 700; }
+  .combat-log-line.reset { color: #38bdf8; }

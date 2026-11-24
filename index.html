@@ -40,7 +40,7 @@
     <button class="tab-btn" data-tab="tab-rokagos" onclick="switchTab('tab-rokagos', this)">⚔️ 3. 보스 패턴 도감</button>
     <button class="tab-btn" data-tab="tab-weekly" onclick="switchTab('tab-weekly', this)">✅ 4. 주간 숙제 & 득템</button>
     <button class="tab-btn" data-tab="tab-craft" onclick="switchTab('tab-craft', this)">🔨 5. 제련 · 조합 · 공방</button>
-    <button class="tab-btn" data-tab="tab-coeff" onclick="switchTab('tab-coeff', this)">🧮 6. 계수 & 명중 계산기</button>
+    <button class="tab-btn" data-tab="tab-coeff" onclick="switchTab('tab-coeff', this)">🧮 6. 계수 · 전투 시험장</button>
     <button class="tab-btn" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">💰 7. 시드 · 재료 계산기</button>
   </nav>
 
@@ -5845,6 +5845,140 @@
             <div class="coeff-kpi-card" style="border-color:#ca8a04;">
               <div class="coeff-kpi-label">최종 명중 (DEX)</div>
               <div id="coeff-kpi-dex" class="coeff-kpi-val acc">1,599</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== COMBAT TEST BENCH (실전 전투 시험장 & 1방 컷 시뮬레이터) ==================== -->
+        <div class="combat-bench-wrapper">
+          <div class="combat-bench-header">
+            <div class="combat-bench-title-wrap">
+              <span style="font-size:1.4rem;">⚔️</span>
+              <h3 class="combat-bench-title">실전 전투 시험장: 던전 · 보스 스킬 대미지 & 1방 컷 시뮬레이터</h3>
+            </div>
+            <span class="combat-test-mode-badge">⚡ 테스트 서버 모드</span>
+          </div>
+          <div class="combat-bench-desc">
+            위에서 세팅된 <b>종합 계수, DEX 명중, 54종 도핑 버프, 펫 스킬(집중)</b>을 실시간 연동하여 특정 던전 몬스터나 레이드 보스에 가해지는 <b>타당 실대미지, 크리티컬, 실제 적중률(%), 그리고 1방 컷(원샷 원킬) 달성 여부</b>를 시뮬레이션합니다.
+          </div>
+
+          <!-- Controls: Monster & Skill Selectors + Toggles -->
+          <div class="combat-control-grid">
+            <div class="combat-control-field">
+              <label for="combat-monster-select">🎯 대상 던전 / 몬스터 (레이드 보스)</label>
+              <select id="combat-monster-select">
+                <!-- Populated dynamically by TARGET_MONSTERS_DATA -->
+              </select>
+            </div>
+
+            <div class="combat-control-field">
+              <label for="combat-skill-select">⚔️ 시전할 주력 공격 스킬 (타수 / 배율)</label>
+              <select id="combat-skill-select">
+                <!-- Populated dynamically by active archetype skills -->
+              </select>
+            </div>
+
+            <div class="combat-toggles-row">
+              <label class="combat-toggle-chip">
+                <input type="checkbox" id="combat-crit-chk" checked>
+                <span>💥 크리티컬 100% 적용 (치명타 극딜)</span>
+              </label>
+              <label class="combat-toggle-chip">
+                <input type="checkbox" id="combat-third-sien-chk">
+                <span>📚 서드 시엔 레벨 돌파 (+200%p 계수 / +1타)</span>
+              </label>
+              <label class="combat-toggle-chip">
+                <input type="checkbox" id="combat-pet-conc-chk" checked>
+                <span>🐾 펫 3단계 [집중] 스킬 가산 (적중률 대폭 보정)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Main 2-Col Combat Arena Panel -->
+          <div class="combat-arena-panel">
+            <!-- Left: Monster Target Card & Visual HP Bar -->
+            <div id="combat-monster-card" class="combat-monster-card">
+              <div>
+                <div class="monster-header-row">
+                  <div class="monster-name-wrap">
+                    <span id="combat-m-name" class="monster-name-title">사과의 섬 숲 경비 몬스터</span>
+                    <span id="combat-m-dungeon" class="monster-dungeon-subtitle">사과의 섬 (Lv.300)</span>
+                  </div>
+                  <span id="combat-m-category" class="monster-category-badge">🌾 일반 사냥터</span>
+                </div>
+
+                <!-- Monster HP Progress Bar -->
+                <div class="monster-hp-container">
+                  <div class="monster-hp-labels">
+                    <span style="font-weight:700;">❤️ 몬스터 체력 (HP)</span>
+                    <span id="combat-m-hp-text" style="font-weight:800; color:#f87171;">45,000,000 / 45,000,000 (100%)</span>
+                  </div>
+                  <div class="monster-hp-track">
+                    <div id="combat-m-hp-bar" class="monster-hp-fill" style="width: 100%;"></div>
+                  </div>
+                </div>
+
+                <!-- Monster Defensive Stats -->
+                <div class="monster-stat-tags">
+                  <div class="monster-stat-tag-item">
+                    <span class="lbl">물리 방어력</span>
+                    <span id="combat-m-pdef" class="val">2,400</span>
+                  </div>
+                  <div class="monster-stat-tag-item">
+                    <span class="lbl">마법 방어력</span>
+                    <span id="combat-m-mdef" class="val">2,400</span>
+                  </div>
+                  <div class="monster-stat-tag-item">
+                    <span class="lbl">요구 회피치 (EVA)</span>
+                    <span id="combat-m-eva" class="val" style="color:#facc15;">1,350</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="monster-action-buttons">
+                <button type="button" id="btn-combat-attack" class="combat-attack-btn" onclick="runCombatAttackSimulation()">
+                  <span>💥 가상 스킬 타격 테스트!</span>
+                </button>
+                <button type="button" id="btn-combat-reset" class="combat-reset-btn" onclick="resetCombatMonsterHp()">
+                  <span>🔄 체력 리셋</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right: Combat Analysis Metrics & 1-Shot Verdict -->
+            <div class="combat-analysis-card">
+              <!-- KPI Grid -->
+              <div class="combat-kpi-grid">
+                <div class="combat-kpi-box hit">
+                  <div class="combat-kpi-lbl">🎯 실전 적중도 (Hit Rate)</div>
+                  <div id="combat-kpi-hit" class="combat-kpi-val">100% 올힛</div>
+                </div>
+                <div class="combat-kpi-box dmg">
+                  <div class="combat-kpi-lbl">🗡️ 타당 실대미지</div>
+                  <div id="combat-kpi-perhit" class="combat-kpi-val">3,850,000</div>
+                </div>
+                <div class="combat-kpi-box total">
+                  <div class="combat-kpi-lbl">💥 스킬 1회 총 대미지</div>
+                  <div id="combat-kpi-total" class="combat-kpi-val">46,200,000</div>
+                </div>
+              </div>
+
+              <!-- 1-Shot Kill Verdict Banner -->
+              <div id="combat-verdict-banner" class="combat-verdict-banner success">
+                <div id="combat-verdict-title" class="combat-verdict-title">
+                  <span>🎉</span>
+                  <span>【1방 컷 (원샷 원킬) 달성!】</span>
+                </div>
+                <div id="combat-verdict-desc" class="combat-verdict-desc">
+                  스킬 1회 시전 총 대미지(46,200,000)가 몬스터 Max HP(45,000,000)를 초과하여 1방에 처치할 수 있습니다! (오버킬 +2.7%)
+                </div>
+              </div>
+
+              <!-- Battle Log Console -->
+              <div id="combat-battle-log" class="combat-log-wrapper">
+                <div class="combat-log-line reset">[준비] ⚔️ 전투 시험장 준비 완료. [가상 스킬 타격 테스트!] 버튼을 누르거나 장비/도핑을 변경해보세요.</div>
+              </div>
             </div>
           </div>
         </div>

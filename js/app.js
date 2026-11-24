@@ -1687,6 +1687,7 @@ function bootCompanion() {
   initWeeklyTaskLootTracker();
   initRuneCollectionTracker();
   initEncryptCalculator();
+  initCombatSimulator();
 }
 
 // ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
@@ -1769,6 +1770,9 @@ function switchCoeffType(typeKey) {
   updateCoeffLabels();
   renderCoeffSlots();
   syncCoeffInputsFromProfile();
+  if (typeof populateCombatSkillSelector === 'function') {
+    populateCombatSkillSelector(typeKey);
+  }
   calculateCoefficients();
 }
 
@@ -2369,8 +2373,11 @@ function calculateCoefficients() {
   if (kpiValEl)   kpiValEl.textContent = totalCoeff.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   if (kpiDexEl)   kpiDexEl.textContent = totalDex.toLocaleString();
 
-  // Update Content Guide
+  // Update Content Guide & Combat Simulation
   renderBossContentGuide(totalCoeff, totalDex);
+  if (typeof updateCombatSimulation === 'function') {
+    updateCombatSimulation(totalCoeff, totalDex);
+  }
 }
 
 function renderBossContentGuide(currentCoeff, currentDex) {
@@ -2425,6 +2432,296 @@ function renderBossContentGuide(currentCoeff, currentDex) {
   });
 
   container.innerHTML = html;
+}
+
+// ==================== COMBAT TEST BENCH & 1-SHOT SIMULATOR LOGIC ====================
+let combatActiveMonsterId = null;
+let combatCurrentMonsterHp = 0;
+let combatCurrentMonsterMaxHp = 0;
+let combatLastCalculatedMetrics = null;
+
+function initCombatSimulator() {
+  populateCombatMonsterSelector();
+  const prof = typeof getActiveCoeffProfile === 'function' ? getActiveCoeffProfile() : null;
+  const typeKey = (prof && prof.type) || 'stab';
+  populateCombatSkillSelector(typeKey);
+
+  const monsterSel = document.getElementById('combat-monster-select');
+  const skillSel = document.getElementById('combat-skill-select');
+  const critChk = document.getElementById('combat-crit-chk');
+  const thirdChk = document.getElementById('combat-third-sien-chk');
+  const petChk = document.getElementById('combat-pet-conc-chk');
+
+  if (monsterSel) {
+    monsterSel.addEventListener('change', function() {
+      combatActiveMonsterId = this.value;
+      const target = (typeof TARGET_MONSTERS_DATA !== 'undefined' ? TARGET_MONSTERS_DATA : []).find(m => m.id === this.value);
+      if (target) {
+        combatCurrentMonsterHp = target.hp;
+        combatCurrentMonsterMaxHp = target.hp;
+      }
+      if (typeof calculateCoefficients === 'function') calculateCoefficients();
+    });
+  }
+
+  [skillSel, critChk, thirdChk, petChk].forEach(el => {
+    if (el) {
+      el.addEventListener('change', function() {
+        if (typeof calculateCoefficients === 'function') calculateCoefficients();
+      });
+    }
+  });
+
+  // Initial trigger
+  const initialTarget = (typeof TARGET_MONSTERS_DATA !== 'undefined' ? TARGET_MONSTERS_DATA : []).find(m => m.id === (monsterSel ? monsterSel.value : '')) || (typeof TARGET_MONSTERS_DATA !== 'undefined' && TARGET_MONSTERS_DATA[4]);
+  if (initialTarget) {
+    combatActiveMonsterId = initialTarget.id;
+    combatCurrentMonsterHp = initialTarget.hp;
+    combatCurrentMonsterMaxHp = initialTarget.hp;
+  }
+}
+
+function populateCombatMonsterSelector() {
+  const sel = document.getElementById('combat-monster-select');
+  if (!sel || typeof TARGET_MONSTERS_DATA === 'undefined') return;
+
+  const categories = [
+    { key: "farming", label: "🌾 일반 사냥터 잡몹 (1방 컷 검증 특화)" },
+    { key: "raid", label: "⚔️ 주간 레이드 보스 (실대미지 & 적중도 검증)" },
+    { key: "dummy", label: "🎯 훈련용 허수아비 (순수 데미지 측정)" }
+  ];
+
+  sel.innerHTML = categories.map(cat => {
+    const monsters = TARGET_MONSTERS_DATA.filter(m => m.category === cat.key);
+    const options = monsters.map(m => {
+      const isSelected = m.id === 'mob_apple' ? 'selected' : '';
+      const hpLabel = m.hp >= 100000000 ? (m.hp / 100000000) + '억' : (m.hp / 10000) + '만';
+      return `<option value="${m.id}" ${isSelected}>${m.name} (${m.dungeon}) - HP ${hpLabel}</option>`;
+    }).join('');
+    return `<optgroup label="${cat.label}">${options}</optgroup>`;
+  }).join('');
+}
+
+function populateCombatSkillSelector(typeKey) {
+  const sel = document.getElementById('combat-skill-select');
+  if (!sel || typeof CHARACTER_SKILLS_DATA === 'undefined') return;
+
+  const skills = CHARACTER_SKILLS_DATA[typeKey] || CHARACTER_SKILLS_DATA.stab || [];
+  sel.innerHTML = skills.map((sk, idx) => {
+    return `<option value="${sk.id}" ${idx === 0 ? 'selected' : ''}>${sk.name} [${sk.hits}타 / ${sk.mult}% 계수]</option>`;
+  }).join('');
+}
+
+function updateCombatSimulation(currentCoeff, currentDex) {
+  const monsterSel = document.getElementById('combat-monster-select');
+  const skillSel = document.getElementById('combat-skill-select');
+  if (!monsterSel || !skillSel || typeof TARGET_MONSTERS_DATA === 'undefined') return;
+
+  const prof = typeof getActiveCoeffProfile === 'function' ? getActiveCoeffProfile() : null;
+  const typeKey = (prof && prof.type) || 'stab';
+
+  const monsterId = monsterSel.value || 'mob_apple';
+  const target = TARGET_MONSTERS_DATA.find(m => m.id === monsterId) || TARGET_MONSTERS_DATA[4];
+
+  if (!combatActiveMonsterId || combatActiveMonsterId !== target.id) {
+    combatActiveMonsterId = target.id;
+    combatCurrentMonsterHp = target.hp;
+    combatCurrentMonsterMaxHp = target.hp;
+  }
+
+  const skills = CHARACTER_SKILLS_DATA[typeKey] || CHARACTER_SKILLS_DATA.stab || [];
+  const skillId = skillSel.value;
+  const skill = skills.find(s => s.id === skillId) || skills[0] || { name: "기본 공격", hits: 10, mult: 2000 };
+
+  const isCrit = document.getElementById('combat-crit-chk') ? document.getElementById('combat-crit-chk').checked : true;
+  const isThirdSien = document.getElementById('combat-third-sien-chk') ? document.getElementById('combat-third-sien-chk').checked : false;
+  const isPetConc = document.getElementById('combat-pet-conc-chk') ? document.getElementById('combat-pet-conc-chk').checked : true;
+
+  // 1. Hit Rate (적중도)
+  const effDex = (Number(currentDex) || 1500) + (isPetConc ? 150 : 0);
+  const dexDiff = effDex - target.eva;
+  let hitRate = 100;
+  let hitText = '100% 올힛';
+  let hitColor = '#34d399';
+
+  if (dexDiff >= 0) {
+    hitRate = 100;
+    hitText = '🟢 100% 올힛 (All-Hit)';
+    hitColor = '#34d399';
+  } else {
+    hitRate = Math.max(5, Math.min(99, Math.round(100 + (dexDiff * 0.15))));
+    if (hitRate >= 80) {
+      hitText = `🟡 ${hitRate}% (부분 미스: ${100 - hitRate}% MISS)`;
+      hitColor = '#facc15';
+    } else {
+      hitText = `🔴 ${hitRate}% (MISS 심각: -${Math.abs(dexDiff)})`;
+      hitColor = '#f87171';
+    }
+  }
+
+  // 2. Damage per Hit & Total
+  const effMult = (skill.mult || 2000) + (isThirdSien ? 200 : 0);
+  const effHits = (skill.hits || 10) + (isThirdSien ? 1 : 0);
+  const isMagical = (typeKey === 'magic_def' || typeKey === 'magic_atk' || typeKey === 'magic_slash');
+  const targetDef = isMagical ? target.mdef : target.pdef;
+  const dopingBuffPct = (prof && prof.applyDoping) ? 30 : 0;
+
+  const rawHit = ((currentCoeff || 45000) * (effMult / 100) * (1 + dopingBuffPct / 100) * 18) / effHits;
+  let hitDmg = Math.max(1000, Math.round(rawHit - (targetDef * 12)));
+  if (isCrit) {
+    hitDmg = Math.round(hitDmg * 1.65);
+  }
+  const totalDmg = hitDmg * effHits;
+
+  // Cache for interactive attack simulation
+  combatLastCalculatedMetrics = {
+    target,
+    skill,
+    hitRate,
+    hitDmg,
+    totalDmg,
+    effHits,
+    isCrit
+  };
+
+  // 3. 1-Shot Kill Verdict
+  const verdictBanner = document.getElementById('combat-verdict-banner');
+  const verdictTitle = document.getElementById('combat-verdict-title');
+  const verdictDesc = document.getElementById('combat-verdict-desc');
+
+  if (verdictBanner && verdictTitle && verdictDesc) {
+    if (target.is1ShotTarget) {
+      if (totalDmg >= target.hp) {
+        const overkill = Math.round(((totalDmg - target.hp) / target.hp) * 100);
+        verdictBanner.className = 'combat-verdict-banner success';
+        verdictTitle.innerHTML = '<span>🎉</span><span>【1방 컷 (원샷 원킬) 달성!】</span>';
+        verdictDesc.innerHTML = `스킬 1회 시전 총 대미지(<b>${totalDmg.toLocaleString()}</b>)가 몬스터 체력(<b>${target.hp.toLocaleString()}</b>)을 초과하여 1방에 완벽히 격파합니다! (오버킬 <b>+${overkill}%</b>)`;
+      } else {
+        const remain = target.hp - totalDmg;
+        const remainPct = Math.round((remain / target.hp) * 100);
+        const reqHits = Math.ceil(target.hp / totalDmg);
+        verdictBanner.className = 'combat-verdict-banner fail';
+        verdictTitle.innerHTML = '<span>⚠️</span><span>【1방 컷 부족 (추가 타격 필요)】</span>';
+        verdictDesc.innerHTML = `스킬 1회 시전 시 몬스터 체력이 <b>${remainPct}% (${remain.toLocaleString()})</b> 남습니다. 처치하려면 <b>최소 ${reqHits}회</b> 시전이 필요합니다. (도핑/장비 보강 권장)`;
+      }
+    } else {
+      // Raid Boss
+      const bossDmgPct = ((totalDmg / target.hp) * 100).toFixed(2);
+      const estHits = Math.ceil(target.hp / totalDmg);
+      verdictBanner.className = 'combat-verdict-banner boss';
+      verdictTitle.innerHTML = '<span>👑</span><span>【주간 레이드 보스 딜 점유율】</span>';
+      verdictDesc.innerHTML = `스킬 1회 시전당 보스 Max HP의 <b>${bossDmgPct}% (${totalDmg.toLocaleString()})</b>를 차감합니다. (처치 예상 시전 횟수: 약 <b>${estHits.toLocaleString()}회</b>)`;
+    }
+  }
+
+  // 4. Update UI Elements
+  const mName = document.getElementById('combat-m-name');
+  const mDungeon = document.getElementById('combat-m-dungeon');
+  const mCat = document.getElementById('combat-m-category');
+  const mPdef = document.getElementById('combat-m-pdef');
+  const mMdef = document.getElementById('combat-m-mdef');
+  const mEva = document.getElementById('combat-m-eva');
+
+  if (mName) mName.textContent = target.name;
+  if (mDungeon) mDungeon.textContent = target.dungeon;
+  if (mCat) mCat.textContent = target.categoryName;
+  if (mPdef) mPdef.textContent = target.pdef.toLocaleString();
+  if (mMdef) mMdef.textContent = target.mdef.toLocaleString();
+  if (mEva) mEva.textContent = target.eva.toLocaleString();
+
+  const kpiHit = document.getElementById('combat-kpi-hit');
+  const kpiPerhit = document.getElementById('combat-kpi-perhit');
+  const kpiTotal = document.getElementById('combat-kpi-total');
+
+  if (kpiHit) {
+    kpiHit.textContent = hitText;
+    kpiHit.style.color = hitColor;
+  }
+  if (kpiPerhit) kpiPerhit.textContent = `${hitDmg.toLocaleString()} ${isCrit ? '(크리)' : ''}`;
+  if (kpiTotal) kpiTotal.textContent = `${totalDmg.toLocaleString()}`;
+
+  updateCombatMonsterHpBar();
+}
+
+function updateCombatMonsterHpBar() {
+  const hpText = document.getElementById('combat-m-hp-text');
+  const hpBar = document.getElementById('combat-m-hp-bar');
+  if (!hpText || !hpBar || !combatCurrentMonsterMaxHp) return;
+
+  const pct = Math.max(0, Math.min(100, Math.round((combatCurrentMonsterHp / combatCurrentMonsterMaxHp) * 100)));
+  hpText.textContent = `${combatCurrentMonsterHp.toLocaleString()} / ${combatCurrentMonsterMaxHp.toLocaleString()} (${pct}%)`;
+  hpBar.style.width = `${pct}%`;
+
+  if (pct === 0) {
+    hpBar.classList.add('dead');
+  } else {
+    hpBar.classList.remove('dead');
+  }
+}
+
+function runCombatAttackSimulation() {
+  if (!combatLastCalculatedMetrics) {
+    if (typeof calculateCoefficients === 'function') calculateCoefficients();
+  }
+  if (!combatLastCalculatedMetrics) return;
+
+  const m = combatLastCalculatedMetrics;
+  const card = document.getElementById('combat-monster-card');
+  const logEl = document.getElementById('combat-battle-log');
+
+  if (card) {
+    card.classList.remove('hit-animation');
+    void card.offsetWidth; // trigger reflow
+    card.classList.add('hit-animation');
+  }
+
+  const now = new Date();
+  const timeStr = now.toTimeString().split(' ')[0];
+
+  // If already dead, reset HP first
+  if (combatCurrentMonsterHp <= 0) {
+    combatCurrentMonsterHp = combatCurrentMonsterMaxHp;
+    if (logEl) {
+      logEl.innerHTML += `<div class="combat-log-line reset">[${timeStr}] 🔄 몬스터가 리스폰되었습니다 (체력 100% 복구).</div>`;
+    }
+  }
+
+  // Hit or Miss check
+  const isHit = Math.random() * 100 <= m.hitRate;
+  if (!isHit) {
+    if (logEl) {
+      logEl.innerHTML += `<div class="combat-log-line miss">[${timeStr}] 💨 ${m.skill.name} 시전 ➔ 몬스터 회피(EVA)로 MISS 발생! (적중 실패)</div>`;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    return;
+  }
+
+  // Deduct HP
+  combatCurrentMonsterHp = Math.max(0, combatCurrentMonsterHp - m.totalDmg);
+  updateCombatMonsterHpBar();
+
+  if (logEl) {
+    const critTag = m.isCrit ? '💥 [CRITICAL]' : '🗡️ [NORMAL]';
+    if (combatCurrentMonsterHp === 0) {
+      logEl.innerHTML += `<div class="combat-log-line kill">[${timeStr}] ${critTag} ${m.skill.name} (${m.effHits}타) ➔ 총 ${m.totalDmg.toLocaleString()} 대미지! 💀 【${m.target.name}】 처치 완료!</div>`;
+    } else {
+      const pct = Math.round((combatCurrentMonsterHp / combatCurrentMonsterMaxHp) * 100);
+      logEl.innerHTML += `<div class="combat-log-line ${m.isCrit ? 'crit' : 'hit'}">[${timeStr}] ${critTag} ${m.skill.name} (${m.effHits}타) ➔ ${m.totalDmg.toLocaleString()} 대미지 (타당 ${m.hitDmg.toLocaleString()}) | 잔여 HP: ${pct}%</div>`;
+    }
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+}
+
+function resetCombatMonsterHp() {
+  combatCurrentMonsterHp = combatCurrentMonsterMaxHp;
+  updateCombatMonsterHpBar();
+  const logEl = document.getElementById('combat-battle-log');
+  if (logEl) {
+    const now = new Date();
+    const timeStr = now.toTimeString().split(' ')[0];
+    logEl.innerHTML += `<div class="combat-log-line reset">[${timeStr}] 🔄 몬스터 체력이 100%로 초기화되었습니다.</div>`;
+    logEl.scrollTop = logEl.scrollHeight;
+  }
 }
 
 function addCoeffPreset() {
