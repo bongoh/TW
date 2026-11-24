@@ -756,14 +756,14 @@
               📖 초보자를 위한 테일즈위버 필수 용어 & 줄임말 사전
             </h2>
             <p style="font-size:0.88rem; color:#cbd5e1; line-height:1.6;">
-              게임 내 외치기나 파티 모집 글에서 자주 쓰이는 생소한 줄임말(신어헬, 오방, 사과섬, 1괴, 마방작 등)을 실시간으로 검색하고 카테고리별로 확인하세요!
+              게임 내 외치기나 파티 모집 글에서 자주 쓰이는 생소한 줄임말(신어헬, 오방, 사과섬, 억시드, 마방작 등)을 실시간으로 검색하고 카테고리별로 확인하세요!
             </p>
           </div>
         </div>
 
         <!-- Live Search Bar -->
         <div class="glossary-search-wrap">
-          <input type="text" id="glossary-search-input" class="glossary-search-input" placeholder="🔍 용어·줄임말·내용 검색 (예: 신어헬, 림보, 1괴, 마방작, 홀필, 각성...)" oninput="handleGlossarySearch(this.value)">
+          <input type="text" id="glossary-search-input" class="glossary-search-input" placeholder="🔍 용어·줄임말·내용 검색 (예: 신어헬, 림보, 억시드, 마방작, 홀필, 각성...)" oninput="handleGlossarySearch(this.value)">
           <button type="button" class="btn-sm btn-outline" onclick="clearGlossarySearch()" style="white-space:nowrap;">🔄 초기화</button>
         </div>
 
@@ -6491,16 +6491,13 @@
     <section>
       <h2>테일즈위버 시드 · 던전 수익 · 장비 제작 계산기</h2>
 
-    <!-- Global Seed / Gwe Exchange Rate Bar -->
-    <div class="global-rate-bar">
-      <div class="global-rate-label">
-        <span>🪙 1괴(Gold Ingot)당 시드 환율 설정:</span>
-        <span style="font-size:0.78rem; color:#94a3b8; font-weight:normal;">(서버 시세에 맞춰 변경 시 계산기 전체 자동 연동)</span>
+    <!-- Modern Currency Notice Bar -->
+    <div class="global-rate-bar" style="background: rgba(30, 41, 59, 0.7); border: 1px solid #334155; padding: 0.75rem 1.1rem; border-radius: 8px; margin-bottom: 1.25rem;">
+      <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+        <span style="font-size:0.95rem; font-weight:800; color:#38bdf8;">🪙 현대 테일즈위버 거래 기준:</span>
+        <span style="font-size:0.83rem; color:#cbd5e1;">최대 소지 한도 및 거래소 개편으로 <b>'괴(금괴)' 거래는 완전히 사라졌으며</b>, 모든 거래는 <b>'억 / 만 단위 순수 Seed'</b> 또는 <b>TP</b>로 직접 거래합니다.</span>
       </div>
-      <div class="global-rate-input-wrap">
-        <input type="number" id="global-gwe-rate" class="global-rate-input" value="44000000" step="1000000" onchange="onGweRateChange(this.value)">
-        <span style="font-size:0.85rem; font-weight:700; color:#fbbf24;">Seed</span>
-      </div>
+      <input type="hidden" id="global-gwe-rate" value="100000000">
     </div>
 
       <div class="sub-nav">
