@@ -3,29 +3,48 @@
  * Navigation, Profile Management, Stat Simulator, Checklists, and Calculators
  */
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // ==================== 1. TAB SWITCHING ====================
 function switchBossPanel(panelId, btnEl) {
   document.querySelectorAll('.boss-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.boss-sub-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(panelId).classList.add('active');
-  btnEl.classList.add('active');
+  const p = document.getElementById(panelId);
+  if (p) p.classList.add('active');
+  if (btnEl) btnEl.classList.add('active');
 }
 
 function toggleTaskPattern(ev, boxId) {
-  ev.preventDefault();
-  ev.stopPropagation();
+  if (ev) {
+    if (ev.preventDefault) ev.preventDefault();
+    if (ev.stopPropagation) ev.stopPropagation();
+  }
   const box = document.getElementById(boxId);
-  const btn = ev.currentTarget;
+  const btn = ev ? ev.currentTarget : null;
   if (!box) return;
   const isOpen = box.classList.toggle('open');
-  btn.textContent = isOpen ? '📖 상세 패턴 · 공략 접기 ▴' : '📖 상세 패턴 · 공략 펼치기 ▾';
+  if (btn) btn.textContent = isOpen ? '📖 상세 패턴 · 공략 접기 ▴' : '📖 상세 패턴 · 공략 펼치기 ▾';
 }
 
 function switchTab(tabId, btnEl) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  btnEl.classList.add('active');
+  const panel = document.getElementById(tabId);
+  if (panel) panel.classList.add('active');
+  if (btnEl) {
+    btnEl.classList.add('active');
+  } else {
+    const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+    if (targetBtn) targetBtn.classList.add('active');
+  }
 }
 
 function switchGrowthSection(secId, btnEl) {
@@ -37,7 +56,7 @@ function switchGrowthSection(secId, btnEl) {
     const el = document.getElementById(secId);
     if (el) el.classList.add('active');
   }
-  btnEl.classList.add('active');
+  if (btnEl) btnEl.classList.add('active');
 }
 
 // ==================== 2. BUFF SELECTOR & SPEC SIMULATOR ====================
@@ -459,12 +478,17 @@ function getSelectedBuffBonus() {
 
 function evaluateStats() {
   const currentArch = getCurrentArchetype();
-  const targetKey = document.getElementById('target-dungeon') ? document.getElementById('target-dungeon').value : 'rokagos';
   const bonus = getSelectedBuffBonus();
 
   // Determine whether we evaluate against 'buff' threshold or 'nobuff' threshold
   const effectiveMode = (inputMode === 'buff' || bonus.count > 0) ? 'buff' : 'nobuff';
-  const req = currentArch.thresholds[effectiveMode][targetKey];
+  const dungeonEl = document.getElementById('target-dungeon');
+  const dVal = dungeonEl ? dungeonEl.value : 'rokagos';
+  const targetKey = (currentArch.thresholds && currentArch.thresholds[effectiveMode] && currentArch.thresholds[effectiveMode][dVal])
+    ? dVal
+    : 'rokagos';
+  const req = (currentArch.thresholds && currentArch.thresholds[effectiveMode] && currentArch.thresholds[effectiveMode][targetKey])
+    || { reqMain: 1550, acc: 1450, elem: 200, eta: 15 };
   
   // Update Card 1 UI
   const cardMainTitle = document.getElementById('card-mainstat-title');
@@ -659,8 +683,14 @@ function resetWeeklyTasks() {
 function switchSubCalc(subId, btnEl) {
   document.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(subId).classList.add('active');
-  btnEl.classList.add('active');
+  const el = document.getElementById(subId);
+  if (el) el.classList.add('active');
+  if (btnEl) {
+    btnEl.classList.add('active');
+  } else {
+    const btn = document.querySelector(`.sub-tab-btn[onclick*="${subId}"]`);
+    if (btn) btn.classList.add('active');
+  }
 }
 
 // --- 4-1. Waste Paper Calculator (폐지 계산기) ---
@@ -1178,9 +1208,10 @@ function deleteCurrentProfile() {
 }
 
 function toggleCompactMode() {
+  if (!document.body) return;
   const isCompact = document.body.classList.toggle('compact-mode');
   const btn = document.getElementById('btn-compact');
-  btn.textContent = isCompact ? '🖥️ 기본 뷰' : '📱 컴팩트 모드';
+  if (btn) btn.textContent = isCompact ? '🖥️ 기본 뷰' : '📱 컴팩트 모드';
   try {
     localStorage.setItem('tw_compact_mode', isCompact ? '1' : '0');
   } catch (e) {}
@@ -1403,8 +1434,14 @@ function saveCoeffProfiles() {
 function getActiveCoeffProfile() {
   let prof = coeffProfiles.find(p => p.id === activeCoeffProfileId);
   if (!prof) {
-    prof = coeffProfiles[0];
-    activeCoeffProfileId = prof.id;
+    if (coeffProfiles && coeffProfiles.length > 0) {
+      prof = coeffProfiles[0];
+      activeCoeffProfileId = prof.id;
+    } else {
+      loadCoeffProfiles();
+      prof = coeffProfiles && coeffProfiles.length > 0 ? coeffProfiles[0] : null;
+      if (prof) activeCoeffProfileId = prof.id;
+    }
   }
   return prof;
 }
@@ -2773,6 +2810,50 @@ function updatePartyCountdown() {
   }
 }
 
+function copyToClipboardFallback(text, title, msg) {
+  if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showPartyToast(title, msg);
+    }).catch(() => {
+      execFallbackCopy(text, title, msg);
+    });
+  } else {
+    execFallbackCopy(text, title, msg);
+  }
+}
+
+function execFallbackCopy(text, title, msg) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showPartyToast(title, msg);
+  } catch (e) {
+    showPartyToast('⚠️ 복사 실패', '수동으로 텍스트를 선택하여 복사해 주세요.');
+  }
+}
+
+function safeBtoa(str) {
+  try {
+    return btoa(unescape(encodeURIComponent(str)));
+  } catch (e) {
+    return encodeURIComponent(str);
+  }
+}
+
+function safeAtob(str) {
+  try {
+    return decodeURIComponent(escape(atob(str)));
+  } catch (e) {
+    return decodeURIComponent(str);
+  }
+}
+
 function copyPartyRecruitmentText() {
   const dName = partyState.dungeon || '테일즈위버 숙제/레이드';
   const filled = partyState.members.filter(m => m.name && m.name.trim() !== '').length;
@@ -2785,11 +2866,7 @@ function copyPartyRecruitmentText() {
 
   const text = `[테일즈위버 파티 모집] ⚔️ ${dName} (${filled}/5)\n⏰ 출발 시간: ${timeStr}\n📋 최소 스펙: ${partyState.minSpec || '자유 스펙'}\n👥 구성: ${slotStatus}\n※ 함께 하실 분 귓속말이나 댓글 주세요!`;
 
-  navigator.clipboard.writeText(text).then(() => {
-    showPartyToast('📋 인게임 양식 복사 완료', '게임 내 확성기나 채팅창, 디스코드에 붙여넣기(Ctrl+V) 하세요.');
-  }).catch(() => {
-    showPartyToast('⚠️ 복사 실패', '클립보드 접근 권한을 확인해 주세요.');
-  });
+  copyToClipboardFallback(text, '📋 인게임 양식 복사 완료', '게임 내 확성기나 채팅창, 디스코드에 붙여넣기(Ctrl+V) 하세요.');
 }
 
 function copyPartyShareUrl() {
@@ -2801,27 +2878,25 @@ function copyPartyShareUrl() {
       m: partyState.members.map(m => ({ i: m.id, n: m.name, r: m.role, s: m.spec, y: m.ready }))
     };
     const jsonStr = JSON.stringify(payload);
-    const encoded = encodeURIComponent(btoa(unescape(encodeURIComponent(jsonStr))));
-    const url = `${window.location.origin}${window.location.pathname}#party=${encoded}`;
+    const encoded = encodeURIComponent(safeBtoa(jsonStr));
+    const origin = (window.location && window.location.origin) ? window.location.origin : '';
+    const path = (window.location && window.location.pathname) ? window.location.pathname : '';
+    const url = `${origin}${path}#party=${encoded}`;
 
-    navigator.clipboard.writeText(url).then(() => {
-      showPartyToast('🔗 무서버 초대 링크 복사 완료', '이 링크를 파티원들에게 공유하면 별도 서버 없이도 동일한 파티 현황을 함께 확인하고 신청할 수 있습니다.');
-    }).catch(() => {
-      showPartyToast('⚠️ 복사 실패', '초대 링크 생성 중 오류가 발생했습니다.');
-    });
+    copyToClipboardFallback(url, '🔗 무서버 초대 링크 복사 완료', '이 링크를 파티원들에게 공유하면 별도 서버 없이도 동일한 파티 현황을 함께 확인하고 신청할 수 있습니다.');
   } catch (e) {
-    console.error('Share URL error', e);
+    console.warn('Share URL error', e);
     showPartyToast('⚠️ 오류', '초대 링크를 생성하지 못했습니다.');
   }
 }
 
 function checkPartyHashImport() {
   try {
-    const hash = window.location.hash;
+    const hash = (window.location && window.location.hash) ? window.location.hash : '';
     if (hash && hash.includes('party=')) {
       const match = hash.match(/party=([^&]+)/);
       if (match && match[1]) {
-        const decodedStr = decodeURIComponent(escape(atob(decodeURIComponent(match[1]))));
+        const decodedStr = safeAtob(decodeURIComponent(match[1]));
         const data = JSON.parse(decodedStr);
         if (data && data.m) {
           partyState.dungeon = data.d || partyState.dungeon;
@@ -2910,7 +2985,8 @@ function resetPartyHub() {
   updatePartyCountdown();
   showPartyToast('🔄 파티 초기화 완료', '새로운 파티를 모집할 준비가 완료되었습니다.');
 }
-\n\nif (document.readyState === 'loading') {
+
+if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bootCompanion);
 } else {
   bootCompanion();
