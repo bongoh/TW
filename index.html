@@ -2973,6 +2973,20 @@
   <div id="tab-weekly" class="tab-panel">
     <section>
 
+    <!-- Tab 3 Quick Jump Anchor Navigation -->
+    <div class="weekly-quick-nav">
+      <span style="font-size:0.78rem; font-weight:700; color:#94a3b8; display:flex; align-items:center; gap:4px;">
+        📍 빠른 이동:
+      </span>
+      <button type="button" class="quick-jump-btn" onclick="scrollToSection('thursday-countdown')">⏰ 목요 점검·수익</button>
+      <button type="button" class="quick-jump-btn" onclick="scrollToSection('party-hub')">⚔️ 파티 모집·알람</button>
+      <button type="button" class="quick-jump-btn" onclick="scrollToSection('sec-prereq-matrix')">🗝️ 12대 선행 퀘스트</button>
+      <button type="button" class="quick-jump-btn" onclick="scrollToSection('cat-sec-daily')">🌟 일일 필수 (6종)</button>
+      <button type="button" class="quick-jump-btn" onclick="scrollToSection('cat-sec-special')">🪙 어벤던로드 (3종)</button>
+      <button type="button" class="quick-jump-btn" onclick="scrollToSection('cat-sec-bosses')">⚔️ 주간 보스·던전 (13종)</button>
+      <button type="button" class="quick-jump-btn" onclick="scrollToSection('cat-sec-routine')">📜 내실·도전과제 (6종)</button>
+    </div>
+
     <!-- Weekly Reset Countdown & Seed Revenue Tracker -->
     <div class="weekly-summary-card">
       <div class="weekly-meta-grid">
@@ -3147,7 +3161,7 @@
       </p>
 
       <!-- Comprehensive Prerequisite & Entry Quest Matrix -->
-      <div class="prereq-matrix-card">
+      <div class="prereq-matrix-card" id="sec-prereq-matrix">
         <div class="prereq-matrix-header">
           <div class="prereq-matrix-title">
             <span>🗝️ 주요 던전 & 숙제 12대 선행·진입 퀘스트 총정리 요약표</span>
@@ -3255,9 +3269,34 @@
         </div>
       </div>
 
+            <!-- Smart Filter & Collapsible Master Toolbar -->
+      <div class="task-filter-bar" id="sec-task-filter">
+        <div class="task-filter-group">
+          <button type="button" class="task-filter-btn active" data-cat="all" onclick="filterWeeklyTasks('all', this)">📋 전체 (28종)</button>
+          <button type="button" class="task-filter-btn" data-cat="daily" onclick="filterWeeklyTasks('daily', this)">🌟 일일 필수 (6종)</button>
+          <button type="button" class="task-filter-btn" data-cat="bosses" onclick="filterWeeklyTasks('bosses', this)">⚔️ 주간 보스·던전 (13종)</button>
+          <button type="button" class="task-filter-btn" data-cat="special" onclick="filterWeeklyTasks('special', this)">🪙 어벤던로드 (3종)</button>
+          <button type="button" class="task-filter-btn" data-cat="routine" onclick="filterWeeklyTasks('routine', this)">📜 내실·상점 (6종)</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <button type="button" id="btn-uncompleted-filter" class="task-filter-btn btn-uncompleted" onclick="toggleUncompletedFilter()">
+            ⏳ 미완료만 보기 (<b id="uncompleted-count">28</b>개 남음)
+          </button>
+          <button type="button" class="task-filter-btn" onclick="toggleAllTaskCategories()">
+            <span id="all-boxes-toggle-text">▴ 모두 접기</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Category 1: Daily Core Routine -->
-      <div class="cat-block">
-        <div class="cat-title">🌟 카테고리 1. 일일 필수 숙제 & 성장 루틴 (네냐플 & 이클립스)</div>
+      <div class="cat-block" id="cat-sec-daily" data-category="daily">
+        <div class="cat-header-toggle" onclick="toggleTaskCategory('grid-daily', this.querySelector('.cat-toggle-icon'))">
+          <div class="cat-title">
+            <span>🌟 카테고리 1. 일일 필수 숙제 & 성장 루틴 (6종)</span>
+            <span class="cat-toggle-icon">▾</span>
+          </div>
+        </div>
+        <div class="task-items-grid" id="grid-daily">
 
         <!-- 1. Solar Relic -->
         <label class="task-item">
@@ -3384,11 +3423,17 @@
             </div>
           </div>
         </label>
+        </div>
       </div>
 
       <!-- Category 2: Abandon Road Specialization -->
-      <div class="cat-block">
-        <div class="cat-title">🪙 카테고리 2. 어벤던로드 주간 특화 시드 파밍 (주 총 30회)</div>
+      <div class="cat-block" id="cat-sec-special" data-category="special">
+        <div class="cat-header-toggle" onclick="toggleTaskCategory('grid-special', this.querySelector('.cat-toggle-icon'))">
+          <div class="cat-title">
+            <span>🪙 카테고리 2. 어벤던로드 주간 특화 시드 파밍 (3종)</span>
+            <span class="cat-toggle-icon">▾</span>
+          </div>
+        </div>
 
         <!-- Abandon Road Guide Banner -->
         <div class="info-box" style="margin-bottom: 0.9rem; border-color: rgba(245, 158, 11, 0.45); background: rgba(30, 27, 75, 0.45);">
@@ -3404,6 +3449,7 @@
           </div>
         </div>
 
+        <div class="task-items-grid" id="grid-special">
         <!-- 6. Abandon Mortal -->
         <label class="task-item">
           <input type="checkbox" class="weekly-chk" onchange="updateWeeklyProgress()" data-id="w_abendon_mortal" data-task="w_abendon_mortal" data-seed="70000000">
@@ -3460,11 +3506,18 @@
             </div>
           </div>
         </label>
+        </div>
       </div>
 
       <!-- Category 3: Weekly Boss & Dungeon Raids -->
-      <div class="cat-block">
-        <div class="cat-title">⚔️ 카테고리 3. 핵심 주간 보스 & 던전 토벌 (패턴 · 최소 컷)</div>
+      <div class="cat-block" id="cat-sec-bosses" data-category="bosses">
+        <div class="cat-header-toggle" onclick="toggleTaskCategory('grid-bosses', this.querySelector('.cat-toggle-icon'))">
+          <div class="cat-title">
+            <span>⚔️ 카테고리 3. 핵심 주간 보스 & 던전 토벌 (13종)</span>
+            <span class="cat-toggle-icon">▾</span>
+          </div>
+        </div>
+        <div class="task-items-grid" id="grid-bosses">
 
         <!-- 9. Shinjo -->
         <label class="task-item">
@@ -3750,11 +3803,18 @@
             </div>
           </div>
         </label>
+        </div>
       </div>
 
       <!-- Category 4: Weekly Management & Shop -->
-      <div class="cat-block">
-        <div class="cat-title">📜 카테고리 4. 주간 내실 · 상점 교환 · 도전과제</div>
+      <div class="cat-block" id="cat-sec-routine" data-category="routine">
+        <div class="cat-header-toggle" onclick="toggleTaskCategory('grid-routine', this.querySelector('.cat-toggle-icon'))">
+          <div class="cat-title">
+            <span>📜 카테고리 4. 주간 내실 · 상점 교환 · 도전과제 (6종)</span>
+            <span class="cat-toggle-icon">▾</span>
+          </div>
+        </div>
+        <div class="task-items-grid" id="grid-routine">
 
         <!-- 22. Weekly Challenge -->
         <label class="task-item">
@@ -3857,6 +3917,7 @@
             </div>
           </div>
         </label>
+        </div>
       </div>
 
       <!-- Practical Growth Tips Box -->
@@ -4379,6 +4440,9 @@
     </div>
   </div>
 </div>
+
+<!-- Floating Back to Top Button -->
+<button type="button" id="btn-back-to-top" class="floating-top-btn" onclick="scrollToPageTop()" title="맨 위로 이동">⬆️</button>
 
 </body>
 </html>

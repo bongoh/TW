@@ -1363,8 +1363,123 @@ updateWeeklyProgress = function() {
   if (seedTextEl) seedTextEl.textContent = `${(earnedSeed / 100000000).toFixed(2)}억 Seed (${pct}%)`;
   if (fillEl) fillEl.style.width = pct + '%';
 
+  const uncompleted = totalTasks - doneTasks;
+  const uncompletedEl = document.getElementById('uncompleted-count');
+  if (uncompletedEl) {
+    uncompletedEl.textContent = uncompleted;
+  }
+  if (hideCompletedTasks) {
+    applyWeeklyFilterDisplay();
+  }
+
   saveCurrentStateToProfile();
 };
+
+// ==================== TAB 3 QUICK JUMP, SMART FILTER & ACCORDION UX ====================
+let currentWeeklyCatFilter = 'all';
+let hideCompletedTasks = false;
+let allCategoriesExpanded = true;
+
+function scrollToSection(secId) {
+  const el = document.getElementById(secId);
+  if (!el) return;
+  const yOffset = -70;
+  const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+  window.scrollTo({ top: y, behavior: 'smooth' });
+}
+
+function filterWeeklyTasks(cat, btnEl) {
+  currentWeeklyCatFilter = cat;
+  const group = document.querySelector('#sec-task-filter .task-filter-group');
+  if (group) {
+    group.querySelectorAll('.task-filter-btn').forEach(b => b.classList.remove('active'));
+  }
+  if (btnEl) btnEl.classList.add('active');
+  applyWeeklyFilterDisplay();
+}
+
+function toggleUncompletedFilter() {
+  hideCompletedTasks = !hideCompletedTasks;
+  const btn = document.getElementById('btn-uncompleted-filter');
+  if (btn) {
+    if (hideCompletedTasks) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+  applyWeeklyFilterDisplay();
+}
+
+function applyWeeklyFilterDisplay() {
+  const catBlocks = document.querySelectorAll('#tab-weekly .cat-block[data-category]');
+  catBlocks.forEach(block => {
+    const blockCat = block.dataset.category;
+    const isCatMatch = (currentWeeklyCatFilter === 'all' || blockCat === currentWeeklyCatFilter);
+    if (!isCatMatch) {
+      block.style.display = 'none';
+      return;
+    }
+    block.style.display = '';
+
+    const taskItems = block.querySelectorAll('.task-item');
+    taskItems.forEach(item => {
+      const chk = item.querySelector('.weekly-chk');
+      const isDone = chk && chk.checked;
+      if (hideCompletedTasks && isDone) {
+        item.style.display = 'none';
+      } else {
+        item.style.display = '';
+      }
+    });
+  });
+}
+
+function toggleTaskCategory(gridId, iconEl) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  const isHidden = window.getComputedStyle(grid).display === 'none' || grid.style.display === 'none';
+  grid.style.display = isHidden ? 'grid' : 'none';
+  if (iconEl) {
+    iconEl.textContent = isHidden ? '▾' : '▸';
+  }
+}
+
+function toggleAllTaskCategories() {
+  allCategoriesExpanded = !allCategoriesExpanded;
+  const targetDisplay = allCategoriesExpanded ? 'grid' : 'none';
+  const targetIcon = allCategoriesExpanded ? '▾' : '▸';
+
+  ['grid-daily', 'grid-special', 'grid-bosses', 'grid-routine'].forEach(id => {
+    const grid = document.getElementById(id);
+    if (grid) grid.style.display = targetDisplay;
+  });
+
+  document.querySelectorAll('.cat-toggle-icon').forEach(icon => {
+    icon.textContent = targetIcon;
+  });
+
+  const toggleTextEl = document.getElementById('all-boxes-toggle-text');
+  if (toggleTextEl) {
+    toggleTextEl.textContent = allCategoriesExpanded ? '▴ 모두 접기' : '▾ 모두 펼치기';
+  }
+}
+
+function scrollToPageTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function initBackToTopButton() {
+  const btn = document.getElementById('btn-back-to-top');
+  if (!btn) return;
+  window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 320) {
+      btn.style.display = 'flex';
+    } else {
+      btn.style.display = 'none';
+    }
+  }, { passive: true });
+}
 
 function initGrowthMilestones() {
   try {
@@ -1399,6 +1514,7 @@ function bootCompanion() {
   initCoeffCalculator();
   initGrowthMilestones();
   initPartyHub();
+  initBackToTopButton();
 }
 
 // ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
