@@ -396,6 +396,8 @@ function onDopingToggle(key) {
   }
   
   evaluateStats();
+  updateConflictLocks();
+  renderExtraActiveDopingChips();
 }
 
 function showConflictToast(msg) {
@@ -430,6 +432,8 @@ function applyDopingPreset(presetKey) {
   if (toast) toast.classList.remove('show');
 
   evaluateStats();
+  updateConflictLocks();
+  renderExtraActiveDopingChips();
 }
 
 function filterDopingTable(query) {
@@ -438,6 +442,126 @@ function filterDopingTable(query) {
     const text = (row.dataset.search || '').toLowerCase();
     row.style.display = text.includes(q) ? '' : 'none';
   });
+}
+
+// ==================== DOPING MODAL & ACCORDION SYSTEM ====================
+const CORE_DOPING_KEYS = [
+  'snowman_potion', 'awakening_potion', 'trust_potion',
+  'isabelle_fixed', 'isabelle_percent', 'isabelle_damage',
+  'super_ham', 'purified_ampoule'
+];
+
+function openDopingModal() {
+  const m = document.getElementById('doping-modal');
+  if (m) {
+    m.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    updateModalSelectedCount();
+  }
+}
+
+function closeDopingModal() {
+  const m = document.getElementById('doping-modal');
+  if (m) {
+    m.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  renderExtraActiveDopingChips();
+}
+
+function filterModalDoping(query) {
+  const q = query.trim().toLowerCase();
+  document.querySelectorAll('#doping-modal .doping-card').forEach(card => {
+    const text = card.textContent.toLowerCase();
+    card.style.display = text.includes(q) ? '' : 'none';
+  });
+}
+
+function switchModalDopingCat(catId, btnEl) {
+  document.querySelectorAll('.modal-cat-tab').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  document.querySelectorAll('#doping-modal .modal-doping-group').forEach(group => {
+    if (catId === 'all' || group.dataset.cat === catId) {
+      group.style.display = '';
+    } else {
+      group.style.display = 'none';
+    }
+  });
+}
+
+function clearModalDoping() {
+  document.querySelectorAll('#doping-modal .buff-chk').forEach(chk => {
+    if (chk.checked) {
+      chk.checked = false;
+      const card = document.getElementById('card-' + chk.dataset.key);
+      if (card) card.classList.remove('checked');
+    }
+  });
+  updateConflictLocks();
+  evaluateStats();
+  updateModalSelectedCount();
+  renderExtraActiveDopingChips();
+}
+
+function updateModalSelectedCount() {
+  const countEl = document.getElementById('modal-selected-count');
+  if (!countEl) return;
+  const count = document.querySelectorAll('#doping-modal .buff-chk:checked').length;
+  countEl.textContent = `${count}개`;
+}
+
+function renderExtraActiveDopingChips() {
+  const wrap = document.getElementById('doping-extra-chips-list');
+  const badgeEl = document.getElementById('extra-doping-count-badge');
+  if (!wrap) return;
+
+  const extraChecked = [];
+  document.querySelectorAll('#doping-modal .buff-chk:checked').forEach(chk => {
+    const k = chk.dataset.key;
+    const card = document.getElementById('card-' + k);
+    const nameEl = card ? card.querySelector('.doping-name') : null;
+    const name = nameEl ? nameEl.textContent.trim() : k;
+    extraChecked.push({ key: k, name: name });
+  });
+
+  if (extraChecked.length === 0) {
+    wrap.innerHTML = '<span style="font-size:0.78rem; color:#64748b;">(현재 추가 선택된 보조 버프가 없습니다. 필요 시 우측 [추가 버프 선택] 버튼을 이용하세요)</span>';
+  } else {
+    wrap.innerHTML = extraChecked.map(item => `
+      <span class="extra-doping-chip">
+        ${escapeHtml(item.name)}
+        <button type="button" class="chip-del-btn" onclick="removeExtraDoping('${item.key}')" title="제거">&times;</button>
+      </span>
+    `).join('');
+  }
+
+  if (badgeEl) {
+    badgeEl.textContent = extraChecked.length > 0 ? `+${extraChecked.length}` : '';
+    badgeEl.style.display = extraChecked.length > 0 ? 'inline-block' : 'none';
+  }
+  updateModalSelectedCount();
+}
+
+function removeExtraDoping(key) {
+  const chk = document.querySelector(`.buff-chk[data-key="${key}"]`);
+  if (chk) {
+    chk.checked = false;
+    onDopingToggle(key);
+  }
+}
+
+function toggleSpecAccordion(id, btnEl) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isHidden = (el.style.display === 'none' || !el.style.display);
+  el.style.display = isHidden ? 'block' : 'none';
+  if (btnEl) {
+    const arrow = btnEl.querySelector('.acc-arrow');
+    if (arrow) arrow.textContent = isHidden ? '▲' : '▼';
+    if (isHidden) btnEl.classList.add('open');
+    else btnEl.classList.remove('open');
+  }
 }
 
 // Override getSelectedBuffBonus
@@ -1678,6 +1802,8 @@ function bootCompanion() {
   renderAbendonTable();
   renderEquipCalc();
   evaluateStats();
+  renderExtraActiveDopingChips();
+  updateConflictLocks();
   loadWeeklyTasks();
   initCoeffCalculator();
   initGrowthMilestones();

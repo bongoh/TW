@@ -787,7 +787,7 @@
   </div>
 
   <!-- ==================== TAB 1: SPEC SIMULATOR & BUFF SELECTOR ==================== -->
-  <div id="tab-spec" class="tab-panel active">
+    <div id="tab-spec" class="tab-panel active">
     <section>
       <h2>내 스탯 실시간 판독기 (버프 선택 연동 · 가능 / 미스 판정)</h2>
       <div class="sim-toolbar">
@@ -826,12 +826,123 @@
       </div>
 
       <!-- Individual Buff Checkboxes -->
-      
-      <!-- Upgraded Full Doping & Buff Dashboard (Notice 131192 Aligned) -->
+
+      <!-- 1. [TOP PRIORITY] User Stat Input Grid & Clearance Result -->
+      <div class="stat-input-grid">
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-title" id="card-mainstat-title">🛡️ 마법방어력 (MR+장비)</span>
+            <span id="req-mdef" class="req-chip">기준: 1,550+</span>
+          </div>
+          <input type="number" id="in-mdef" class="stat-input" placeholder="예: 1520" oninput="evaluateStats()">
+          <div id="prev-mdef" class="calc-preview"></div>
+          <div id="res-mdef" class="result-pill res-empty">수치를 입력하세요</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-title">🎯 명중률 (올힛 판정)</span>
+            <span id="req-acc" class="req-chip">기준: 1,450+</span>
+          </div>
+          <input type="number" id="in-acc" class="stat-input" placeholder="예: 1430" oninput="evaluateStats()">
+          <div id="prev-acc" class="calc-preview"></div>
+          <div id="res-acc" class="result-pill res-empty">수치를 입력하세요</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-title" id="card-elem-title">🔮 주력 속성 (풍·화·수·암·성 등)</span>
+            <span id="req-elem" class="req-chip">기준: 200+</span>
+          </div>
+          <input type="number" id="in-elem" class="stat-input" placeholder="예: 195" oninput="evaluateStats()">
+          <div id="prev-elem" class="calc-preview"></div>
+          <div id="res-elem" class="result-pill res-empty">수치를 입력하세요</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-title">✨ 에타(ETA) 레벨</span>
+            <span id="req-eta" class="req-chip">기준: 15+</span>
+          </div>
+          <input type="number" id="in-eta" class="stat-input" placeholder="예: 16" oninput="evaluateStats()">
+          <div id="prev-eta" class="calc-preview">버프 무관 고정 레벨</div>
+          <div id="res-eta" class="result-pill res-empty">수치를 입력하세요</div>
+        </div>
+      </div>
+
+      <div id="overall-result" class="overall-banner res-empty">
+        <span>📋 종합 진단 결과: 위 칸에 내 스탯을 입력하고 버프를 선택하면 진입 가능 여부를 판정해 드립니다.</span>
+      </div>
+
+      <!-- Tab 1 -> Tab 4 Spec Reuse Card -->
+      <div class="spec-to-coeff-card">
+        <div class="spec-to-coeff-header">
+          <span class="spec-to-coeff-title">🧮 1번 스펙 ➡️ 4번 계수 & 명중 계산기 원클릭 연동</span>
+          <span class="tag tag-ready">스펙 재사용</span>
+        </div>
+        <div class="spec-to-coeff-desc">
+          1번에서 입력하신 <b>명중률(<span id="sync-val-acc" style="color:#facc15; font-weight:700;">0</span>)</b>, <b>마법방어(<span id="sync-val-mdef" style="color:#38bdf8; font-weight:700;">0</span>)</b>, <b>도핑(<span id="sync-val-dop" style="color:#34d399; font-weight:700;">0개</span>)</b> 수치를 4번 계산기로 그대로 가져가 계수와 상위 보스 적정성을 바로 계산합니다.
+        </div>
+        <div class="spec-to-coeff-controls">
+          <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; color:#cbd5e1;">
+            <span>내 공격 계열:</span>
+            <select id="sync-tab1-type" class="coeff-slot-select" style="width:auto; margin:0; padding:0.25rem 0.5rem;">
+              <option value="stab">찌르기 (STAB)</option>
+              <option value="hack">베기 (HACK)</option>
+              <option value="magic_def">마법방어 (MR / 비호)</option>
+              <option value="magic_atk">마법공격 (INT)</option>
+              <option value="composite">물리복합 (STAB+HACK)</option>
+              <option value="magic_slash">마법베기 (HACK+INT)</option>
+            </select>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; color:#cbd5e1;">
+            <span>주 공격스탯(선택):</span>
+            <input type="number" id="sync-tab1-atk" class="coeff-slot-input-sm" style="width:75px;" placeholder="예: 1400" title="미입력 시 기본 세팅값 유지">
+          </div>
+          <button type="button" class="spec-to-coeff-btn" onclick="transferTab1ToCoeff()">
+            🚀 4번 계산기로 전송하고 이동
+          </button>
+        </div>
+      </div>
+
+      <!-- Multi-Dungeon Real-time Readiness Matrix -->
+      <div class="matrix-section">
+        <div class="matrix-header">
+          <div>
+            <h3>🎯 전체 콘텐츠 동시 판독 매트릭스</h3>
+            <span class="matrix-tip">내 현재 세팅(도핑 포함)으로 즉시 갈 수 있는 던전을 한눈에 확인하세요. (클릭 시 해당 목표로 전환)</span>
+          </div>
+          <span style="font-size:0.8rem; color:#38bdf8; font-weight:700;">실시간 자동 계산 중</span>
+        </div>
+        <div class="matrix-grid" id="dungeon-matrix-grid">
+          <!-- Populated by renderDungeonMatrix() -->
+        </div>
+      </div>
+
+      <!-- Real-time Equipment Upgrade Comparator Jump Banner -->
+      <div class="spec-to-comparator-banner" style="margin-top:1.25rem; background:linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(15,23,42,0.95) 100%); border:1px solid rgba(245,158,11,0.35); border-radius:10px; padding:1.1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.85rem;">
+        <div>
+          <span class="badge" style="background:rgba(245,158,11,0.2); color:#fde68a; border-color:rgba(245,158,11,0.4);">
+            🛡️ 실전 스펙업 비교 시뮬레이터 연동
+          </span>
+          <h4 style="margin:0.4rem 0 0.25rem; color:#fde68a; font-size:1.05rem; font-weight:800;">
+            내 현재 장비 ➔ 추천 장비 교체 시 대미지 & 적중률 변화가 궁금하신가요?
+          </h4>
+          <p style="margin:0; font-size:0.85rem; color:#cbd5e1; line-height:1.55;">
+            현재 착용 중인 장비에서 다음 추천 장비로 교체할 때 가해지는 <b>스킬 1타당 대미지(+%), 보스 적중률(%p), 1방 컷(원샷 원킬) 달성 여부</b>를 실시간으로 비교해 드립니다.
+          </p>
+        </div>
+        <button type="button" class="btn-primary" onclick="jumpToSpecupComparator()" style="background:#f59e0b; color:#0f172a; font-weight:800; border:none; padding:0.65rem 1.25rem; border-radius:8px; cursor:pointer; white-space:nowrap; font-size:0.9rem; box-shadow:0 4px 12px rgba(245,158,11,0.3);">
+          🧭 장비 스펙업 실시간 비교기 열기 ➔
+        </button>
+      </div>
+    </section>
+
+      <!-- 2. Core 8 Doping & Additional Buff Trigger Dashboard -->
       <div class="doping-dashboard-box">
         <div class="doping-header-top">
           <div class="doping-title">
-            <span>🧪 테일즈위버 실전 도핑 백과 & 버프 시뮬레이터</span>
+            <span>🧪 실전 국민 8대 도핑 & 버프 시뮬레이터</span>
             <span style="font-size:0.75rem; background:#1e3a8a; color:#93c5fd; padding:0.15rem 0.5rem; border-radius:999px;">공식 GM가이드 131192 기준</span>
           </div>
           <div class="preset-bar">
@@ -849,128 +960,20 @@
         <!-- Conflict notification toast banner -->
         <div id="conflict-toast" class="conflict-toast"></div>
 
-        <!-- Navigation Tabs for Doping Categories -->
-        
-        <!-- TalesWeaver Stacking Rule Guide Box -->
-        <div class="stack-rules-box">
-          <h4>💡 테일즈위버 버프 중첩(Stacking) 공식 핵심 가이드</h4>
-          <div class="stack-rules-grid">
-            <div class="stack-rule-item">
-              <span style="color:#34d399; font-weight:800;">[🟢 100% 동시 중첩 가능]</span><br>
-              • <b>스탯류</b>: 고정 스탯(이자벨/특선) + 비율 스탯(이자벨/특선/신뢰) + 요리 + 괴력햄 + 클럽P(클럽조건부) + 비호장판<br>
-              • <b>대미지류</b>: 일루미 축제음료 + 개각성 + 이자벨 대미지 + 특선 대미지 + 장비강화석 + 클럽P(클럽조건부) + 탐험 공격력
-            </div>
-            <div class="stack-rule-item">
-              <span style="color:#f87171; font-weight:800;">[⚠️ 중복 불가 / 충돌 그룹]</span><br>
-              • <b>경험치 메인</b>: 클럽 E-2 ↔ 스승의 증표 ↔ 따뜻한 에오스<br>
-              • <b>눈사람 vs 에오스</b>: 눈사람 포션 ↔ 따뜻한 에오스<br>
-              • <b>부스터류</b>: 경험의 심장 ↔ 군고구마 / 레어의 심장 ↔ 밤고구마 / 도전 도장 ↔ 참 잘했어요
-            </div>
+        <!-- Core 8 Doping Cards Header & Modal Trigger -->
+        <div class="doping-core-header-row">
+          <div>
+            <span style="font-weight:800; color:#fde68a; font-size:0.95rem;">⭐ 실전 국민 핵심 도핑 (8종 상시 노출)</span>
+            <span style="font-size:0.76rem; color:#94a3b8; display:block; margin-top:2px;">보스 레이드 및 컨텐츠 진행 시 90% 이상의 모험가가 상시 복용하는 필수 도핑입니다.</span>
           </div>
+          <button type="button" class="btn-open-doping-modal" onclick="openDopingModal()">
+            ⚙️ 추가 버프 · 도핑 선택 (+48종) <span id="extra-doping-count-badge" class="extra-count-badge" style="display:none;"></span> ➔
+          </button>
         </div>
 
-        <!-- Stacking Filter Bar -->
-        <div class="stack-filter-bar">
-          <span style="font-weight:700; color:#38bdf8;">🏷️ 중첩 유형 필터:</span>
-          <button type="button" class="stack-filter-btn active" onclick="filterStackType('all', this)">📋 전체 표시 (54종)</button>
-          <button type="button" class="stack-filter-btn" onclick="filterStackType('ok', this)">🟢 자유 중첩 가능 버프 (42종)</button>
-          <button type="button" class="stack-filter-btn" onclick="filterStackType('limit', this)">⚠️ 중첩 주의/제한 버프 (12종)</button>
-          <span style="margin-left:auto; font-size:0.75rem; color:#94a3b8;">※ 버프 선택 시 중복 불가 버프는 자동으로 잠김(Lock) 처리됩니다.</span>
-        </div>
-
-        <!-- Practical Content Core Doping Guide Card -->
-        <div class="info-box" style="margin-bottom:1.15rem; border-color:rgba(245, 158, 11, 0.55); background:linear-gradient(135deg, rgba(30, 27, 75, 0.75), rgba(15, 23, 42, 0.95));">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.6rem;">
-            <div style="display:flex; align-items:center; gap:0.4rem;">
-              <span style="font-size:1.15rem;">⭐</span>
-              <strong style="color:#fde047; font-size:1rem;">실전 컨텐츠 필수 국민 도핑 세트 (상점 vs 거래소 vs 출석)</strong>
-            </div>
-            <button type="button" class="btn-sm" style="background:#f59e0b; color:#0f172a; font-weight:800; font-size:0.78rem; padding:0.3rem 0.75rem; border-radius:6px; cursor:pointer;" onclick="applyDopingPreset('content_core')">⚡ 8종 원클릭 일괄 적용</button>
-          </div>
-          <div style="font-size:0.84rem; color:#cbd5e1; line-height:1.6; margin-bottom:0.75rem;">
-            보스 레이드 및 상위 컨텐츠 진행 시 <b>동시 중첩하여 상시 복용하는 필수 도핑 조합</b>입니다. 각 아이템의 구매 경로(상점 / 거래소 / 출석)를 확인하고 미리 구비해 두세요:
-          </div>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.55rem; font-size:0.82rem;">
-            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(51,65,85,0.7); border-radius:6px; padding:0.5rem 0.65rem;">
-              <div style="font-weight:700; color:#e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                <span>1. 일루미네이션 축제 음료</span>
-                <span class="badge-exchange">🏪 거래소 구매 가능</span>
-              </div>
-              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">전스탯 +15, 대미지 +10~20%, 마방 +20, 명중 +15 (축제/이벤트/거래소)</div>
-            </div>
-
-            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(51,65,85,0.7); border-radius:6px; padding:0.5rem 0.65rem;">
-              <div style="font-weight:700; color:#e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                <span>2. 신속 포션 (그라츠)</span>
-                <span style="display:flex; gap:3px;"><span class="badge-shop">🛒 상점(TP)</span><span class="badge-exchange">🏪 거래소</span></span>
-              </div>
-              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">이동속도 +3, 스킬 후딜레이 획기적 감소 (TP상점, 젤리삐, 거래소)</div>
-            </div>
-
-            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(51,65,85,0.7); border-radius:6px; padding:0.5rem 0.65rem;">
-              <div style="font-weight:700; color:#e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                <span>3. 매일 출석체크 버프</span>
-                <span class="badge-event">📅 출석 UI 1클릭 수령</span>
-              </div>
-              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">올스탯 +15, 공격력 증가 (상점/거래소 불가 ➔ 매일 출석창에서 무료 수령)</div>
-            </div>
-
-            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(51,65,85,0.7); border-radius:6px; padding:0.5rem 0.65rem;">
-              <div style="font-weight:700; color:#e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                <span>4. 改-각성의 비약 (개각비)</span>
-                <span class="badge-exchange">🏪 거래소 구매 가능</span>
-              </div>
-              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">명중 +20, 공격력 +20%, 대미지 +10% (거래소 유저 거래 / 조제)</div>
-            </div>
-
-            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(51,65,85,0.7); border-radius:6px; padding:0.5rem 0.65rem;">
-              <div style="font-weight:700; color:#e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                <span>5. 改-신뢰의 물약 (개신뢰)</span>
-                <span class="badge-exchange">🏪 거래소 구매 가능</span>
-              </div>
-              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">전 능력치 +10% 비율 증가 (비호 마방 +35~50 폭발적 상승, 거래소/조제)</div>
-            </div>
-
-            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(51,65,85,0.7); border-radius:6px; padding:0.5rem 0.65rem;">
-              <div style="font-weight:700; color:#e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                <span>6. 이자벨 비법 3종 (대미지/고정/비율)</span>
-                <span style="display:flex; gap:3px;"><span class="badge-exchange">🏪 거래소</span><span class="badge-shop">🛒 캐시샵/키트</span></span>
-              </div>
-              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">대미지 +10%, 마방 +70, 명중 +55 동시 상승 (3종 100% 동시 중첩 가능)</div>
-            </div>
-
-            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(51,65,85,0.7); border-radius:6px; padding:0.5rem 0.65rem;">
-              <div style="font-weight:700; color:#e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                <span>7. 장비강화석 버프</span>
-                <span style="display:flex; gap:3px;"><span class="badge-shop">🛒 ELSO상점</span><span class="badge-exchange">🏪 거래소</span></span>
-              </div>
-              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">장비 공격력/마방 상승, 대미지 +5% (사과의 섬 ELSO 상점, 허상 드랍, 거래소)</div>
-            </div>
-
-            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(51,65,85,0.7); border-radius:6px; padding:0.5rem 0.65rem;">
-              <div style="font-weight:700; color:#e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                <span>8. 정제된 속성 앰플</span>
-                <span class="badge-shop">🛒 마을 마법상점 시드 판매</span>
-              </div>
-              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">주력 속성 +10~20 즉시 부여 (각 마을 마법상점 NPC 시드로 상시 구매 가능)</div>
-            </div>
-          </div>
-          <div style="margin-top:0.65rem; font-size:0.76rem; color:#fca5a5; border-top:1px dashed rgba(245,158,11,0.3); padding-top:0.45rem;">
-            ⚠️ <b>클럽 버프 관련 주의:</b> 클럽 버프(Type P, E-2, R-2)는 모든 유저에게 기본 제공되는 기본값이 아니며, 가입한 클럽의 레벨 및 마스터의 스킬 활성화 상태에 따라 다르게 주어지는 <b>조건부 버프</b>입니다.
-          </div>
-        </div>
-
-        <div class="doping-nav">
-          <button type="button" class="doping-nav-btn active" onclick="switchDopingNav('cat_basic', this)">⚔️ 1. 기본 전투 (8종)</button><button type="button" class="doping-nav-btn " onclick="switchDopingNav('cat_high_end', this)">🔥 2. 추가·극딜 (14종)</button><button type="button" class="doping-nav-btn " onclick="switchDopingNav('cat_biho_skills', this)">🛡️ 3. 비호 장판 (3종)</button><button type="button" class="doping-nav-btn " onclick="switchDopingNav('cat_utility_hp', this)">🏃 4. 유틸·HP (7종)</button><button type="button" class="doping-nav-btn " onclick="switchDopingNav('cat_exp_doping', this)">📚 5. 경험치·룬 (12종)</button><button type="button" class="doping-nav-btn " onclick="switchDopingNav('cat_rare_doping', this)">💎 6. 레어 파밍 (10종)</button><button type="button" class="doping-nav-btn" onclick="switchDopingNav('cat_all_sources', this)">📖 7. 획득처 총정리 도감</button>
-        </div>
-
-        <!-- Panels for each Category -->
-        
-      <div id="cat_basic" class="doping-cat-panel active">
-        <div class="doping-cat-desc">💡 모든 컨텐츠 입문 및 기본 사냥/파플 시 기본으로 상시 도핑하는 핵심 도핑군 (상점 vs 거래소 vs 출석 구분)</div>
-        <div class="doping-grid">
-          
-          <label class="doping-card" data-stack="limit" id="card-snowman_potion">
+        <!-- Core 8 Cards Grid -->
+        <div class="doping-core-grid">
+<label class="doping-card" data-stack="limit" id="card-snowman_potion">
             <div class="doping-card-header">
               <div class="doping-name-wrap">
                 <input type="checkbox" class="buff-chk" data-key="snowman_potion"
@@ -990,8 +993,7 @@
               <span class="badge-conflict-tag">⚠️ 중복불가: 따뜻한 에오스의 파편</span>
             </div>
           </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-awakening_potion">
+<label class="doping-card" data-stack="ok" id="card-awakening_potion">
             <div class="doping-card-header">
               <div class="doping-name-wrap">
                 <input type="checkbox" class="buff-chk" data-key="awakening_potion"
@@ -1010,8 +1012,7 @@
               <span class="badge-src">⚗️ 조제 스킬 제작 / 이벤트</span>
             </div>
           </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-trust_potion">
+<label class="doping-card" data-stack="ok" id="card-trust_potion">
             <div class="doping-card-header">
               <div class="doping-name-wrap">
                 <input type="checkbox" class="buff-chk" data-key="trust_potion"
@@ -1030,8 +1031,7 @@
               <span class="badge-src">⚗️ 조제 스킬 제작 / 이벤트</span>
             </div>
           </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_fixed">
+<label class="doping-card" data-stack="ok" id="card-isabelle_fixed">
             <div class="doping-card-header">
               <div class="doping-name-wrap">
                 <input type="checkbox" class="buff-chk" data-key="isabelle_fixed"
@@ -1050,8 +1050,7 @@
               <span class="badge-shop">🛒 캐시샵 / 키트 상점</span>
             </div>
           </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_percent">
+<label class="doping-card" data-stack="ok" id="card-isabelle_percent">
             <div class="doping-card-header">
               <div class="doping-name-wrap">
                 <input type="checkbox" class="buff-chk" data-key="isabelle_percent"
@@ -1070,8 +1069,7 @@
               <span class="badge-shop">🛒 캐시샵 / 키트 상점</span>
             </div>
           </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_damage">
+<label class="doping-card" data-stack="ok" id="card-isabelle_damage">
             <div class="doping-card-header">
               <div class="doping-name-wrap">
                 <input type="checkbox" class="buff-chk" data-key="isabelle_damage"
@@ -1090,8 +1088,22 @@
               <span class="badge-shop">🛒 캐시샵 / 키트 상점</span>
             </div>
           </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-purified_ampoule">
+<label class="doping-card" data-stack="ok" id="card-super_ham">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="super_ham"
+                  data-mdef="15" data-acc="0" data-elem="0"
+                  data-dmg="5" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('super_ham')">
+                <span class="doping-name">괴력의 햄</span>
+              </div>
+              <span class="doping-stat-tag">마방 +15 / 대미지 +5%</span>
+            </div>
+            <div class="doping-tip">공격력/마공 +15, 마방 +15</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트, 룬정원 채집, 거래소</span></div>
+          </label>
+<label class="doping-card" data-stack="ok" id="card-purified_ampoule">
             <div class="doping-card-header">
               <div class="doping-name-wrap">
                 <input type="checkbox" class="buff-chk" data-key="purified_ampoule"
@@ -1110,846 +1122,109 @@
               <span class="badge-exchange">🏪 거래소 구매 가능</span>
             </div>
           </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-haste_potion">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="haste_potion"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('haste_potion')">
-                <span class="doping-name">신속 포션 (그라츠 / 이속+3)</span>
-              </div>
-              <span class="doping-stat-tag">특수 효과</span>
-            </div>
-            <div class="doping-tip">이동속도 +3, 후딜레이 감소</div>
-            <div class="doping-badges">
-              <span class="badge-stack-ok">🟢 자유 중첩</span>
-              <span class="badge-shop">🛒 상점 구매 (TP/젤리삐)</span>
-              <span class="badge-exchange">🏪 거래소 구매 가능</span>
-              <span class="badge-event">📅 출석/이벤트 보상</span>
-            </div>
-          </label>
+        </div>
 
-          <!-- Attendance Buff (New) -->
-          <label class="doping-card" data-stack="ok" id="card-attendance_buff">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="attendance_buff"
-                  data-mdef="15" data-acc="15" data-elem="0"
-                  data-dmg="5" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('attendance_buff')">
-                <span class="doping-name">매일 출석체크 버프 (출석 버프)</span>
-              </div>
-              <span class="doping-stat-tag">마방 +15 / 명중 +15 / 대미지 +5%</span>
-            </div>
-            <div class="doping-tip">매일 출석체크 UI에서 1클릭 수령하는 공짜 데일리 전투 버프</div>
-            <div class="doping-badges">
-              <span class="badge-stack-ok">🟢 자유 중첩</span>
-              <span class="badge-event">📅 매일 출석 UI 1클릭 수령</span>
-              <span class="badge-src">🚫 상점/거래소 불가</span>
-            </div>
-          </label>
+        <!-- Extra Active Doping Chips Display -->
+        <div class="doping-extra-chips-bar">
+          <span style="font-weight:700; color:#38bdf8; font-size:0.8rem; white-space:nowrap;">추가 선택된 보조 버프:</span>
+          <div id="doping-extra-chips-list" class="extra-chips-list">
+            <span style="font-size:0.78rem; color:#64748b;">(현재 추가 선택된 보조 버프가 없습니다. 필요 시 우측 [추가 버프 선택] 버튼을 이용하세요)</span>
+          </div>
+        </div>
 
-          <!-- Equip Reinforce Stone (New) -->
-          <label class="doping-card" data-stack="ok" id="card-equip_reinforce_stone">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="equip_reinforce_stone"
-                  data-mdef="30" data-acc="10" data-elem="0"
-                  data-dmg="5" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('equip_reinforce_stone')">
-                <span class="doping-name">장비강화석 버프 (공격/마방 증폭)</span>
-              </div>
-              <span class="doping-stat-tag">마방 +30 / 명중 +10 / 대미지 +5%</span>
+        <!-- Real-time Multi-Metric Dashboard -->
+        <div class="doping-summary-dashboard">
+          <span id="buff-bonus-text" style="display:none;"></span>
+          <div class="summary-title-row">
+            <span>📊 실시간 적용 도핑 총합 (<b id="doping-active-count" style="color:#38bdf8;">0개 선택됨</b>)</span>
+            <span style="color:#94a3b8; font-size:0.75rem;">※ 스탯 판독기 및 던전 매트릭스에 실시간 자동 반영됩니다.</span>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-item">
+              <div class="metric-label">🛡️ 마법방어력</div>
+              <div id="metric-mdef" class="metric-val">+0</div>
             </div>
-            <div class="doping-tip">장비강화석 소모 시 발동되는 전투 버프 (허상 외 일반 레이드 시 활용)</div>
-            <div class="doping-badges">
-              <span class="badge-stack-ok">🟢 자유 중첩</span>
-              <span class="badge-exchange">🏪 거래소 구매 가능</span>
-              <span class="badge-shop">🛒 사과의 섬 ELSO 상점</span>
-              <span class="badge-src">📍 프시키의 허상 드랍</span>
+            <div class="metric-item">
+              <div class="metric-label">🎯 명중률</div>
+              <div id="metric-acc" class="metric-val">+0</div>
             </div>
-          </label>
-        
+            <div class="metric-item">
+              <div class="metric-label">🌪️ 속성치</div>
+              <div id="metric-elem" class="metric-val">+0</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">💥 최종 대미지</div>
+              <div id="metric-dmg" class="metric-val" style="color:#f87171;">+0%</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">🛡️ 피격 피해감소</div>
+              <div id="metric-dmgred" class="metric-val" style="color:#fbbf24;">+0%</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">📚 경험치 증가</div>
+              <div id="metric-exp" class="metric-val" style="color:#34d399;">+0%</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label">💎 레어 드랍률</div>
+              <div id="metric-rare" class="metric-val" style="color:#c084fc;">+0%</div>
+            </div>
+          </div>
         </div>
       </div>
-    
-      <div id="cat_high_end" class="doping-cat-panel ">
-        <div class="doping-cat-desc">💡 신어헬, 로카고스, 에토스 등 상위 레이드에서 미스 방지 및 극딜을 위해 사용하는 14종</div>
-        <div class="doping-grid">
-          
-          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_fixed">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_fixed"
-                  data-mdef="35" data-acc="30" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('isabelle_sp_fixed')">
-                <span class="doping-name">이자벨의 특선 묘약 (고정)</span>
-              </div>
-              <span class="doping-stat-tag">마방 +35 / 명중 +30</span>
-            </div>
-            <div class="doping-tip">모든 스탯 고정치 +35 추가 증가</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_percent">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_percent"
-                  data-mdef="50" data-acc="35" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('isabelle_sp_percent')">
-                <span class="doping-name">이자벨의 특선 묘약 (비율)</span>
-              </div>
-              <span class="doping-stat-tag">마방 +50 / 명중 +35</span>
-            </div>
-            <div class="doping-tip">모든 스탯 비율 +15% 추가 증가</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_damage">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_damage"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="15" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('isabelle_sp_damage')">
-                <span class="doping-name">이자벨의 특선 묘약 (대미지)</span>
-              </div>
-              <span class="doping-stat-tag">대미지 +15%</span>
-            </div>
-            <div class="doping-tip">최종 피해량 +15% 추가 증가</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_acc">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="isabelle_acc"
-                  data-mdef="0" data-acc="30" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('isabelle_acc')">
-                <span class="doping-name">이자벨의 비법 (명중)</span>
-              </div>
-              <span class="doping-stat-tag">명중 +30</span>
-            </div>
-            <div class="doping-tip">명중률 +30 (신어헬/로카고스 미스 대책 필수)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_acc">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_acc"
-                  data-mdef="0" data-acc="50" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('isabelle_sp_acc')">
-                <span class="doping-name">이자벨의 특선 묘약 (명중)</span>
-              </div>
-              <span class="doping-stat-tag">명중 +50</span>
-            </div>
-            <div class="doping-tip">명중률 +50 극대화 (상위 보스 올힛용)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_crit">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="isabelle_crit"
-                  data-mdef="0" data-acc="10" data-elem="0"
-                  data-dmg="5" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('isabelle_crit')">
-                <span class="doping-name">이자벨의 비법 (크리티컬)</span>
-              </div>
-              <span class="doping-stat-tag">명중 +10 / 대미지 +5%</span>
-            </div>
-            <div class="doping-tip">크리티컬 확률 +20%</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-samiseon_dish">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="samiseon_dish"
-                  data-mdef="20" data-acc="20" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('samiseon_dish')">
-                <span class="doping-name">사미선령지채 (요리)</span>
-              </div>
-              <span class="doping-stat-tag">마방 +20 / 명중 +20</span>
-            </div>
-            <div class="doping-tip">마방 +20, 명중 +20, 전 능력치 +15</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 요리 스킬, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-super_ham">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="super_ham"
-                  data-mdef="15" data-acc="0" data-elem="0"
-                  data-dmg="5" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('super_ham')">
-                <span class="doping-name">괴력의 햄</span>
-              </div>
-              <span class="doping-stat-tag">마방 +15 / 대미지 +5%</span>
-            </div>
-            <div class="doping-tip">공격력/마공 +15, 마방 +15</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트, 룬정원 채집, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-protection_elixir">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="protection_elixir"
-                  data-mdef="30" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="10"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('protection_elixir')">
-                <span class="doping-name">보호의 비약</span>
-              </div>
-              <span class="doping-stat-tag">마방 +30 / 피감 +10%</span>
-            </div>
-            <div class="doping-tip">피격 대미지 10% 감소 (생존 극대화)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-focus_elixir">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="focus_elixir"
-                  data-mdef="0" data-acc="25" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('focus_elixir')">
-                <span class="doping-name">집중의 비약</span>
-              </div>
-              <span class="doping-stat-tag">명중 +25</span>
-            </div>
-            <div class="doping-tip">명중률 +25 증가</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-will_elixir">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="will_elixir"
-                  data-mdef="15" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="5"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('will_elixir')">
-                <span class="doping-name">의지의 비약</span>
-              </div>
-              <span class="doping-stat-tag">마방 +15 / 피감 +5%</span>
-            </div>
-            <div class="doping-tip">피격 대미지 5% 감소 및 회피율 증가</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-club_type_p">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="club_type_p"
-                  data-mdef="15" data-acc="15" data-elem="0"
-                  data-dmg="10" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('club_type_p')">
-                <span class="doping-name">클럽 상점 버프 Type P (클럽 조건부)</span>
-              </div>
-              <span class="doping-stat-tag">마방 +15 / 명중 +15 / 대미지 +10%</span>
-            </div>
-            <div class="doping-tip">피해량 +10%, 모든 스탯 +10 (가입 클럽의 레벨 및 마스터 스킬 활성화 상태에 따라 상이함 - 기본 제공 아님)</div>
-            <div class="doping-badges"><span class="badge-stack-limit" style="color:#fcd34d; border-color:#f59e0b; background:rgba(245,158,11,0.2);">⚠️ 클럽 조건부 (기본 아님)</span><span class="badge-shop">🛒 나르비크 클럽상점 알렌 (클럽 코인)</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-soul_atk_buff">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="soul_atk_buff"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="5" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('soul_atk_buff')">
-                <span class="doping-name">탐험 공격 피해량 증가</span>
-              </div>
-              <span class="doping-stat-tag">대미지 +5%</span>
-            </div>
-            <div class="doping-tip">공격 피해량 +5% 상시 유지</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-soul_def_buff">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="soul_def_buff"
-                  data-mdef="20" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="5"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('soul_def_buff')">
-                <span class="doping-name">탐험 피해 감소 증가</span>
-              </div>
-              <span class="doping-stat-tag">마방 +20 / 피감 +5%</span>
-            </div>
-            <div class="doping-tip">피격 피해 5% 감소 상시 유지</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
-          </label>
-        
-        </div>
       </div>
-    
-      <div id="cat_biho_skills" class="doping-cat-panel ">
-        <div class="doping-cat-desc">💡 비호정령(아나이스) 본인 및 파티원에게 부여되는 핵심 장판/스킬</div>
-        <div class="doping-grid">
-          
-          <label class="doping-card" data-stack="ok" id="card-skill_light">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="skill_light"
-                  data-mdef="40" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('skill_light')">
-                <span class="doping-name">생명의 빛 (아에르 힐 장판)</span>
-              </div>
-              <span class="doping-stat-tag">마방 +40</span>
+
+      <!-- 3. Collapsible Accordions Group for References -->
+      <div class="spec-accordions-group">
+        <div class="spec-accordion-item">
+          <button type="button" class="spec-accordion-btn" onclick="toggleSpecAccordion('acc-stack-rules', this)">
+            <span class="acc-btn-left">💡 테일즈위버 버프 중첩(Stacking) 공식 & 실전 국민 세트 설명</span>
+            <span class="acc-arrow">▼</span>
+          </button>
+          <div id="acc-stack-rules" class="spec-accordion-body" style="display:none;">
+            <div class="stack-rules-box">
+          <h4>💡 테일즈위버 버프 중첩(Stacking) 공식 핵심 가이드</h4>
+          <div class="stack-rules-grid">
+            <div class="stack-rule-item">
+              <span style="color:#34d399; font-weight:800;">[🟢 100% 동시 중첩 가능]</span><br>
+              • <b>스탯류</b>: 고정 스탯(이자벨/특선) + 비율 스탯(이자벨/특선/신뢰) + 요리 + 괴력햄 + 클럽P(클럽조건부) + 비호장판<br>
+              • <b>대미지류</b>: 일루미 축제음료 + 개각성 + 이자벨 대미지 + 특선 대미지 + 장비강화석 + 클럽P(클럽조건부) + 탐험 공격력
             </div>
-            <div class="doping-tip">마방 +40, 초당 대량 HP 지속 회복 (기본 유지)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 비호정령 스킬</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-skill_over">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="skill_over"
-                  data-mdef="0" data-acc="40" data-elem="0"
-                  data-dmg="10" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('skill_over')">
-                <span class="doping-name">오버 페이스 (아에르 공격 장판)</span>
-              </div>
-              <span class="doping-stat-tag">명중 +40 / 대미지 +10%</span>
+            <div class="stack-rule-item">
+              <span style="color:#f87171; font-weight:800;">[⚠️ 중복 불가 / 충돌 그룹]</span><br>
+              • <b>경험치 메인</b>: 클럽 E-2 ↔ 스승의 증표 ↔ 따뜻한 에오스<br>
+              • <b>눈사람 vs 에오스</b>: 눈사람 포션 ↔ 따뜻한 에오스<br>
+              • <b>부스터류</b>: 경험의 심장 ↔ 군고구마 / 레어의 심장 ↔ 밤고구마 / 도전 도장 ↔ 참 잘했어요
             </div>
-            <div class="doping-tip">명중 +40, 딜러 후딜레이 대폭 감소 및 피해량 증가</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 비호정령 스킬</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-skill_earth">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="skill_earth"
-                  data-mdef="60" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="30"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('skill_earth')">
-                <span class="doping-name">어스 프로텍션 (로키 피감 장판)</span>
-              </div>
-              <span class="doping-stat-tag">마방 +60 / 피감 +30%</span>
+          </div>
+            <div class="info-box" style="margin-bottom:1.15rem; border-color:rgba(245, 158, 11, 0.55); background:linear-gradient(135deg, rgba(30, 27, 75, 0.75), rgba(15, 23, 42, 0.95));">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.6rem;">
+            <div style="display:flex; align-items:center; gap:0.4rem;">
+              <span style="font-size:1.15rem;">⭐</span>
+              <strong style="color:#fde047; font-size:1rem;">실전 컨텐츠 필수 국민 도핑 세트 (상점 vs 거래소 vs 출석)</strong>
             </div>
-            <div class="doping-tip">피격 대미지 30% 즉시 감소, 마방 +60 (보스 광폭화/즉사기 방어)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 비호정령 스킬</span></div>
-          </label>
-        
+            <button type="button" class="btn-sm" style="background:#f59e0b; color:#0f172a; font-weight:800; font-size:0.78rem; padding:0.3rem 0.75rem; border-radius:6px; cursor:pointer;" onclick="applyDopingPreset('content_core')">⚡ 8종 원클릭 일괄 적용</button>
+          </div>
+          <div style="font-size:0.84rem; color:#cbd5e1; line-height:1.6; margin-bottom:0.75rem;">
+            보스 레이드 및 상위 컨텐츠 진행 시 <b>동시 중첩하여 상시 복용하는 필수 도핑 조합</b>입니다. 각 아이템의 구매 경로(상점 / 거래소 / 출석)를 확인하고 미리 구비해 두세요:
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.55rem; font-size:0.82rem;">
+            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(51,65,85,0.7); border-radius:6px; padding:0.5rem 0.65rem;">
+              <div style="font-weight:700; color:#e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+                <span>1. 일루미네이션 축제 음료</span>
+                <span class="badge-exchange">🏪 거래소 구매 가능</span>
+              </div>
+              <div style="color:#94a3b8; font-size:0.75rem; margin-top:2px;">전스탯 +15, 대미지 +10~20%, 마방 +20, 명중 +15 (축제/이벤트/거래소)</div>
+            </div>
+          </div>
         </div>
-      </div>
-    
-      <div id="cat_utility_hp" class="doping-cat-panel ">
-        <div class="doping-cat-desc">💡 사거리, 경직 무시 및 위기 탈출용 추천 회복제 목록</div>
-        <div class="doping-grid">
-          
-          <label class="doping-card" data-stack="ok" id="card-soul_range">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="soul_range"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('soul_range')">
-                <span class="doping-name">탐험 사거리 증가</span>
-              </div>
-              <span class="doping-stat-tag">특수 효과</span>
-            </div>
-            <div class="doping-tip">스킬 사거리 +2 증가 (패시브/상시)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-soul_superarmor">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="soul_superarmor"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('soul_superarmor')">
-                <span class="doping-name">탐험 경직 무시</span>
-              </div>
-              <span class="doping-stat-tag">특수 효과</span>
-            </div>
-            <div class="doping-tip">피격 시 경직 100% 무시 (패시브에 경직무시 없는 캐릭 필수)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_hp">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_hp"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('isabelle_sp_hp')">
-                <span class="doping-name">☆★ 이자벨의 특선 묘약 (HP 회복)</span>
-              </div>
-              <span class="doping-stat-tag">특수 효과</span>
-            </div>
-            <div class="doping-tip">초당 대량 지속 회복 (레이드 강력 추천)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_sp_all">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_all"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('isabelle_sp_all')">
-                <span class="doping-name">☆★ 이자벨의 특선 묘약 (HP/MP/SP)</span>
-              </div>
-              <span class="doping-stat-tag">특수 효과</span>
-            </div>
-            <div class="doping-tip">HP, MP, SP 동시 대량 지속 회복</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_elixir_hp">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="isabelle_elixir_hp"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('isabelle_elixir_hp')">
-                <span class="doping-name">이자벨의 선약 (HP 즉시 회복)</span>
-              </div>
-              <span class="doping-stat-tag">특수 효과</span>
-            </div>
-            <div class="doping-tip">HP 즉시 50% 회복 (쿨타임 짧음)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-attendance_potion">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="attendance_potion"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('attendance_potion')">
-                <span class="doping-name">☆★ 스페셜 출석체크 물약</span>
-              </div>
-              <span class="doping-stat-tag">특수 효과</span>
-            </div>
-            <div class="doping-tip">즉시 회복 및 지속 회복 겸용 (강력 추천)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 출석 이벤트</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-life_potion_large">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="life_potion_large"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="0"
-                  onchange="onDopingToggle('life_potion_large')">
-                <span class="doping-name">改/眞/신-라이프 포션(대)</span>
-              </div>
-              <span class="doping-stat-tag">특수 효과</span>
-            </div>
-            <div class="doping-tip">기본 HP 회복제</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 조제, 거래소</span></div>
-          </label>
-        
-        </div>
-      </div>
-    
-      <div id="cat_exp_doping" class="doping-cat-panel ">
-        <div class="doping-cat-desc">💡 사냥 및 룬 경험치 파밍 시 사용하는 경험치 증가 도핑 (중복 불가 규칙 포함)</div>
-        <div class="doping-grid">
-          
-          <label class="doping-card" data-stack="limit" id="card-club_type_e2">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="club_type_e2"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="100" data-rare="0"
-                  onchange="onDopingToggle('club_type_e2')">
-                <span class="doping-name">클럽 상점 버프 Type E-2</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +100%</span>
-            </div>
-            <div class="doping-tip">경험치 +100%</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 나르비크 클럽상점 알렌</span><span class="badge-conflict-tag">⚠️ 중복불가: 스승의 증표 / 따뜻한 에오스</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="limit" id="card-master_token">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="master_token"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="100" data-rare="0"
-                  onchange="onDopingToggle('master_token')">
-                <span class="doping-name">스승의 증표</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +100%</span>
-            </div>
-            <div class="doping-tip">경험치 +100% / ⌛ 접종 시에도 시간 차감</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 나르비크 사제 관리 사무실</span><span class="badge-conflict-tag">⚠️ 중복불가: 클럽 상점 버프 Type E-2</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="limit" id="card-warm_eos">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="warm_eos"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="100" data-rare="0"
-                  onchange="onDopingToggle('warm_eos')">
-                <span class="doping-name">따뜻한 에오스의 파편</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +100%</span>
-            </div>
-            <div class="doping-tip">경험치 +100%</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 이벤트</span><span class="badge-conflict-tag">⚠️ 중복불가: 클럽 E-2 / 눈사람 포션</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="limit" id="card-exp_heart">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="exp_heart"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="100" data-rare="0"
-                  onchange="onDopingToggle('exp_heart')">
-                <span class="doping-name">경험의 심장</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +100%</span>
-            </div>
-            <div class="doping-tip">경험치 +100% / ⌛ 접종 시 시간 차감</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 컨텐츠, 거래소</span><span class="badge-conflict-tag">⚠️ 중복불가: 경험의 군고구마</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="limit" id="card-exp_sweet_potato">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="exp_sweet_potato"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="100" data-rare="0"
-                  onchange="onDopingToggle('exp_sweet_potato')">
-                <span class="doping-name">경험의 군고구마 (숙성)</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +100%</span>
-            </div>
-            <div class="doping-tip">경험치 +100% / ⌛ 접종 시 시간 차감</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 이벤트</span><span class="badge-conflict-tag">⚠️ 중복불가: 경험의 심장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="limit" id="card-quest_stamp_exp">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="quest_stamp_exp"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="50" data-rare="0"
-                  onchange="onDopingToggle('quest_stamp_exp')">
-                <span class="doping-name">도전 과제 완료 도장 (경험치)</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +50%</span>
-            </div>
-            <div class="doping-tip">경험치 +50% / ⌛ 접종 시 시간 차감</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 참 잘했어요</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="limit" id="card-good_job_exp">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="good_job_exp"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="50" data-rare="0"
-                  onchange="onDopingToggle('good_job_exp')">
-                <span class="doping-name">참 잘했어요 (경험치)</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +50%</span>
-            </div>
-            <div class="doping-tip">경험치 +50% / ⌛ 접종 시 시간 차감</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 도전 과제 완료 도장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-isabelle_exp">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="isabelle_exp"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="50" data-rare="0"
-                  onchange="onDopingToggle('isabelle_exp')">
-                <span class="doping-name">이자벨의 비법/특선/선약 (경험)</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +50%</span>
-            </div>
-            <div class="doping-tip">경험치 +50% (타 경험 도핑과 중복 가능)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-cash_trio">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="cash_trio"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="150" data-rare="0"
-                  onchange="onDopingToggle('cash_trio')">
-                <span class="doping-name">캐시 3종 (전설고구마/최상급에오스/얼리버드)</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +150%</span>
-            </div>
-            <div class="doping-tip">경험치 대폭 증가 (중복 가능)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 아이템 샵, 거래소</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-nenyaple_cat1">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="nenyaple_cat1"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="30" data-rare="0"
-                  onchange="onDopingToggle('nenyaple_cat1')">
-                <span class="doping-name">네냐플 고양이1 버프</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +30%</span>
-            </div>
-            <div class="doping-tip">경험치 +30% (무료 버프)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 네냐플 고양이1</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-rune_tp_boost">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="rune_tp_boost"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="100" data-rare="0"
-                  onchange="onDopingToggle('rune_tp_boost')">
-                <span class="doping-name">룬 던전 TP 룬 경험치 부스터</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +100%</span>
-            </div>
-            <div class="doping-tip">TP 사용하여 룬 경험치 획득량 2배 증가</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 룬 경험의 던전 좌측 하단 아이콘</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-helmet_rune_opt">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="helmet_rune_opt"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="50" data-rare="0"
-                  onchange="onDopingToggle('helmet_rune_opt')">
-                <span class="doping-name">투구 랜덤 옵션 (룬 경험치 +500)</span>
-              </div>
-              <span class="doping-stat-tag">경험치 +50%</span>
-            </div>
-            <div class="doping-tip">몬스터 퇴치 시 룬 경험치 500 추가 획득</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 사냥터, 키트, 거래소</span></div>
-          </label>
-        
-        </div>
-      </div>
-    
-      <div id="cat_rare_doping" class="doping-cat-panel ">
-        <div class="doping-cat-desc">💡 아이템 파밍 시 드랍률을 극대화하는 레어 도핑 (중복 불가 규칙 포함)</div>
-        <div class="doping-grid">
-          
-          <label class="doping-card" data-stack="ok" id="card-roto_amulet">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="roto_amulet"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="100"
-                  onchange="onDopingToggle('roto_amulet')">
-                <span class="doping-name">로토의 부적</span>
-              </div>
-              <span class="doping-stat-tag">레어 +100%</span>
-            </div>
-            <div class="doping-tip">레어 드랍률 +100% (필수 파밍 도핑)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 엘티보 눈사람족 수장</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="limit" id="card-rare_heart">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="rare_heart"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="100"
-                  onchange="onDopingToggle('rare_heart')">
-                <span class="doping-name">레어의 심장</span>
-              </div>
-              <span class="doping-stat-tag">레어 +100%</span>
-            </div>
-            <div class="doping-tip">레어 드랍률 +100% / ⌛ 접종 시 시간 차감</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 컨텐츠, 거래소</span><span class="badge-conflict-tag">⚠️ 중복불가: 레어의 밤고구마</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="limit" id="card-rare_chestnut">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="rare_chestnut"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="100"
-                  onchange="onDopingToggle('rare_chestnut')">
-                <span class="doping-name">레어의 밤 고구마 (숙성)</span>
-              </div>
-              <span class="doping-stat-tag">레어 +100%</span>
-            </div>
-            <div class="doping-tip">레어 드랍률 +100% / ⌛ 접종 시 시간 차감</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 이벤트</span><span class="badge-conflict-tag">⚠️ 중복불가: 레어의 심장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-four_leaf_clover">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="four_leaf_clover"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="50"
-                  onchange="onDopingToggle('four_leaf_clover')">
-                <span class="doping-name">행운의 네잎클로버</span>
-              </div>
-              <span class="doping-stat-tag">레어 +50%</span>
-            </div>
-            <div class="doping-tip">레어 드랍률 +50% 증가</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 엘티보 눈사람족 수장</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-club_type_r2">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="club_type_r2"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="50"
-                  onchange="onDopingToggle('club_type_r2')">
-                <span class="doping-name">클럽 상점 버프 Type R-2</span>
-              </div>
-              <span class="doping-stat-tag">레어 +50%</span>
-            </div>
-            <div class="doping-tip">레어 드랍률 +50% 증가 (클럽 코인)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 나르비크 클럽상점 알렌</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="limit" id="card-quest_stamp_rare">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="quest_stamp_rare"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="50"
-                  onchange="onDopingToggle('quest_stamp_rare')">
-                <span class="doping-name">도전 과제 완료 도장 (레어)</span>
-              </div>
-              <span class="doping-stat-tag">레어 +50%</span>
-            </div>
-            <div class="doping-tip">레어 +50% / ⌛ 접종 시 시간 차감</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 참 잘했어요</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="limit" id="card-good_job_rare">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="good_job_rare"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="50"
-                  onchange="onDopingToggle('good_job_rare')">
-                <span class="doping-name">참 잘했어요 (레어)</span>
-              </div>
-              <span class="doping-stat-tag">레어 +50%</span>
-            </div>
-            <div class="doping-tip">레어 +50% / ⌛ 접종 시 시간 차감</div>
-            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 도전 과제 완료 도장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-soul_rare_buff">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="soul_rare_buff"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="30"
-                  onchange="onDopingToggle('soul_rare_buff')">
-                <span class="doping-name">탐험 레어 버프</span>
-              </div>
-              <span class="doping-stat-tag">레어 +30%</span>
-            </div>
-            <div class="doping-tip">레어 드랍률 +30% (탐험 포인트로 획득)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-nenyaple_cat_x">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="nenyaple_cat_x"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="30"
-                  onchange="onDopingToggle('nenyaple_cat_x')">
-                <span class="doping-name">네냐플 고양이X 버프</span>
-              </div>
-              <span class="doping-stat-tag">레어 +30%</span>
-            </div>
-            <div class="doping-tip">레어 드랍률 +30% (무료 버프)</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 네냐플 고양이X</span></div>
-          </label>
-        
-          <label class="doping-card" data-stack="ok" id="card-pet_treasure">
-            <div class="doping-card-header">
-              <div class="doping-name-wrap">
-                <input type="checkbox" class="buff-chk" data-key="pet_treasure"
-                  data-mdef="0" data-acc="0" data-elem="0"
-                  data-dmg="0" data-dmgred="0"
-                  data-exp="0" data-rare="40"
-                  onchange="onDopingToggle('pet_treasure')">
-                <span class="doping-name">펫 보물찾기 & 몬스터 카드(+4)</span>
-              </div>
-              <span class="doping-stat-tag">레어 +40%</span>
-            </div>
-            <div class="doping-tip">펫 스킬 및 몬카 조합 상시 레어 증가</div>
-            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 엘티보 / 몬스터카드</span></div>
-          </label>
-        
-        </div>
-      </div>
-    
-  <div id="cat_all_sources" class="doping-cat-panel">
+
+        <div class="spec-accordion-item">
+          <button type="button" class="spec-accordion-btn" onclick="toggleSpecAccordion('acc-doping-table', this)">
+            <span class="acc-btn-left">📖 54종 전체 도핑 상세 효과 & 획득처 백과사전 표 보기</span>
+            <span class="acc-arrow">▼</span>
+          </button>
+          <div id="acc-doping-table" class="spec-accordion-body" style="display:none;">
+            <div id="cat_all_sources" class="doping-cat-panel">
     <div class="doping-cat-desc">
       🔍 <b>[GM가이드 Notice 131192 기준]</b> 테일즈위버 54종 전체 버프/도핑 아이템의 획득처와 옵션을 실시간 검색할 수 있습니다.
     </div>
@@ -2350,159 +1625,16 @@
       </table>
     </div>
   </div>
-
-
-        <!-- Real-time Multi-Metric Dashboard -->
-        <div class="doping-summary-dashboard">
-          <span id="buff-bonus-text" style="display:none;"></span>
-          <div class="summary-title-row">
-            <span>📊 실시간 적용 도핑 총합 (<b id="doping-active-count" style="color:#38bdf8;">0개 선택됨</b>)</span>
-            <span style="color:#94a3b8; font-size:0.75rem;">※ 스탯 판독기 및 던전 매트릭스에 실시간 자동 반영됩니다.</span>
-          </div>
-          <div class="metrics-grid">
-            <div class="metric-item">
-              <div class="metric-label">🛡️ 마법방어력</div>
-              <div id="metric-mdef" class="metric-val">+0</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">🎯 명중률</div>
-              <div id="metric-acc" class="metric-val">+0</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">🌪️ 속성치</div>
-              <div id="metric-elem" class="metric-val">+0</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">💥 최종 대미지</div>
-              <div id="metric-dmg" class="metric-val" style="color:#f87171;">+0%</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">🛡️ 피격 피해감소</div>
-              <div id="metric-dmgred" class="metric-val" style="color:#fbbf24;">+0%</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">📚 경험치 증가</div>
-              <div id="metric-exp" class="metric-val" style="color:#34d399;">+0%</div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">💎 레어 드랍률</div>
-              <div id="metric-rare" class="metric-val" style="color:#c084fc;">+0%</div>
-            </div>
           </div>
         </div>
-      </div>
 
-      <div class="stat-input-grid">
-        <div class="stat-card">
-          <div class="stat-card-top">
-            <span class="stat-card-title" id="card-mainstat-title">🛡️ 마법방어력 (MR+장비)</span>
-            <span id="req-mdef" class="req-chip">기준: 1,550+</span>
-          </div>
-          <input type="number" id="in-mdef" class="stat-input" placeholder="예: 1520" oninput="evaluateStats()">
-          <div id="prev-mdef" class="calc-preview"></div>
-          <div id="res-mdef" class="result-pill res-empty">수치를 입력하세요</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-card-top">
-            <span class="stat-card-title">🎯 명중률 (올힛 판정)</span>
-            <span id="req-acc" class="req-chip">기준: 1,450+</span>
-          </div>
-          <input type="number" id="in-acc" class="stat-input" placeholder="예: 1430" oninput="evaluateStats()">
-          <div id="prev-acc" class="calc-preview"></div>
-          <div id="res-acc" class="result-pill res-empty">수치를 입력하세요</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-card-top">
-            <span class="stat-card-title" id="card-elem-title">🔮 주력 속성 (풍·화·수·암·성 등)</span>
-            <span id="req-elem" class="req-chip">기준: 200+</span>
-          </div>
-          <input type="number" id="in-elem" class="stat-input" placeholder="예: 195" oninput="evaluateStats()">
-          <div id="prev-elem" class="calc-preview"></div>
-          <div id="res-elem" class="result-pill res-empty">수치를 입력하세요</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-card-top">
-            <span class="stat-card-title">✨ 에타(ETA) 레벨</span>
-            <span id="req-eta" class="req-chip">기준: 15+</span>
-          </div>
-          <input type="number" id="in-eta" class="stat-input" placeholder="예: 16" oninput="evaluateStats()">
-          <div id="prev-eta" class="calc-preview">버프 무관 고정 레벨</div>
-          <div id="res-eta" class="result-pill res-empty">수치를 입력하세요</div>
-        </div>
-      </div>
-
-      <div id="overall-result" class="overall-banner res-empty">
-        <span>📋 종합 진단 결과: 위 칸에 내 스탯을 입력하고 버프를 선택하면 진입 가능 여부를 판정해 드립니다.</span>
-      </div>
-
-      <!-- Tab 1 -> Tab 4 Spec Reuse Card -->
-      <div class="spec-to-coeff-card">
-        <div class="spec-to-coeff-header">
-          <span class="spec-to-coeff-title">🧮 1번 스펙 ➡️ 4번 계수 & 명중 계산기 원클릭 연동</span>
-          <span class="tag tag-ready">스펙 재사용</span>
-        </div>
-        <div class="spec-to-coeff-desc">
-          1번에서 입력하신 <b>명중률(<span id="sync-val-acc" style="color:#facc15; font-weight:700;">0</span>)</b>, <b>마법방어(<span id="sync-val-mdef" style="color:#38bdf8; font-weight:700;">0</span>)</b>, <b>도핑(<span id="sync-val-dop" style="color:#34d399; font-weight:700;">0개</span>)</b> 수치를 4번 계산기로 그대로 가져가 계수와 상위 보스 적정성을 바로 계산합니다.
-        </div>
-        <div class="spec-to-coeff-controls">
-          <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; color:#cbd5e1;">
-            <span>내 공격 계열:</span>
-            <select id="sync-tab1-type" class="coeff-slot-select" style="width:auto; margin:0; padding:0.25rem 0.5rem;">
-              <option value="stab">찌르기 (STAB)</option>
-              <option value="hack">베기 (HACK)</option>
-              <option value="magic_def">마법방어 (MR / 비호)</option>
-              <option value="magic_atk">마법공격 (INT)</option>
-              <option value="composite">물리복합 (STAB+HACK)</option>
-              <option value="magic_slash">마법베기 (HACK+INT)</option>
-            </select>
-          </div>
-          <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; color:#cbd5e1;">
-            <span>주 공격스탯(선택):</span>
-            <input type="number" id="sync-tab1-atk" class="coeff-slot-input-sm" style="width:75px;" placeholder="예: 1400" title="미입력 시 기본 세팅값 유지">
-          </div>
-          <button type="button" class="spec-to-coeff-btn" onclick="transferTab1ToCoeff()">
-            🚀 4번 계산기로 전송하고 이동
+        <div class="spec-accordion-item">
+          <button type="button" class="spec-accordion-btn" onclick="toggleSpecAccordion('acc-min-spec', this)">
+            <span class="acc-btn-left">📋 항목별 최저 스펙 정리표 (마을 노버프 기준)</span>
+            <span class="acc-arrow">▼</span>
           </button>
-        </div>
-      </div>
-
-      <!-- Multi-Dungeon Real-time Readiness Matrix -->
-      <div class="matrix-section">
-        <div class="matrix-header">
-          <div>
-            <h3>🎯 전체 콘텐츠 동시 판독 매트릭스</h3>
-            <span class="matrix-tip">내 현재 세팅(도핑 포함)으로 즉시 갈 수 있는 던전을 한눈에 확인하세요. (클릭 시 해당 목표로 전환)</span>
-          </div>
-          <span style="font-size:0.8rem; color:#38bdf8; font-weight:700;">실시간 자동 계산 중</span>
-        </div>
-        <div class="matrix-grid" id="dungeon-matrix-grid">
-          <!-- Populated by renderDungeonMatrix() -->
-        </div>
-      </div>
-
-      <!-- Real-time Equipment Upgrade Comparator Jump Banner -->
-      <div class="spec-to-comparator-banner" style="margin-top:1.25rem; background:linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(15,23,42,0.95) 100%); border:1px solid rgba(245,158,11,0.35); border-radius:10px; padding:1.1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.85rem;">
-        <div>
-          <span class="badge" style="background:rgba(245,158,11,0.2); color:#fde68a; border-color:rgba(245,158,11,0.4);">
-            🛡️ 실전 스펙업 비교 시뮬레이터 연동
-          </span>
-          <h4 style="margin:0.4rem 0 0.25rem; color:#fde68a; font-size:1.05rem; font-weight:800;">
-            내 현재 장비 ➔ 추천 장비 교체 시 대미지 & 적중률 변화가 궁금하신가요?
-          </h4>
-          <p style="margin:0; font-size:0.85rem; color:#cbd5e1; line-height:1.55;">
-            현재 착용 중인 장비에서 다음 추천 장비로 교체할 때 가해지는 <b>스킬 1타당 대미지(+%), 보스 적중률(%p), 1방 컷(원샷 원킬) 달성 여부</b>를 실시간으로 비교해 드립니다.
-          </p>
-        </div>
-        <button type="button" class="btn-primary" onclick="jumpToSpecupComparator()" style="background:#f59e0b; color:#0f172a; font-weight:800; border:none; padding:0.65rem 1.25rem; border-radius:8px; cursor:pointer; white-space:nowrap; font-size:0.9rem; box-shadow:0 4px 12px rgba(245,158,11,0.3);">
-          🧭 장비 스펙업 실시간 비교기 열기 ➔
-        </button>
-      </div>
-    </section>
-
-    <section>
+          <div id="acc-min-spec" class="spec-accordion-body" style="display:none;">
+            <section>
       <h2>항목별 최저 스펙 정리표 (<span id="table-mode-label" style="color: var(--accent);">마을 노버프 기준</span>)</h2>
       <p style="font-size: 0.88rem; color: var(--muted); margin-bottom: 0.75rem;">
         ※ 버프를 하나라도 체크하거나 상단 <b>실전 풀버프 입력</b>을 선택하면 아래 표의 기준치도 실전 도핑 기준치로 자동 전환됩니다.
@@ -2527,8 +1659,16 @@
         </table>
       </div>
     </section>
+          </div>
+        </div>
 
-    <section>
+        <div class="spec-accordion-item">
+          <button type="button" class="spec-accordion-btn" onclick="toggleSpecAccordion('acc-difficulty', this)">
+            <span class="acc-btn-left">🛡️ 난이도별(일반 · 어려움 · 헬 / 5각) 스펙·운용 비교 가이드</span>
+            <span class="acc-arrow">▼</span>
+          </button>
+          <div id="acc-difficulty" class="spec-accordion-body" style="display:none;">
+            <section>
       <h2>난이도별(일반 · 어려움 · 헬 / 5각) 스펙·운용 비교 가이드</h2>
       <p style="font-size: 0.88rem; color: var(--muted); margin-bottom: 0.75rem;">
         ※ 동일 던전·콘텐츠라도 난이도(일반/어려움/헬) 및 5차 각성 전후에 따라 요구되는 <b>명중·마방·도핑·장판 운용</b>이 달라집니다.
@@ -2572,10 +1712,12 @@
         </table>
       </div>
     </section>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
-
-  <!-- ==================== TAB 2: BOSS & DUNGEON PATTERN COMPENDIUM ==================== -->
-  <div id="tab-rokagos" class="tab-panel">
+<div id="tab-rokagos" class="tab-panel">
     <section>
       <h2>보스 · 던전별 핵심 패턴 & 비호정령 파훼 도감</h2>
       <p style="font-size: 0.88rem; color: var(--muted); margin-bottom: 1rem;">
@@ -6694,6 +5836,770 @@
 
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
+
+
+<!-- Doping Modal for Additional Buffs (48 items) -->
+<div id="doping-modal" class="modal-backdrop">
+  <div class="modal-box doping-modal-box">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size:1.25rem;">🧪</span>
+        <div>
+          <h3 style="margin:0; font-size:1.12rem; color:#fde68a;">추가 버프 · 도핑 선택 (총 48종)</h3>
+          <span style="font-size:0.75rem; color:#94a3b8;">경험치, 레어, 극딜, 유틸 비약 등 필요한 보조 도핑을 체크하세요</span>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeDopingModal()">&times;</button>
+    </div>
+
+    <div class="doping-modal-toolbar">
+      <input type="text" id="modal-doping-search" class="modal-doping-search" placeholder="🔍 버프 이름, 효과, 획득처 검색..." oninput="filterModalDoping(this.value)">
+      <div class="modal-cat-tabs">
+        <button type="button" class="modal-cat-tab active" data-cat="all" onclick="switchModalDopingCat('all', this)">📋 전체 (48종)</button>
+        <button type="button" class="modal-cat-tab" data-cat="high_end" onclick="switchModalDopingCat('high_end', this)">🔥 추가·극딜 (16종)</button>
+        <button type="button" class="modal-cat-tab" data-cat="biho" onclick="switchModalDopingCat('biho', this)">🛡️ 비호 장판 (5종)</button>
+        <button type="button" class="modal-cat-tab" data-cat="util" onclick="switchModalDopingCat('util', this)">🏃 유틸·생존 (5종)</button>
+        <button type="button" class="modal-cat-tab" data-cat="exp" onclick="switchModalDopingCat('exp', this)">📚 경험치·룬 (12종)</button>
+        <button type="button" class="modal-cat-tab" data-cat="rare" onclick="switchModalDopingCat('rare', this)">💎 레어 파밍 (10종)</button>
+      </div>
+    </div>
+
+    <div class="modal-body doping-modal-body">
+
+        <div class="modal-doping-group" data-cat="high_end">
+          <div class="modal-group-title">🔥 추가·극딜 및 실전 버프 (16종)</div>
+          <div class="modal-doping-grid">
+            <label class="doping-card" data-stack="ok" id="card-attendance_buff">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="attendance_buff"
+                  data-mdef="15" data-acc="15" data-elem="0"
+                  data-dmg="5" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('attendance_buff')">
+                <span class="doping-name">매일 출석체크 버프 (출석 버프)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +15 / 명중 +15 / 대미지 +5%</span>
+            </div>
+            <div class="doping-tip">매일 출석체크 UI에서 1클릭 수령하는 공짜 데일리 전투 버프</div>
+            <div class="doping-badges">
+              <span class="badge-stack-ok">🟢 자유 중첩</span>
+              <span class="badge-event">📅 매일 출석 UI 1클릭 수령</span>
+              <span class="badge-src">🚫 상점/거래소 불가</span>
+            </div>
+          </label><label class="doping-card" data-stack="ok" id="card-equip_reinforce_stone">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="equip_reinforce_stone"
+                  data-mdef="30" data-acc="10" data-elem="0"
+                  data-dmg="5" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('equip_reinforce_stone')">
+                <span class="doping-name">장비강화석 버프 (공격/마방 증폭)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +30 / 명중 +10 / 대미지 +5%</span>
+            </div>
+            <div class="doping-tip">장비강화석 소모 시 발동되는 전투 버프 (허상 외 일반 레이드 시 활용)</div>
+            <div class="doping-badges">
+              <span class="badge-stack-ok">🟢 자유 중첩</span>
+              <span class="badge-exchange">🏪 거래소 구매 가능</span>
+              <span class="badge-shop">🛒 사과의 섬 ELSO 상점</span>
+              <span class="badge-src">📍 프시키의 허상 드랍</span>
+            </div>
+          </label><label class="doping-card" data-stack="ok" id="card-haste_potion">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="haste_potion"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('haste_potion')">
+                <span class="doping-name">신속 포션 (그라츠 / 이속+3)</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">이동속도 +3, 후딜레이 감소</div>
+            <div class="doping-badges">
+              <span class="badge-stack-ok">🟢 자유 중첩</span>
+              <span class="badge-shop">🛒 상점 구매 (TP/젤리삐)</span>
+              <span class="badge-exchange">🏪 거래소 구매 가능</span>
+              <span class="badge-event">📅 출석/이벤트 보상</span>
+            </div>
+          </label><label class="doping-card" data-stack="ok" id="card-isabelle_sp_fixed">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_fixed"
+                  data-mdef="35" data-acc="30" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_fixed')">
+                <span class="doping-name">이자벨의 특선 묘약 (고정)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +35 / 명중 +30</span>
+            </div>
+            <div class="doping-tip">모든 스탯 고정치 +35 추가 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-isabelle_sp_percent">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_percent"
+                  data-mdef="50" data-acc="35" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_percent')">
+                <span class="doping-name">이자벨의 특선 묘약 (비율)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +50 / 명중 +35</span>
+            </div>
+            <div class="doping-tip">모든 스탯 비율 +15% 추가 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-isabelle_sp_damage">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_damage"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="15" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_damage')">
+                <span class="doping-name">이자벨의 특선 묘약 (대미지)</span>
+              </div>
+              <span class="doping-stat-tag">대미지 +15%</span>
+            </div>
+            <div class="doping-tip">최종 피해량 +15% 추가 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-isabelle_acc">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_acc"
+                  data-mdef="0" data-acc="30" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_acc')">
+                <span class="doping-name">이자벨의 비법 (명중)</span>
+              </div>
+              <span class="doping-stat-tag">명중 +30</span>
+            </div>
+            <div class="doping-tip">명중률 +30 (신어헬/로카고스 미스 대책 필수)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-isabelle_sp_acc">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_acc"
+                  data-mdef="0" data-acc="50" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_acc')">
+                <span class="doping-name">이자벨의 특선 묘약 (명중)</span>
+              </div>
+              <span class="doping-stat-tag">명중 +50</span>
+            </div>
+            <div class="doping-tip">명중률 +50 극대화 (상위 보스 올힛용)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-isabelle_crit">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_crit"
+                  data-mdef="0" data-acc="10" data-elem="0"
+                  data-dmg="5" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_crit')">
+                <span class="doping-name">이자벨의 비법 (크리티컬)</span>
+              </div>
+              <span class="doping-stat-tag">명중 +10 / 대미지 +5%</span>
+            </div>
+            <div class="doping-tip">크리티컬 확률 +20%</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-samiseon_dish">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="samiseon_dish"
+                  data-mdef="20" data-acc="20" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('samiseon_dish')">
+                <span class="doping-name">사미선령지채 (요리)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +20 / 명중 +20</span>
+            </div>
+            <div class="doping-tip">마방 +20, 명중 +20, 전 능력치 +15</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 요리 스킬, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-protection_elixir">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="protection_elixir"
+                  data-mdef="30" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="10"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('protection_elixir')">
+                <span class="doping-name">보호의 비약</span>
+              </div>
+              <span class="doping-stat-tag">마방 +30 / 피감 +10%</span>
+            </div>
+            <div class="doping-tip">피격 대미지 10% 감소 (생존 극대화)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-focus_elixir">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="focus_elixir"
+                  data-mdef="0" data-acc="25" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('focus_elixir')">
+                <span class="doping-name">집중의 비약</span>
+              </div>
+              <span class="doping-stat-tag">명중 +25</span>
+            </div>
+            <div class="doping-tip">명중률 +25 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-will_elixir">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="will_elixir"
+                  data-mdef="15" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="5"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('will_elixir')">
+                <span class="doping-name">의지의 비약</span>
+              </div>
+              <span class="doping-stat-tag">마방 +15 / 피감 +5%</span>
+            </div>
+            <div class="doping-tip">피격 대미지 5% 감소 및 회피율 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 이벤트</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-club_type_p">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="club_type_p"
+                  data-mdef="15" data-acc="15" data-elem="0"
+                  data-dmg="10" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('club_type_p')">
+                <span class="doping-name">클럽 상점 버프 Type P (클럽 조건부)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +15 / 명중 +15 / 대미지 +10%</span>
+            </div>
+            <div class="doping-tip">피해량 +10%, 모든 스탯 +10 (가입 클럽의 레벨 및 마스터 스킬 활성화 상태에 따라 상이함 - 기본 제공 아님)</div>
+            <div class="doping-badges"><span class="badge-stack-limit" style="color:#fcd34d; border-color:#f59e0b; background:rgba(245,158,11,0.2);">⚠️ 클럽 조건부 (기본 아님)</span><span class="badge-shop">🛒 나르비크 클럽상점 알렌 (클럽 코인)</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-soul_atk_buff">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="soul_atk_buff"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="5" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('soul_atk_buff')">
+                <span class="doping-name">탐험 공격 피해량 증가</span>
+              </div>
+              <span class="doping-stat-tag">대미지 +5%</span>
+            </div>
+            <div class="doping-tip">공격 피해량 +5% 상시 유지</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-soul_def_buff">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="soul_def_buff"
+                  data-mdef="20" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="5"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('soul_def_buff')">
+                <span class="doping-name">탐험 피해 감소 증가</span>
+              </div>
+              <span class="doping-stat-tag">마방 +20 / 피감 +5%</span>
+            </div>
+            <div class="doping-tip">피격 피해 5% 감소 상시 유지</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
+          </label>
+          </div>
+        </div>
+
+        <div class="modal-doping-group" data-cat="biho">
+          <div class="modal-group-title">🛡️ 비호 장판 & 소울링크 버프 (5종)</div>
+          <div class="modal-doping-grid">
+            <label class="doping-card" data-stack="ok" id="card-skill_light">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="skill_light"
+                  data-mdef="40" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('skill_light')">
+                <span class="doping-name">생명의 빛 (아에르 힐 장판)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +40</span>
+            </div>
+            <div class="doping-tip">마방 +40, 초당 대량 HP 지속 회복 (기본 유지)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 비호정령 스킬</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-skill_over">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="skill_over"
+                  data-mdef="0" data-acc="40" data-elem="0"
+                  data-dmg="10" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('skill_over')">
+                <span class="doping-name">오버 페이스 (아에르 공격 장판)</span>
+              </div>
+              <span class="doping-stat-tag">명중 +40 / 대미지 +10%</span>
+            </div>
+            <div class="doping-tip">명중 +40, 딜러 후딜레이 대폭 감소 및 피해량 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 비호정령 스킬</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-skill_earth">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="skill_earth"
+                  data-mdef="60" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="30"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('skill_earth')">
+                <span class="doping-name">어스 프로텍션 (로키 피감 장판)</span>
+              </div>
+              <span class="doping-stat-tag">마방 +60 / 피감 +30%</span>
+            </div>
+            <div class="doping-tip">피격 대미지 30% 즉시 감소, 마방 +60 (보스 광폭화/즉사기 방어)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 비호정령 스킬</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-soul_range">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="soul_range"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('soul_range')">
+                <span class="doping-name">탐험 사거리 증가</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">스킬 사거리 +2 증가 (패시브/상시)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-soul_superarmor">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="soul_superarmor"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('soul_superarmor')">
+                <span class="doping-name">탐험 경직 무시</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">피격 시 경직 100% 무시 (패시브에 경직무시 없는 캐릭 필수)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
+          </label>
+          </div>
+        </div>
+
+        <div class="modal-doping-group" data-cat="util">
+          <div class="modal-group-title">🏃 유틸 및 HP 생존 비약 (5종)</div>
+          <div class="modal-doping-grid">
+            <label class="doping-card" data-stack="ok" id="card-isabelle_sp_hp">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_hp"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_hp')">
+                <span class="doping-name">☆★ 이자벨의 특선 묘약 (HP 회복)</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">초당 대량 지속 회복 (레이드 강력 추천)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-isabelle_sp_all">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_sp_all"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_sp_all')">
+                <span class="doping-name">☆★ 이자벨의 특선 묘약 (HP/MP/SP)</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">HP, MP, SP 동시 대량 지속 회복</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-isabelle_elixir_hp">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_elixir_hp"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('isabelle_elixir_hp')">
+                <span class="doping-name">이자벨의 선약 (HP 즉시 회복)</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">HP 즉시 50% 회복 (쿨타임 짧음)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-attendance_potion">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="attendance_potion"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('attendance_potion')">
+                <span class="doping-name">☆★ 스페셜 출석체크 물약</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">즉시 회복 및 지속 회복 겸용 (강력 추천)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 출석 이벤트</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-life_potion_large">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="life_potion_large"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="0"
+                  onchange="onDopingToggle('life_potion_large')">
+                <span class="doping-name">改/眞/신-라이프 포션(대)</span>
+              </div>
+              <span class="doping-stat-tag">특수 효과</span>
+            </div>
+            <div class="doping-tip">기본 HP 회복제</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 조제, 거래소</span></div>
+          </label>
+          </div>
+        </div>
+
+        <div class="modal-doping-group" data-cat="exp">
+          <div class="modal-group-title">📚 경험치 & 룬 부스터 (12종)</div>
+          <div class="modal-doping-grid">
+            <label class="doping-card" data-stack="limit" id="card-club_type_e2">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="club_type_e2"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('club_type_e2')">
+                <span class="doping-name">클럽 상점 버프 Type E-2</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">경험치 +100%</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 나르비크 클럽상점 알렌</span><span class="badge-conflict-tag">⚠️ 중복불가: 스승의 증표 / 따뜻한 에오스</span></div>
+          </label><label class="doping-card" data-stack="limit" id="card-master_token">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="master_token"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('master_token')">
+                <span class="doping-name">스승의 증표</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">경험치 +100% / ⌛ 접종 시에도 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 나르비크 사제 관리 사무실</span><span class="badge-conflict-tag">⚠️ 중복불가: 클럽 상점 버프 Type E-2</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label><label class="doping-card" data-stack="limit" id="card-warm_eos">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="warm_eos"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('warm_eos')">
+                <span class="doping-name">따뜻한 에오스의 파편</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">경험치 +100%</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 이벤트</span><span class="badge-conflict-tag">⚠️ 중복불가: 클럽 E-2 / 눈사람 포션</span></div>
+          </label><label class="doping-card" data-stack="limit" id="card-exp_heart">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="exp_heart"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('exp_heart')">
+                <span class="doping-name">경험의 심장</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">경험치 +100% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 컨텐츠, 거래소</span><span class="badge-conflict-tag">⚠️ 중복불가: 경험의 군고구마</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label><label class="doping-card" data-stack="limit" id="card-exp_sweet_potato">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="exp_sweet_potato"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('exp_sweet_potato')">
+                <span class="doping-name">경험의 군고구마 (숙성)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">경험치 +100% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 이벤트</span><span class="badge-conflict-tag">⚠️ 중복불가: 경험의 심장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label><label class="doping-card" data-stack="limit" id="card-quest_stamp_exp">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="quest_stamp_exp"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="50" data-rare="0"
+                  onchange="onDopingToggle('quest_stamp_exp')">
+                <span class="doping-name">도전 과제 완료 도장 (경험치)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +50%</span>
+            </div>
+            <div class="doping-tip">경험치 +50% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 참 잘했어요</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label><label class="doping-card" data-stack="limit" id="card-good_job_exp">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="good_job_exp"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="50" data-rare="0"
+                  onchange="onDopingToggle('good_job_exp')">
+                <span class="doping-name">참 잘했어요 (경험치)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +50%</span>
+            </div>
+            <div class="doping-tip">경험치 +50% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 도전 과제 완료 도장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-isabelle_exp">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="isabelle_exp"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="50" data-rare="0"
+                  onchange="onDopingToggle('isabelle_exp')">
+                <span class="doping-name">이자벨의 비법/특선/선약 (경험)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +50%</span>
+            </div>
+            <div class="doping-tip">경험치 +50% (타 경험 도핑과 중복 가능)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 키트, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-cash_trio">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="cash_trio"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="150" data-rare="0"
+                  onchange="onDopingToggle('cash_trio')">
+                <span class="doping-name">캐시 3종 (전설고구마/최상급에오스/얼리버드)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +150%</span>
+            </div>
+            <div class="doping-tip">경험치 대폭 증가 (중복 가능)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 아이템 샵, 거래소</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-nenyaple_cat1">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="nenyaple_cat1"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="30" data-rare="0"
+                  onchange="onDopingToggle('nenyaple_cat1')">
+                <span class="doping-name">네냐플 고양이1 버프</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +30%</span>
+            </div>
+            <div class="doping-tip">경험치 +30% (무료 버프)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 네냐플 고양이1</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-rune_tp_boost">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="rune_tp_boost"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="100" data-rare="0"
+                  onchange="onDopingToggle('rune_tp_boost')">
+                <span class="doping-name">룬 던전 TP 룬 경험치 부스터</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +100%</span>
+            </div>
+            <div class="doping-tip">TP 사용하여 룬 경험치 획득량 2배 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 룬 경험의 던전 좌측 하단 아이콘</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-helmet_rune_opt">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="helmet_rune_opt"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="50" data-rare="0"
+                  onchange="onDopingToggle('helmet_rune_opt')">
+                <span class="doping-name">투구 랜덤 옵션 (룬 경험치 +500)</span>
+              </div>
+              <span class="doping-stat-tag">경험치 +50%</span>
+            </div>
+            <div class="doping-tip">몬스터 퇴치 시 룬 경험치 500 추가 획득</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 사냥터, 키트, 거래소</span></div>
+          </label>
+          </div>
+        </div>
+
+        <div class="modal-doping-group" data-cat="rare">
+          <div class="modal-group-title">💎 레어 드랍률 파밍 (10종)</div>
+          <div class="modal-doping-grid">
+            <label class="doping-card" data-stack="ok" id="card-roto_amulet">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="roto_amulet"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="100"
+                  onchange="onDopingToggle('roto_amulet')">
+                <span class="doping-name">로토의 부적</span>
+              </div>
+              <span class="doping-stat-tag">레어 +100%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +100% (필수 파밍 도핑)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 엘티보 눈사람족 수장</span></div>
+          </label><label class="doping-card" data-stack="limit" id="card-rare_heart">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="rare_heart"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="100"
+                  onchange="onDopingToggle('rare_heart')">
+                <span class="doping-name">레어의 심장</span>
+              </div>
+              <span class="doping-stat-tag">레어 +100%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +100% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 컨텐츠, 거래소</span><span class="badge-conflict-tag">⚠️ 중복불가: 레어의 밤고구마</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label><label class="doping-card" data-stack="limit" id="card-rare_chestnut">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="rare_chestnut"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="100"
+                  onchange="onDopingToggle('rare_chestnut')">
+                <span class="doping-name">레어의 밤 고구마 (숙성)</span>
+              </div>
+              <span class="doping-stat-tag">레어 +100%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +100% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 이벤트</span><span class="badge-conflict-tag">⚠️ 중복불가: 레어의 심장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-four_leaf_clover">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="four_leaf_clover"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="50"
+                  onchange="onDopingToggle('four_leaf_clover')">
+                <span class="doping-name">행운의 네잎클로버</span>
+              </div>
+              <span class="doping-stat-tag">레어 +50%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +50% 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 엘티보 눈사람족 수장</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-club_type_r2">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="club_type_r2"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="50"
+                  onchange="onDopingToggle('club_type_r2')">
+                <span class="doping-name">클럽 상점 버프 Type R-2</span>
+              </div>
+              <span class="doping-stat-tag">레어 +50%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +50% 증가 (클럽 코인)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 나르비크 클럽상점 알렌</span></div>
+          </label><label class="doping-card" data-stack="limit" id="card-quest_stamp_rare">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="quest_stamp_rare"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="50"
+                  onchange="onDopingToggle('quest_stamp_rare')">
+                <span class="doping-name">도전 과제 완료 도장 (레어)</span>
+              </div>
+              <span class="doping-stat-tag">레어 +50%</span>
+            </div>
+            <div class="doping-tip">레어 +50% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 참 잘했어요</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label><label class="doping-card" data-stack="limit" id="card-good_job_rare">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="good_job_rare"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="50"
+                  onchange="onDopingToggle('good_job_rare')">
+                <span class="doping-name">참 잘했어요 (레어)</span>
+              </div>
+              <span class="doping-stat-tag">레어 +50%</span>
+            </div>
+            <div class="doping-tip">레어 +50% / ⌛ 접종 시 시간 차감</div>
+            <div class="doping-badges"><span class="badge-stack-limit">⚠️ 중첩 제한</span><span class="badge-src">📍 도전 과제</span><span class="badge-conflict-tag">⚠️ 중복불가: 도전 과제 완료 도장</span><span class="badge-decay-tag">⌛ 접종 시 시간차감</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-soul_rare_buff">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="soul_rare_buff"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="30"
+                  onchange="onDopingToggle('soul_rare_buff')">
+                <span class="doping-name">탐험 레어 버프</span>
+              </div>
+              <span class="doping-stat-tag">레어 +30%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +30% (탐험 포인트로 획득)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 소울링크 탐험 포인트</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-nenyaple_cat_x">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="nenyaple_cat_x"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="30"
+                  onchange="onDopingToggle('nenyaple_cat_x')">
+                <span class="doping-name">네냐플 고양이X 버프</span>
+              </div>
+              <span class="doping-stat-tag">레어 +30%</span>
+            </div>
+            <div class="doping-tip">레어 드랍률 +30% (무료 버프)</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 네냐플 고양이X</span></div>
+          </label><label class="doping-card" data-stack="ok" id="card-pet_treasure">
+            <div class="doping-card-header">
+              <div class="doping-name-wrap">
+                <input type="checkbox" class="buff-chk" data-key="pet_treasure"
+                  data-mdef="0" data-acc="0" data-elem="0"
+                  data-dmg="0" data-dmgred="0"
+                  data-exp="0" data-rare="40"
+                  onchange="onDopingToggle('pet_treasure')">
+                <span class="doping-name">펫 보물찾기 & 몬스터 카드(+4)</span>
+              </div>
+              <span class="doping-stat-tag">레어 +40%</span>
+            </div>
+            <div class="doping-tip">펫 스킬 및 몬카 조합 상시 레어 증가</div>
+            <div class="doping-badges"><span class="badge-stack-ok">🟢 자유 중첩</span><span class="badge-src">📍 엘티보 / 몬스터카드</span></div>
+          </label>
+          </div>
+        </div>
+
+    </div>
+
+    <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:0.84rem; color:#cbd5e1;">
+        <span>선택된 추가 버프: <b id="modal-selected-count" style="color:#38bdf8;">0개</b></span>
+      </div>
+      <div style="display:flex; gap:0.5rem;">
+        <button type="button" class="btn-sm btn-outline" onclick="clearModalDoping()">🔄 전체 해제</button>
+        <button type="button" class="btn-sm btn-primary-soft" onclick="closeDopingModal()">선택 완료 (닫기)</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Character Profile Modal -->
 <div id="profile-modal" class="modal-backdrop">
