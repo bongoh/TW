@@ -514,6 +514,7 @@
               <button type="button" class="btn-sm btn-outline" onclick="applyRoadmapPreset('prep_mine')">⛏️ 채굴장(에타20) 준비 단계</button>
               <button type="button" class="btn-sm btn-outline" onclick="applyRoadmapPreset('end_game')">👑 커프 200 종결 & 부캐 확장</button>
               <button type="button" class="btn-sm" onclick="syncProfileToRoadmap()" style="background:#0284c7; color:#fff; border:none;">🔄 현재 프로필 연동</button>
+              <button type="button" class="btn-sm" onclick="jumpToSpecupComparator()" style="background:#f59e0b; color:#0f172a; font-weight:800; border:none; box-shadow:0 2px 8px rgba(245,158,11,0.3);">⚔️ 장비 교체 대미지·적중률 실시간 비교 ➔</button>
             </div>
           </div>
 
@@ -2482,6 +2483,23 @@
         </div>
       </div>
 
+      <!-- Real-time Equipment Upgrade Comparator Jump Banner -->
+      <div class="spec-to-comparator-banner" style="margin-top:1.25rem; background:linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(15,23,42,0.95) 100%); border:1px solid rgba(245,158,11,0.35); border-radius:10px; padding:1.1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.85rem;">
+        <div>
+          <span class="badge" style="background:rgba(245,158,11,0.2); color:#fde68a; border-color:rgba(245,158,11,0.4);">
+            🛡️ 실전 스펙업 비교 시뮬레이터 연동
+          </span>
+          <h4 style="margin:0.4rem 0 0.25rem; color:#fde68a; font-size:1.05rem; font-weight:800;">
+            내 현재 장비 ➔ 추천 장비 교체 시 대미지 & 적중률 변화가 궁금하신가요?
+          </h4>
+          <p style="margin:0; font-size:0.85rem; color:#cbd5e1; line-height:1.55;">
+            현재 착용 중인 장비에서 다음 추천 장비로 교체할 때 가해지는 <b>스킬 1타당 대미지(+%), 보스 적중률(%p), 1방 컷(원샷 원킬) 달성 여부</b>를 실시간으로 비교해 드립니다.
+          </p>
+        </div>
+        <button type="button" class="btn-primary" onclick="jumpToSpecupComparator()" style="background:#f59e0b; color:#0f172a; font-weight:800; border:none; padding:0.65rem 1.25rem; border-radius:8px; cursor:pointer; white-space:nowrap; font-size:0.9rem; box-shadow:0 4px 12px rgba(245,158,11,0.3);">
+          🧭 장비 스펙업 실시간 비교기 열기 ➔
+        </button>
+      </div>
     </section>
 
     <section>
@@ -6266,6 +6284,63 @@
               <div id="combat-battle-log" class="combat-log-wrapper">
                 <div class="combat-log-line reset">[준비] ⚔️ 전투 시험장 준비 완료. [가상 스킬 타격 테스트!] 버튼을 누르거나 장비/도핑을 변경해보세요.</div>
               </div>
+            </div>
+          </div>
+
+          <!-- ==================== EQUIPMENT UPGRADE COMPARATOR ==================== -->
+          <div id="equip-upgrade-comparator" class="specup-comparator-wrapper">
+            <div class="specup-comp-header">
+              <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#fde68a; border-color:rgba(245, 158, 11, 0.4);">
+                  🛡️ 스펙업 비교 시뮬레이터
+                </span>
+                <h4 class="specup-comp-title">🛡️ 실전 장비 스펙업 비교기: 현재 장비 ➔ 추천 업그레이드 대미지 & 적중률 시뮬레이터</h4>
+              </div>
+              <p class="specup-comp-subtitle">
+                내 현재 착용 장비에서 다음 추천 장비로 교체할 경우, 선택된 몬스터/보스에 가해지는 <b>실제 대미지 증가량(+%), 적중률 상승폭(+%p), 1방 컷(원샷 원킬) 달성 여부</b>를 실시간 비교 판정합니다.
+              </p>
+            </div>
+
+            <!-- Dual Selector Row -->
+            <div class="specup-selectors-row">
+              <div class="specup-selector-field">
+                <label for="specup-cur-gear-select">📌 [A. 현재 내 장비 선택]</label>
+                <select id="specup-cur-gear-select" class="calc-input">
+                  <!-- Populated dynamically by CURRENT_GEAR_PRESETS -->
+                </select>
+              </div>
+
+              <div class="specup-vs-icon">➔</div>
+
+              <div class="specup-selector-field">
+                <label for="specup-rec-gear-select">⭐ [B. 추천 업그레이드 장비 선택]</label>
+                <select id="specup-rec-gear-select" class="calc-input">
+                  <!-- Populated dynamically by EQUIP_UPGRADE_RECOMMENDATIONS -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Visual 3-Column Comparison Grid -->
+            <div class="specup-compare-grid">
+              <!-- Left: Current Gear Card -->
+              <div id="specup-cur-card" class="specup-col">
+                <!-- Dynamically rendered -->
+              </div>
+
+              <!-- Center: Diff & Highlight Banner -->
+              <div id="specup-diff-banner" class="specup-col highlight">
+                <!-- Dynamically rendered -->
+              </div>
+
+              <!-- Right: Recommended Gear Card -->
+              <div id="specup-rec-card" class="specup-col">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+
+            <!-- Senior Adventurer's Advice & Cost Efficiency Box -->
+            <div id="specup-advice-card" class="specup-advice-card">
+              <!-- Dynamically rendered -->
             </div>
           </div>
         </div>

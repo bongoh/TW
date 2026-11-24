@@ -5233,3 +5233,270 @@
     white-space: nowrap;
   }
 }
+
+/* ==================== 26. EQUIPMENT UPGRADE COMPARATOR STYLES ==================== */
+.specup-comparator-wrapper {
+  margin-top: 1.5rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+.specup-comp-header {
+  margin-bottom: 1.25rem;
+}
+.specup-comp-title {
+  margin: 0;
+  font-size: 1.18rem;
+  color: #fde68a;
+  font-weight: 800;
+}
+.specup-comp-subtitle {
+  margin: 0.4rem 0 0;
+  font-size: 0.86rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+.specup-selectors-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  background: #1e293b;
+  padding: 1rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid #334155;
+}
+.specup-selector-field {
+  flex: 1;
+}
+.specup-selector-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-bottom: 0.35rem;
+}
+.specup-selector-field select {
+  width: 100%;
+  font-size: 0.86rem;
+  padding: 0.5rem 0.65rem;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #475569;
+  border-radius: 6px;
+}
+.specup-selector-field select:focus {
+  border-color: #f59e0b;
+  outline: none;
+}
+.specup-vs-icon {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #f59e0b;
+  padding: 0 0.25rem;
+}
+.specup-compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  align-items: stretch;
+}
+.specup-compare-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+.specup-compare-card.current {
+  border-left: 4px solid #64748b;
+}
+.specup-compare-card.recommended {
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06) 0%, #1e293b 80%);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+.specup-card-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+.specup-card-badge.current {
+  background: rgba(100, 116, 139, 0.25);
+  color: #cbd5e1;
+}
+.specup-card-badge.recommended {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fde68a;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+}
+.specup-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 0.35rem;
+}
+.specup-compare-card.recommended .specup-card-title {
+  color: #fde68a;
+}
+.specup-card-desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-bottom: 0.85rem;
+  line-height: 1.45;
+  min-height: 2.2em;
+}
+.specup-metric-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: auto;
+}
+.specup-metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0.55rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+.specup-metric-item .lbl {
+  color: #94a3b8;
+}
+.specup-metric-item .val {
+  font-weight: 800;
+  color: #f8fafc;
+}
+.specup-highlight-banner {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(30, 41, 59, 0.95) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 10px;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  box-sizing: border-box;
+}
+.specup-diff-main-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 0.65rem 0;
+}
+.specup-diff-kpi {
+  background: rgba(15, 23, 42, 0.75);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(51, 65, 85, 0.7);
+}
+.specup-diff-kpi .lbl {
+  display: block;
+  font-size: 0.76rem;
+  color: #94a3b8;
+  margin-bottom: 0.15rem;
+}
+.specup-diff-kpi .val {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #38bdf8;
+}
+.specup-diff-pill {
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+.specup-diff-pill.success {
+  background: rgba(52, 211, 153, 0.2);
+  color: #6ee7b7;
+  border-color: rgba(52, 211, 153, 0.5);
+  font-weight: 800;
+}
+.specup-diff-pill.info {
+  background: rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+  border-color: rgba(168, 85, 247, 0.4);
+}
+.specup-advice-card {
+  background: #1e293b;
+  border: 1px dashed #f59e0b;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+}
+.specup-badge-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.18rem 0.5rem;
+  border-radius: 4px;
+}
+.specup-badge-pill.gold {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fde68a;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+}
+.specup-badge-pill.sky {
+  background: rgba(56, 189, 248, 0.2);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+}
+.specup-badge-pill.purple {
+  background: rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+  border: 1px solid rgba(168, 85, 247, 0.5);
+}
+.specup-badge-pill.emerald {
+  background: rgba(52, 211, 153, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(52, 211, 153, 0.5);
+}
+.specup-badge-pill.amber {
+  background: rgba(217, 119, 6, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(217, 119, 6, 0.5);
+}
+.specup-badge-pill.rose {
+  background: rgba(244, 63, 94, 0.2);
+  color: #fda4af;
+  border: 1px solid rgba(244, 63, 94, 0.5);
+}
+
+@media (max-width: 1024px) {
+  .specup-compare-grid {
+    grid-template-columns: 1fr;
+  }
+  .specup-highlight-banner {
+    order: -1;
+  }
+}
+@media (max-width: 768px) {
+  .specup-selectors-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .specup-vs-icon {
+    display: none;
+  }
+  .specup-comparator-wrapper {
+    padding: 1rem 0.75rem;
+  }
+}

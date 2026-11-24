@@ -2652,3 +2652,102 @@ const PROGRESSION_ROADMAP_DATA = {
     }
   ]
 };
+
+// ==================== 26. EQUIPMENT UPGRADE RECOMMENDATIONS & GEAR PRESETS ====================
+const CURRENT_GEAR_PRESETS = [
+  {
+    id: "use_active",
+    name: "⚡ 현재 계산기 / 프로필 세팅 그대로 사용 (실시간 연동)",
+    desc: "상단 12부위 슬롯에 장착된 현재 내 장비와 도핑을 그대로 불러와 비교합니다."
+  },
+  {
+    id: "preset_aquilus",
+    name: "🌱 眞 아퀼루스 풀세트 기준 (복귀 / 버닝 갓 진입)",
+    baseCoeff: 38000,
+    baseDex: 1450,
+    desc: "眞 아퀼루스 8세트 + 기본 아티팩트 + 렐릭 5단계 기준"
+  },
+  {
+    id: "preset_abyss",
+    name: "👑 어비스 8세트 (아일단) 기준 (국민 정착 스펙)",
+    baseCoeff: 45200,
+    baseDex: 1680,
+    desc: "어비스 8세트 + 아크론 아티팩트 + 30효과 + 렐릭 8단계 기준"
+  },
+  {
+    id: "preset_ecl3",
+    name: "💎 어비스 + 이클립스 3신기 세팅 기준 (채굴장 진입 스펙)",
+    baseCoeff: 57700,
+    baseDex: 1990,
+    desc: "어비스 5부위 + 이클립스 3신기(날개/아티/100효과) + 렐릭 9단 기준"
+  }
+];
+
+const EQUIP_UPGRADE_RECOMMENDATIONS = [
+  {
+    id: "up_aquil_to_abyss",
+    name: "🗡️ 眞 아퀼루스 풀세트 ➔ 어비스 8세트 (아일단) 승급",
+    badge: "기초 스펙업 1순위",
+    badgeColor: "gold",
+    desc: "眞 아퀼루스에서 어비스 8세트로 승급하여 기초 마방/공격력과 명중을 비약적으로 올립니다.",
+    coeffGain: 7200,
+    dexGain: 210,
+    costDesc: "주간 숙제 시드 2~3주 파밍 또는 직작 제작",
+    tip: "어비스 8세트를 맞추는 순간 어비스 코어마스터(주간 7억 시드)와 상위 주간 보스 파티 진입이 열립니다."
+  },
+  {
+    id: "up_abyss_to_ecl3",
+    name: "🚀 어비스 풀세트 ➔ 이클립스 3신기 (날개/아티/100효과) 교체",
+    badge: "설계자의 채굴장 진입 컷",
+    badgeColor: "sky",
+    desc: "어비스 방어구 중 가성비가 가장 높은 3부위를 이클립스 신기로 교체하여 상위 내실을 엽니다.",
+    coeffGain: 12500,
+    dexGain: 310,
+    costDesc: "어코마/머코마 주간 확정 시드(주 13억+)로 순차적 구매",
+    tip: "이클립스 3신기를 착용하면 설계자의 채굴장(에타 20) 컷이 충족되며, 이클립스 토벌전이 판당 4~5분대로 쾌속 주파됩니다."
+  },
+  {
+    id: "up_ecl3_to_ecl4",
+    name: "🛡️ 이클립스 3신기 ➔ 4신기 (방패/서브무기 추가) 교체",
+    badge: "마방 캐릭터 특화",
+    badgeColor: "purple",
+    desc: "비호정령 등 마법방어력 캐릭터의 핵심 부위인 이클립스 리스트/서브를 추가 장만합니다.",
+    coeffGain: 5200,
+    dexGain: 110,
+    costDesc: "주간 시드 누적으로 장만",
+    tip: "마방 캐릭터는 4신기 세팅 시 채굴장 안정성과 토벌전 생존력이 극대화됩니다."
+  },
+  {
+    id: "up_cuff_to_200",
+    name: "💍 라이도 커프 140 ➔ 설계자의 채굴장 커프 200 종결작",
+    badge: "단일 부위 최대 가성비",
+    badgeColor: "emerald",
+    desc: "설계자의 채굴장 일일 파밍을 통해 라이도 커프 주스탯을 200 만수치로 졸업시킵니다.",
+    coeffGain: 5500,
+    dexGain: 90,
+    costDesc: "채굴장 일일 조각 파밍 (시드 소모 0원!)",
+    tip: "단일 부위에서 주스탯 +60을 순수 파밍으로 올릴 수 있는 현존 최고의 혜자 내실입니다."
+  },
+  {
+    id: "up_relic_10",
+    name: "☀️ 고대 렐릭의 성소 8단 ➔ 10단 완성 (성소 13단 진입)",
+    badge: "시간 단축 필수 내실",
+    badgeColor: "amber",
+    desc: "더블리워드 쿠폰(주간 4,200 TP)을 꾸준히 유지하여 성소 10강을 졸업합니다.",
+    coeffGain: 3800,
+    dexGain: 100,
+    costDesc: "주간 4,200 TP 고정 유지",
+    tip: "10강을 달성해야 추후 최상위 성소 13단계 진입 자격이 열려 발목을 잡히지 않습니다."
+  },
+  {
+    id: "up_ecl_weapon",
+    name: "⚔️ 어비스 무기 ➔ 이클립스 무기 (100작) 업그레이드",
+    badge: "대미지 상한 대폭 돌파",
+    badgeColor: "rose",
+    desc: "어비스 무기에서 이클립스 무기로 교체하여 스킬 계수와 대미지 상한선을 뚫어냅니다.",
+    coeffGain: 9800,
+    dexGain: 180,
+    costDesc: "중후반 자금 축적 후 구매",
+    tip: "무기 기본 깡마방/깡스탯 증가로 몬스터 방어력을 뚫고 1방 컷 구간이 비약적으로 확장됩니다."
+  }
+];

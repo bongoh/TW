@@ -1689,6 +1689,7 @@ function bootCompanion() {
   initEncryptCalculator();
   initCombatSimulator();
   initRoadmapRecommender();
+  initSpecupComparator();
 }
 
 // ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
@@ -2375,9 +2376,14 @@ function calculateCoefficients() {
   if (kpiDexEl)   kpiDexEl.textContent = totalDex.toLocaleString();
 
   // Update Content Guide & Combat Simulation
+  lastCalculatedCoeff = totalCoeff;
+  lastCalculatedDex = totalDex;
   renderBossContentGuide(totalCoeff, totalDex);
   if (typeof updateCombatSimulation === 'function') {
     updateCombatSimulation(totalCoeff, totalDex);
+  }
+  if (typeof updateSpecupComparison === 'function') {
+    updateSpecupComparison();
   }
 }
 
@@ -4910,6 +4916,319 @@ function syncProfileToRoadmap() {
   }
 
   updateRoadmapRecommendation();
+}
+
+// ==================== 26. EQUIPMENT UPGRADE COMPARATOR LOGIC ====================
+let lastCalculatedCoeff = 45200;
+let lastCalculatedDex = 1680;
+
+function initSpecupComparator() {
+  const curSel = document.getElementById('specup-cur-gear-select');
+  const recSel = document.getElementById('specup-rec-gear-select');
+
+  if (curSel && typeof CURRENT_GEAR_PRESETS !== 'undefined') {
+    curSel.innerHTML = CURRENT_GEAR_PRESETS.map(p => 
+      `<option value="${p.id}">${p.name}</option>`
+    ).join('');
+  }
+
+  if (recSel && typeof EQUIP_UPGRADE_RECOMMENDATIONS !== 'undefined') {
+    recSel.innerHTML = EQUIP_UPGRADE_RECOMMENDATIONS.map(r => 
+      `<option value="${r.id}">${r.name}</option>`
+    ).join('');
+  }
+
+  if (curSel) curSel.addEventListener('change', updateSpecupComparison);
+  if (recSel) recSel.addEventListener('change', updateSpecupComparison);
+
+  // Cross-bind with combat test bench controls
+  const combatInputs = [
+    'combat-monster-select', 'combat-skill-select',
+    'combat-crit-chk', 'combat-third-sien-chk', 'combat-pet-conc-chk'
+  ];
+  combatInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', updateSpecupComparison);
+  });
+
+  updateSpecupComparison();
+}
+
+function calculateCombatMetricsHelper(coeff, dex, target, skill, isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey) {
+  const effDex = (Number(dex) || 1500) + (isPetConc ? 150 : 0);
+  const dexDiff = effDex - target.eva;
+  let hitRate = 100;
+  let hitText = '100% 올힛';
+  let hitColor = '#34d399';
+
+  if (dexDiff >= 0) {
+    hitRate = 100;
+    hitText = '🟢 100% 올힛 (All-Hit)';
+    hitColor = '#34d399';
+  } else {
+    hitRate = Math.max(5, Math.min(99, Math.round(100 + (dexDiff * 0.15))));
+    if (hitRate >= 80) {
+      hitText = `🟡 ${hitRate}% (부분 미스: -${100 - hitRate}%)`;
+      hitColor = '#facc15';
+    } else {
+      hitText = `🔴 ${hitRate}% (MISS 심각: -${Math.abs(dexDiff)})`;
+      hitColor = '#f87171';
+    }
+  }
+
+  const effMult = (skill.mult || 2000) + (isThirdSien ? 200 : 0);
+  const effHits = (skill.hits || 10) + (isThirdSien ? 1 : 0);
+  const isMagical = (typeKey === 'magic_def' || typeKey === 'magic_atk' || typeKey === 'magic_slash');
+  const targetDef = isMagical ? target.mdef : target.pdef;
+
+  const rawHit = ((coeff * (effMult / 100) * (1 + dopingBuffPct / 100) * 18) / effHits);
+  let hitDmg = Math.max(1000, Math.round(rawHit - (targetDef * 12)));
+  if (isCrit) {
+    hitDmg = Math.round(hitDmg * 1.65);
+  }
+  const totalDmg = hitDmg * effHits;
+  const is1Shot = totalDmg >= target.hp;
+  const shotsNeeded = Math.ceil(target.hp / totalDmg);
+
+  return {
+    effDex,
+    dexDiff,
+    hitRate,
+    hitText,
+    hitColor,
+    hitDmg,
+    totalDmg,
+    effHits,
+    is1Shot,
+    shotsNeeded
+  };
+}
+
+function updateSpecupComparison() {
+  const curSel = document.getElementById('specup-cur-gear-select');
+  const recSel = document.getElementById('specup-rec-gear-select');
+  if (!curSel || !recSel || typeof EQUIP_UPGRADE_RECOMMENDATIONS === 'undefined') return;
+
+  const curId = curSel.value || 'use_active';
+  const recId = recSel.value || 'up_abyss_to_ecl3';
+
+  // Determine current baseline Coeff & DEX
+  let curCoeff = lastCalculatedCoeff || 45200;
+  let curDex = lastCalculatedDex || 1680;
+  let curGearName = "⚡ 현재 계산기 세팅 장비";
+  let curGearDesc = "상단 12부위 슬롯에 장착된 장비 및 도핑 실시간 연동";
+
+  if (curId !== 'use_active' && typeof CURRENT_GEAR_PRESETS !== 'undefined') {
+    const p = CURRENT_GEAR_PRESETS.find(x => x.id === curId);
+    if (p) {
+      curCoeff = p.baseCoeff;
+      curDex = p.baseDex;
+      curGearName = p.name;
+      curGearDesc = p.desc;
+    }
+  }
+
+  // Determine recommended upgrade Delta
+  const rec = EQUIP_UPGRADE_RECOMMENDATIONS.find(r => r.id === recId) || EQUIP_UPGRADE_RECOMMENDATIONS[1];
+  const recCoeff = curCoeff + (rec.coeffGain || 0);
+  const recDex = curDex + (rec.dexGain || 0);
+
+  // Get active combat target and skill
+  const monsterSel = document.getElementById('combat-monster-select');
+  const skillSel = document.getElementById('combat-skill-select');
+  const monsterId = monsterSel ? monsterSel.value : 'mob_apple';
+  const target = (typeof TARGET_MONSTERS_DATA !== 'undefined' ? TARGET_MONSTERS_DATA.find(m => m.id === monsterId) : null) || {
+    name: "사과의 섬 숲 경비 몬스터",
+    dungeon: "사과의 섬 (Lv.300)",
+    hp: 45000000,
+    pdef: 2400,
+    mdef: 2400,
+    eva: 1350,
+    is1ShotTarget: true
+  };
+
+  const prof = typeof getActiveCoeffProfile === 'function' ? getActiveCoeffProfile() : null;
+  const typeKey = (prof && prof.type) || 'stab';
+  const skills = (typeof CHARACTER_SKILLS_DATA !== 'undefined' && CHARACTER_SKILLS_DATA[typeKey]) ? CHARACTER_SKILLS_DATA[typeKey] : [];
+  const skillId = skillSel ? skillSel.value : null;
+  const skill = skills.find(s => s.id === skillId) || skills[0] || { name: "주력 스킬", hits: 10, mult: 2000 };
+
+  const isCrit = document.getElementById('combat-crit-chk') ? document.getElementById('combat-crit-chk').checked : true;
+  const isThirdSien = document.getElementById('combat-third-sien-chk') ? document.getElementById('combat-third-sien-chk').checked : false;
+  const isPetConc = document.getElementById('combat-pet-conc-chk') ? document.getElementById('combat-pet-conc-chk').checked : true;
+  const dopingBuffPct = (prof && prof.applyDoping) ? 30 : 0;
+
+  // Compute metrics
+  const curMetrics = calculateCombatMetricsHelper(curCoeff, curDex, target, skill, isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey);
+  const recMetrics = calculateCombatMetricsHelper(recCoeff, recDex, target, skill, isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey);
+
+  // Compute Diffs
+  const hitDmgDiff = recMetrics.hitDmg - curMetrics.hitDmg;
+  const hitDmgDiffPct = curMetrics.hitDmg > 0 ? ((hitDmgDiff / curMetrics.hitDmg) * 100).toFixed(1) : '0';
+  const totalDmgDiff = recMetrics.totalDmg - curMetrics.totalDmg;
+  const hitRateDiff = recMetrics.hitRate - curMetrics.hitRate;
+  const coeffDiff = recCoeff - curCoeff;
+  const dexDiff = recDex - curDex;
+
+  // Render Current Gear Card
+  const curCardEl = document.getElementById('specup-cur-card');
+  if (curCardEl) {
+    curCardEl.innerHTML = `
+      <div class="specup-compare-card current">
+        <div class="specup-card-badge current">현재 장비 세팅</div>
+        <div class="specup-card-title">${curGearName}</div>
+        <div class="specup-card-desc">${curGearDesc}</div>
+        
+        <div class="specup-metric-grid">
+          <div class="specup-metric-item">
+            <span class="lbl">종합 계수</span>
+            <span class="val">${curCoeff.toLocaleString()}</span>
+          </div>
+          <div class="specup-metric-item">
+            <span class="lbl">최종 DEX (명중)</span>
+            <span class="val" style="color:#facc15;">${curDex.toLocaleString()}</span>
+          </div>
+          <div class="specup-metric-item">
+            <span class="lbl">타당 실대미지</span>
+            <span class="val" style="color:#38bdf8;">${curMetrics.hitDmg.toLocaleString()}</span>
+          </div>
+          <div class="specup-metric-item">
+            <span class="lbl">스킬 1회 총 대미지</span>
+            <span class="val" style="color:#ec4899;">${curMetrics.totalDmg.toLocaleString()}</span>
+          </div>
+          <div class="specup-metric-item">
+            <span class="lbl">🎯 보스 적중률</span>
+            <span class="val" style="color:${curMetrics.hitColor};">${curMetrics.hitText}</span>
+          </div>
+          <div class="specup-metric-item">
+            <span class="lbl">⚡ 처치 소요</span>
+            <span class="val" style="color:${curMetrics.is1Shot ? '#34d399' : '#f87171'};">
+              ${curMetrics.is1Shot ? '🎉 1방 컷 (원샷)' : `스킬 ${curMetrics.shotsNeeded}회 시전 필요`}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Render Center Diff / Highlight Banner
+  const diffBannerEl = document.getElementById('specup-diff-banner');
+  if (diffBannerEl) {
+    let killDiffText = "";
+    if (!curMetrics.is1Shot && recMetrics.is1Shot) {
+      killDiffText = `<span class="specup-diff-pill success">🎉 1방 컷 달성!</span>`;
+    } else if (curMetrics.shotsNeeded > recMetrics.shotsNeeded) {
+      killDiffText = `<span class="specup-diff-pill success">소요 스킬 ${curMetrics.shotsNeeded}회 ➔ ${recMetrics.shotsNeeded}회 단축</span>`;
+    } else {
+      killDiffText = `<span class="specup-diff-pill info">오버킬 극대화</span>`;
+    }
+
+    diffBannerEl.innerHTML = `
+      <div class="specup-highlight-banner">
+        <div style="font-size:1.1rem; font-weight:800; color:#fde68a; margin-bottom:0.25rem;">
+          📈 업그레이드 시 기대 상승 효과
+        </div>
+        <div class="specup-diff-main-row">
+          <div class="specup-diff-kpi">
+            <span class="lbl">타당 대미지 증가</span>
+            <span class="val">+${hitDmgDiff.toLocaleString()} <small style="font-size:0.75rem; color:#fde68a;">(+${hitDmgDiffPct}%)</small></span>
+          </div>
+          <div class="specup-diff-kpi">
+            <span class="lbl">스킬 총합 대미지</span>
+            <span class="val">+${totalDmgDiff.toLocaleString()}</span>
+          </div>
+          <div class="specup-diff-kpi">
+            <span class="lbl">적중률(명중) 보정</span>
+            <span class="val" style="color:${hitRateDiff > 0 ? '#34d399' : '#94a3b8'};">
+              ${hitRateDiff > 0 ? `+${hitRateDiff}%p 올힛 상승` : '100% 유지'}
+            </span>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:center; gap:0.5rem; flex-wrap:wrap; margin-top:0.4rem;">
+          <span class="specup-diff-pill">계수 +${coeffDiff.toLocaleString()}</span>
+          <span class="specup-diff-pill">DEX +${dexDiff}</span>
+          ${killDiffText}
+        </div>
+      </div>
+    `;
+  }
+
+  // Render Recommended Gear Card
+  const recCardEl = document.getElementById('specup-rec-card');
+  if (recCardEl) {
+    recCardEl.innerHTML = `
+      <div class="specup-compare-card recommended">
+        <div class="specup-card-badge recommended">⭐ 추천 업그레이드 세팅</div>
+        <div class="specup-card-title">${rec.name}</div>
+        <div class="specup-card-desc">${rec.desc}</div>
+        
+        <div class="specup-metric-grid">
+          <div class="specup-metric-item">
+            <span class="lbl">종합 계수</span>
+            <span class="val" style="color:#fde68a;">${recCoeff.toLocaleString()} (+${coeffDiff.toLocaleString()})</span>
+          </div>
+          <div class="specup-metric-item">
+            <span class="lbl">최종 DEX (명중)</span>
+            <span class="val" style="color:#facc15;">${recDex.toLocaleString()} (+${dexDiff})</span>
+          </div>
+          <div class="specup-metric-item">
+            <span class="lbl">타당 실대미지</span>
+            <span class="val" style="color:#38bdf8;">${recMetrics.hitDmg.toLocaleString()} (+${hitDmgDiffPct}%)</span>
+          </div>
+          <div class="specup-metric-item">
+            <span class="lbl">스킬 1회 총 대미지</span>
+            <span class="val" style="color:#ec4899;">${recMetrics.totalDmg.toLocaleString()}</span>
+          </div>
+          <div class="specup-metric-item">
+            <span class="lbl">🎯 보스 적중률</span>
+            <span class="val" style="color:${recMetrics.hitColor};">${recMetrics.hitText}</span>
+          </div>
+          <div class="specup-metric-item">
+            <span class="lbl">⚡ 처치 소요</span>
+            <span class="val" style="color:${recMetrics.is1Shot ? '#34d399' : '#f87171'};">
+              ${recMetrics.is1Shot ? '🎉 1방 컷 (원샷 달성!)' : `스킬 ${recMetrics.shotsNeeded}회 시전 필요`}
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Render Advice & Cost Efficiency Box
+  const adviceEl = document.getElementById('specup-advice-card');
+  if (adviceEl) {
+    adviceEl.innerHTML = `
+      <div class="specup-advice-inner">
+        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem; flex-wrap:wrap;">
+          <span class="specup-badge-pill ${rec.badgeColor}">${rec.badge}</span>
+          <span style="font-weight:700; color:#f8fafc; font-size:0.95rem;">💡 선배 모험가의 실전 가성비 분석:</span>
+        </div>
+        <div style="font-size:0.86rem; color:#cbd5e1; line-height:1.6; margin-bottom:0.5rem;">
+          ${rec.tip}
+        </div>
+        <div style="font-size:0.81rem; color:#94a3b8; border-top:1px dashed #334155; padding-top:0.4rem;">
+          ⏱️ <b>소요 자금 및 파밍 경로:</b> ${rec.costDesc}
+        </div>
+      </div>
+    `;
+  }
+}
+
+function jumpToSpecupComparator(prefillGearKey, prefillRecKey) {
+  switchTab('tab-coeff', document.querySelector('.tab-btn[data-tab="tab-coeff"]'));
+  if (prefillGearKey) {
+    const curSel = document.getElementById('specup-cur-gear-select');
+    if (curSel) curSel.value = prefillGearKey;
+  }
+  if (prefillRecKey) {
+    const recSel = document.getElementById('specup-rec-gear-select');
+    if (recSel) recSel.value = prefillRecKey;
+  }
+  updateSpecupComparison();
+  const el = document.getElementById('equip-upgrade-comparator');
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 
