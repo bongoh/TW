@@ -1688,6 +1688,7 @@ function bootCompanion() {
   initRuneCollectionTracker();
   initEncryptCalculator();
   initCombatSimulator();
+  initRoadmapRecommender();
 }
 
 // ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
@@ -4428,6 +4429,487 @@ function updateEncryptCalculator() {
   if (barDestroy) barDestroy.style.width = `${destroyRate}%`;
 
   if (tipEl) tipEl.textContent = tipText;
+}
+
+// ==================== 25. PROGRESSION ROADMAP & UPGRADE RECOMMENDER ====================
+// 출처: 디시인사이드 262032 (5각 아일단 이후 뭐해야해요? 실전 가이드)
+
+function initRoadmapRecommender() {
+  const ids = [
+    'roadmap-sel-awk', 'roadmap-sel-gear', 'roadmap-sel-eta',
+    'roadmap-sel-relic', 'roadmap-sel-abyss-core', 'roadmap-sel-merc-core',
+    'roadmap-sel-ecl-core', 'roadmap-sel-cuff'
+  ];
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', updateRoadmapRecommendation);
+    }
+  });
+
+  updateRoadmapRecommendation();
+}
+
+function updateRoadmapRecommendation() {
+  const awkEl = document.getElementById('roadmap-sel-awk');
+  const gearEl = document.getElementById('roadmap-sel-gear');
+  const etaEl = document.getElementById('roadmap-sel-eta');
+  const relicEl = document.getElementById('roadmap-sel-relic');
+  const abyssCoreEl = document.getElementById('roadmap-sel-abyss-core');
+  const mercCoreEl = document.getElementById('roadmap-sel-merc-core');
+  const eclCoreEl = document.getElementById('roadmap-sel-ecl-core');
+  const cuffEl = document.getElementById('roadmap-sel-cuff');
+
+  if (!awkEl || !gearEl || !etaEl) return;
+
+  const awk = awkEl.value; // '4' or '5'
+  const gear = gearEl.value; // 'infernal', 'aquilus', 'abyss', 'eclipse_part', 'eclipse_full'
+  const eta = parseInt(etaEl.value, 10) || 5;
+  const relic = relicEl ? relicEl.value : 'under10_nodouble'; // 'none', 'under10_nodouble', 'under10_double', 'done10'
+  const abyssCore = abyssCoreEl ? abyssCoreEl.value : 'no'; // 'no', 'yes'
+  const mercCore = mercCoreEl ? mercCoreEl.value : 'no'; // 'no', 'yes'
+  const eclCore = eclCoreEl ? eclCoreEl.value : 'none'; // 'none', 'step1', 'step2_4', 'step3', 'master'
+  const cuff = cuffEl ? cuffEl.value : 'none'; // 'none', 'under140', 'cuff200'
+
+  let prio1 = { title: "", badge: "", desc: "", tip: "", profit: "", cost: "" };
+  let prio2 = { title: "", badge: "", desc: "", tip: "" };
+  let prio3 = { title: "", badge: "", desc: "", tip: "" };
+  let goldenTip = "";
+  let weeklySeedGain = 0;
+  let nextContent = "";
+
+  // 1. Determine Priority 1 (최우선 과제)
+  if (awk === '4') {
+    prio1 = {
+      badge: "🚨 최우선 필수",
+      title: "⚡ 5차 각성 완료 (대미지 상한 200만 돌파 & 아일단 진입)",
+      desc: "4차 각성 상태에서는 대미지 상한이 막혀 상위 던전 파티 참여와 코어 마스터 진행이 불가능합니다. 버닝 보상 및 개별 조합으로 5차 각성을 최우선 완료하세요.",
+      tip: "심장 10종 및 조합 재료는 1개씩 개별 조합해야 조합 실패 시 재료 증발을 방지할 수 있습니다.",
+      profit: "기본 공격력/마방 상한선 200만 대폭 돌파",
+      cost: "재료 개별 조합"
+    };
+    prio2 = {
+      badge: "2순위 권장",
+      title: "어비스 8부위 풀세트(아일단) 장착",
+      desc: "5차 각성 후 인퍼널/아퀼루스에서 어비스 세트로 전환하여 기초 방어력과 명중률을 확보하세요.",
+      tip: "세트 효과로 인한 주스탯 상승량이 매우 큽니다."
+    };
+    prio3 = {
+      badge: "3순위 목표",
+      title: "에타의 의지 Lv.5 진입 & 기초 룬 연마",
+      desc: "고체의·고방·연강 연마와 에타 5를 달성하여 1단계 기초 내실 체계를 준비하세요.",
+      tip: "대장간 파밍으로 에타 5는 빠르게 달성 가능합니다."
+    };
+    goldenTip = "💡 5차 각성 재료 조합 시 절대로 10개를 한 번에 조합창에 올리지 마시고, 반드시 <b>1개씩 개별 조합</b>하세요!";
+  } else if (gear === 'infernal' || gear === 'aquilus') {
+    prio1 = {
+      badge: "🛡️ 장비 최우선",
+      title: "어비스 8부위 풀세트(아일단) 전환",
+      desc: "현재 장비 티어로는 상위 코어마스터 던전과 주간 보스 파티 진입이 어렵습니다. 어비스 8세트(아일단)를 완성하여 기초 스펙을 완성하세요.",
+      tip: "아퀼루스에서 어비스로의 승급 재료를 계산기 탭에서 확인하고 차근차근 맞추세요.",
+      profit: "마방/명중/속성 급상승, 코어마스터 진입 가능",
+      cost: "어비스 8부위 제작/구매"
+    };
+    prio2 = {
+      badge: "2순위 권장",
+      title: "고대 렐릭의 성소 10단 더블리워드 가동",
+      desc: "성소는 매주 시간이 걸리는 장기 내실이므로 지금 즉시 더블리워드를 켜고 시작해야 합니다.",
+      tip: "더블리워드 미사용 시 1년이 소요됩니다."
+    };
+    prio3 = {
+      badge: "3순위 목표",
+      title: "머코마 & 어코마 2주 파밍 준비",
+      desc: "어비스 세트 완료 즉시 코어마스터 던전을 돌아 주간 13억 확정 시드를 확보하세요.",
+      tip: "TP 입장권으로 주 14회 집중 파밍합니다."
+    };
+    goldenTip = "💡 어비스 장비 직작 시 [Tab 7 시드·재료 계산기]를 활용하면 현재 보유 재료를 뺀 순수 부족 시드만 실시간 계산할 수 있습니다!";
+  } else if (relic === 'none' || relic === 'under10_nodouble') {
+    prio1 = {
+      badge: "⚠️ 기간 6개월 단축 필수",
+      title: "☀️ 고대 렐릭의 성소: '더블 리워드 쿠폰(주간 4,200 TP)' 즉시 사용!",
+      desc: "성소는 나중에 돈이 아무리 많아도 하루아침에 올릴 수 없는 절대적 시간 투자형 내실입니다. 더블리워드를 쓰지 않으면 10강까지 무려 1년이 걸립니다! 더블리워드를 쓰면 5~6개월로 절반 단축됩니다.",
+      tip: "★ 경고: 나중에 스펙이 아무리 높아져도 렐릭 10강이 없으면 상위 성소 13단 진입이 불가능해져 발목을 잡힙니다. 다른 데 쓸 TP를 아껴서라도 무조건 4,200 TP는 성소에 고정 투자하세요!",
+      profit: "성소 13단 진입 자격 획득 & 렐릭 올스탯 극대화",
+      cost: "주간 4,200 TP (필수 고정 내실비)"
+    };
+    if (abyssCore === 'no') {
+      prio2 = {
+        badge: "2순위 확정수익",
+        title: "👑 어비스 코어 마스터 (어코마) 2주 집중 파밍",
+        desc: "코어마스터 던전 주 14회(500 TP x 14 = 7,000 TP)로 2주 만에 가루/결정을 모두 모을 수 있습니다.",
+        tip: "강화는 패스 보상 엘소(주 60만)로 진행하세요."
+      };
+      weeklySeedGain += 700000000;
+      nextContent = "어비스 코어마스터 던전";
+    } else if (mercCore === 'no') {
+      prio2 = {
+        badge: "2순위 확정수익",
+        title: "🔮 머큐리얼 코어 마스터 (머코마) 1주 파밍",
+        desc: "명중/회피 부스탯 기준 7회(1,400 TP)로 단 1주일이면 가루와 결정이 모두 모여 완성됩니다.",
+        tip: "주간 약 6억 시드와 경심/레심을 안정적으로 수급합니다."
+      };
+      weeklySeedGain += 600000000;
+      nextContent = "머큐리얼 코어마스터 던전";
+    } else {
+      prio2 = {
+        badge: "2순위 콘텐츠 해금",
+        title: "⚡ 에타 10 & 이클립스 코어 120 (훈련소·오딘 해금)",
+        desc: "에타 10과 이클코어 120을 달성하여 훈련소(주 2.45억+정수 17개)와 오딘(라피스)을 해금하세요.",
+        tip: "코어진화권 2단계로 2진 4강에서 멈춰 최종뎀 1%를 챙기세요."
+      };
+      weeklySeedGain += 245000000;
+      nextContent = "훈련소 & 오딘";
+    }
+    prio3 = {
+      badge: "3순위 도약",
+      title: "신규 채굴장(커프 200작) 진입 준비 (에타 20 + 3~4신기)",
+      desc: "기초 내실 완료 후 모이는 시드로 이클립스 3~4신기를 준비하여 설계자의 채굴장(에타 20)에 진입하세요.",
+      tip: "채굴장 컷 달성 시 토벌전도 4~5분대로 쾌속 주파됩니다."
+    };
+    goldenTip = "💡 <b>성소 더블리워드 쿠폰(주 4,200 TP)</b>은 선택이 아닌 필수입니다! 나중에 스펙이 올라도 렐릭 10강이 안 되어 성소 13단을 못 가는 모험가분들이 매우 많으니 꼭 미리 켜두세요.";
+  } else if (abyssCore === 'no') {
+    prio1 = {
+      badge: "🪙 주 7억 확정 수익",
+      title: "👑 어비스 코어 마스터 (어코마) 2주 집중 파밍",
+      desc: "어코마는 2주면 완성이 가능합니다! 코어마스터 던전 주 14회(500 TP x 14 = 7,000 TP)를 2주간 돌면 가루와 결정이 100% 모입니다. 억까를 당하더라도 3주 차 1~2판이면 졸업합니다.",
+      tip: "강화는 패스 보상 엘소(주 60만)로 진행하고, 급하면 시드를 사용하세요. 어헬보다 득템 체감률이 훨씬 우수합니다.",
+      profit: "매주 확정 약 7억 Seed + 어비스 재료 득템 파이 확장",
+      cost: "2주간 총 7,000 TP"
+    };
+    weeklySeedGain += 700000000;
+    nextContent = "어비스 코어마스터 던전";
+    if (mercCore === 'no') {
+      prio2 = {
+        badge: "2순위 확정수익",
+        title: "🔮 머큐리얼 코어 마스터 (머코마) 1주 파밍",
+        desc: "명중/회피 부스탯 기준 7회(1,400 TP)면 단 1주일 만에 가루/결정을 모아 매주 6억 시드를 추가 확보합니다.",
+        tip: "어코마와 병행하여 3주 안에 주간 13억 확정 수익 체계를 완성하세요."
+      };
+    } else {
+      prio2 = {
+        badge: "2순위 콘텐츠 해금",
+        title: "⚡ 에타 10 & 이클립스 코어 120 (훈련소·오딘 해금)",
+        desc: "대장간 파밍으로 에타 10을 찍고, 이클코어 120을 달성하여 훈련소와 오딘을 열어주세요.",
+        tip: "이클립스 코어진화권 2단계로 2진 4강(최종뎀 1%)을 맞추는 것이 핵심 가성비입니다."
+      };
+    }
+    prio3 = {
+      badge: "3순위 도약",
+      title: "신규 채굴장(커프 200작) 진입 목표 (에타 20 + 3~4신기)",
+      desc: "기초 내실로 모이는 주간 15억+ 시드를 모아 이클립스 3~4신기를 준비하세요.",
+      tip: "채굴장 컷 도달 시 토벌전 클리어 타임이 4~5분대로 획기적으로 줄어듭니다."
+    };
+    goldenTip = "💡 어코마는 매주 약 <b>7억 시드의 확정 수익</b>을 안겨주므로, 어설프게 고가 장비를 사기 전에 가장 먼저 2주 투자로 끝내는 것이 최대 가성비입니다!";
+  } else if (mercCore === 'no') {
+    prio1 = {
+      badge: "🪙 주 6억 확정 수익",
+      title: "🔮 머큐리얼 코어 마스터 (머코마) 1주 파밍",
+      desc: "머코마는 단 1주일이면 완성됩니다! 주 7회(200 TP x 7 = 1,400 TP)만 투자하면 명중/회피/민첩 부스탯 코어 가루와 결정이 모두 모입니다.",
+      tip: "주간 약 6억 시드와 함께 고가의 경험의 심장(경심), 레어의 심장(레심)을 파밍할 수 있습니다.",
+      profit: "매주 확정 약 6억 Seed + 경심/레심 득템",
+      cost: "1주간 총 1,400 TP"
+    };
+    weeklySeedGain += 600000000;
+    nextContent = "머큐리얼 코어마스터 던전";
+    prio2 = {
+      badge: "2순위 콘텐츠 해금",
+      title: "⚡ 에타 10 & 이클립스 코어 120 (훈련소·오딘 해금)",
+      desc: "대장간 파밍으로 에타 10을 달성하고, 이클코어 120을 맞춰 훈련소(주 2.45억+정수)와 오딘을 해금하세요.",
+      tip: "코어진화권 2단계 사용 시 2진 4강에서 멈춰 최종뎀 1%를 챙기세요."
+    };
+    prio3 = {
+      badge: "3순위 도약",
+      title: "신규 채굴장(커프 200작) 진입 준비 (에타 20 + 3~4신기)",
+      desc: "주간 시드 수익(어코마 7억 + 머코마 6억 = 주 13억+)으로 이클립스 3~4신기를 준비하세요.",
+      tip: "채굴장 컷 달성 시 토벌전도 4~5분대로 쾌속 주파됩니다."
+    };
+    goldenTip = "💡 머코마는 단 1,400 TP로 1주 만에 졸업할 수 있는 최고 가성비 내실입니다. 빠르게 끝내고 매주 6억 시드를 챙기세요!";
+  } else if (eta < 10 || eclCore === 'none' || eclCore === 'step1') {
+    prio1 = {
+      badge: "🔓 핵심 던전 해금",
+      title: "⚡ 에타 Lv.10 & 이클립스 코어 Lv.120 (훈련소 & 오딘 해금)",
+      desc: "에타 10을 빨리 찍어야 하는 결정적 이유는 <b>훈련소와 오딘</b>이 열리기 때문입니다! 훈련소는 주 7회 완주 시 경험치 50억, 정수 17개, <b>시드 2.45억</b>을 주며, 오딘은 고가의 라피스 득템 기회를 제공합니다.",
+      tip: "★ 코어 120 가성비 공식: 1진 0강(가루) ➔ 2진 0강(진화권 1단계) ➔ <b>2진 4강(진화권 2단계)</b>에서 멈추기! 3진 0강으로 넘기지 말고 2진 4강에서 멈춰야 최종 피해량 +1%를 알뜰하게 챙길 수 있습니다.",
+      profit: "훈련소 주 2.45억 Seed + 정수 17개 + 오딘 라피스 파이 오픈",
+      cost: "대장간 에타 파밍 + 코어 진화권 1~2단계"
+    };
+    weeklySeedGain += 245000000;
+    nextContent = "훈련소 & 오딘 보스전";
+    prio2 = {
+      badge: "2순위 상시 내실",
+      title: "고대 렐릭의 성소 10단 더블리워드 상시 유지",
+      desc: "매주 4,200 TP를 투자하여 렐릭 10단을 꾸준히 진행하세요.",
+      tip: "펜던트 5~6개월, 브슬 5개월 완성을 목표로 합니다."
+    };
+    prio3 = {
+      badge: "3순위 차기 목표",
+      title: "이클립스 3신기 / 4신기 + 100효과 세팅 준비",
+      desc: "훈련소와 코마던에서 모은 자금으로 이클 3~4신기를 구매하여 채굴장(에타 20) 입장 컷을 준비하세요.",
+      tip: "마방캐는 4신기, 단일딜러는 3신기가 채굴장 입장 표준선입니다."
+    };
+    goldenTip = "💡 코어 진화권 2단계 사용 시 3진 0강을 누르지 마시고, <b>2진 4강</b> 상태를 유지하세요! 최종 피해량 1%를 공짜로 얻는 실전 꿀팁입니다.";
+  } else if (gear === 'abyss') {
+    prio1 = {
+      badge: "💎 스펙업 핵심 도약",
+      title: "이클립스 3신기 / 4신기 + 100효과 세팅",
+      desc: "이제 4대 기초 내실이 탄탄하게 갖춰졌습니다! 다음 종결 내실인 <b>신규 채굴장(라이도 커프 200작)</b>에 입장하기 위해 이클립스 신기 장비를 맞출 차례입니다.",
+      tip: "• 마방 캐릭터(비호 등): 이클 4신기 + 렐릭 8~9단 + 100효과 권장<br>• 단일 공격 캐릭터: 이클 3신기 + 렐릭 8~9단 + 100효과 권장",
+      profit: "채굴장 입장 주스탯 확보 & 이클 토벌전 4~5분 쾌속 주파",
+      cost: "주간 누적 시드로 신기 순차 장만"
+    };
+    prio2 = {
+      badge: "2순위 레벨링",
+      title: "에타의 의지 Lv.20 달성 (채굴장 입장 컷)",
+      desc: "훈련소 주간 50억 경험치와 대장간 사냥으로 에타 20을 향해 꾸준히 레벨업하세요.",
+      tip: "에타 20이 되어야 설계자의 채굴장 문이 열립니다."
+    };
+    prio3 = {
+      badge: "3순위 심화 내실",
+      title: "렐릭 10단 완성 후 성소 13단 진입 준비",
+      desc: "더블리워드로 렐릭 10단을 채우면 즉시 성소 13단계로 도약합니다.",
+      tip: "성소 13단은 상위 렐릭 스탯을 대폭 제공합니다."
+    };
+    goldenTip = "💡 이클립스 3~4신기를 착용하고 채굴장 입장 컷을 맞추면, 이클립스 6보스 토벌전이 <b>1판당 4~5분대</b>로 끝나 일일/주간 숙제 시간이 절반 이하로 줄어듭니다!";
+  } else if (eta < 20) {
+    prio1 = {
+      badge: "⛏️ 채굴장 진입 임박",
+      title: "에타의 의지 Lv.20 달성 ➔ 신규 채굴장(커프 200작) 진입!",
+      desc: "장비 세팅(3~4신기)이 준비되었다면 에타 20을 찍고 <b>설계자의 채굴장</b>으로 진입하세요! 커프 140~200 종결 내실을 열어 캐릭터 스탯을 비약적으로 끌어올릴 수 있습니다.",
+      tip: "훈련소 매주 7회 완주(경험치 50억)와 에타 경험치 버프를 활용하여 에타 20을 집중 돌파하세요.",
+      profit: "신규 채굴장 오픈 & 라이도 커프 주스탯 200 종결 작업 개시",
+      cost: "에타 레벨업 경험치 파밍"
+    };
+    nextContent = "설계자의 채굴장 (커프 200)";
+    prio2 = {
+      badge: "2순위 상시 내실",
+      title: "고대 렐릭의 성소 10단 완성 (성소 13단 해금)",
+      desc: "더블리워드를 꾸준히 유지하여 10강 졸업을 완료하세요.",
+      tip: "10강 달성 즉시 성소 13단계 진입이 열립니다."
+    };
+    prio3 = {
+      badge: "3순위 종결 도약",
+      title: "이클립스 코어 마스터 (이클코마 4진화)",
+      desc: "가루, 결정, 엘소를 모아 이클코어를 4진화 마스터 단계로 올리세요.",
+      tip: "최상위 피해량 증가와 방어력을 완성합니다."
+    };
+    goldenTip = "💡 에타 20 달성 시 열리는 <b>신규 채굴장</b>은 라이도 커프 주스탯을 200까지 올려주는 현존 최고의 핵심 내실 던전입니다!";
+  } else if (cuff !== 'cuff200') {
+    prio1 = {
+      badge: "💍 종결 커프 완성",
+      title: "신규 채굴장 파밍 ➔ 라이도 커프 주스탯 200 종결 달성",
+      desc: "채굴장(설계자의 채굴장) 일일 파밍을 통해 라이도 커프의 주스탯(마방캐: MR 200, 딜러: 주공격력 200)을 200 만수치로 졸업시키세요.",
+      tip: "주스탯 200 완성 후 여유가 생기면 명중률(DEX)과 크리티컬 부스탯 작업으로 확장합니다.",
+      profit: "단일 부위 주스탯 +200 확보로 엔드 보스 진입 스펙 완성",
+      cost: "채굴장 조각 파밍"
+    };
+    prio2 = {
+      badge: "2순위 코어 종결",
+      title: "이클립스 코어 마스터 (이클코마 4진화 완성)",
+      desc: "채굴장 파밍과 병행하여 이클립스 코어를 4진화 마스터까지 강화하세요.",
+      tip: "가루, 결정, 엘소를 집중 투입합니다."
+    };
+    prio3 = {
+      badge: "3순위 다캐릭 확장",
+      title: "👥 부캐릭터 5각 육성 ➔ 이클코마던 투입 체제 가동",
+      desc: "본캐가 안정권에 접어들면 5각 부캐를 키워 이클코마던에 투입, 매주 득템 파이를 복리로 증식시키세요.",
+      tip: "다캐릭 체제가 완성되면 매주 수십억 시드가 안정적으로 축적됩니다."
+    };
+    goldenTip = "💡 커프 200작과 렐릭 10단이 제대로 갖춰지지 않으면 추후 최상위 던전(주화단/골고다) 진입 시 수백억 시드의 고가 장비나 고수치 효과를 강요받게 됩니다. 내실을 단단히 다지세요!";
+  } else if (eclCore !== 'master') {
+    prio1 = {
+      badge: "👑 코어 최종 종결",
+      title: "이클립스 코어 마스터 (4진화 코어 강화 완료)",
+      desc: "가루, 결정, 모아둔 엘소를 집중 투입하여 이클립스 코어 마스터를 달성하세요! 최상위 던전에서의 생존력과 최종 딜량이 완성됩니다.",
+      tip: "4진화부터는 진화권이 아닌 가루/결정/엘소로 강화하는 것이 정석입니다.",
+      profit: "이클립스 코어 최종 피해량 및 생존율 종결",
+      cost: "가루, 결정, 엘소/시드"
+    };
+    prio2 = {
+      badge: "2순위 엔드 파밍",
+      title: "성소 13단계 파밍 & 이클 한계작 1부위씩 업그레이드",
+      desc: "성소 13단에서 상위 렐릭 스탯을 파밍하고, 남는 시드로 이클 한계작 부위나 라피스를 챙기세요.",
+      tip: "세크리드 장비 맞춤 자금을 모으는 단계입니다."
+    };
+    prio3 = {
+      badge: "3순위 다캐릭 복리",
+      title: "👥 부캐릭터 5각 육성 ➔ 이클코마던 투입",
+      desc: "본캐 종결 내실 완료 후 부캐릭을 늘려 주간 확정 수익을 2배, 3배로 증폭시키세요.",
+      tip: "부캐 1개당 주간 수억~십수억 시드의 득템 파이가 추가됩니다."
+    };
+    goldenTip = "💡 본캐 이클코마가 완성되는 순간, 부캐릭터를 5각으로 올려 이클코마던에 투입하는 것이 장기적으로 가장 빠르고 거대한 시드 증식 공식입니다!";
+  } else {
+    prio1 = {
+      badge: "👑 엔드 모험가 명예",
+      title: "👥 부캐릭터 5각 육성 & 이클코마던 다캐릭 배급 체제 구축",
+      desc: "모험가님의 본캐릭터는 이미 [토벌전 쾌속 + 채굴장 커프 200 + 이클코마 종결] 체제를 완벽히 갖추셨습니다! 이제 부캐릭터를 5각으로 육성하여 이클코마던에 투입, 매주 득템 및 시드 파이를 복리로 극대화하세요.",
+      tip: "남는 자금으로는 라피스 섭취, 이클 한계작 교체, 세크리드(Sacred) 장비 자금 축적, 최종 주화단 진입을 목표로 즐겁게 플레이하시면 됩니다.",
+      profit: "부캐릭 1개당 주간 수억~십수억 시드 복리 증식",
+      cost: "부캐 육성"
+    };
+    prio2 = {
+      badge: "2순위 엔드 목표",
+      title: "세크리드(Sacred) 장비 & 최상위 주화단 도전",
+      desc: "현존 최상위 장비인 세크리드 세팅과 주화단 스펙업에 도전하세요.",
+      tip: "에타 21+ 및 종결 스펙을 천천히 맞춰나갑니다."
+    };
+    prio3 = {
+      badge: "3순위 커프 완벽 종결",
+      title: "라이도 커프 명중률(DEX) & 크리티컬 200 풀작",
+      desc: "주스탯에 이어 명중과 크리티컬까지 채굴장 조각으로 완벽히 마스터합니다.",
+      tip: "올스탯 종결 커프를 완성합니다."
+    };
+    goldenTip = "💡 진정한 엔드 모험가 단계에 도달하셨습니다! 조급해하지 마시고 다캐릭 파밍과 함께 최종 콘텐츠를 여유롭게 즐기세요.";
+  }
+
+  // Render to DOM
+  const outPrio1El = document.getElementById('roadmap-res-prio1');
+  const outPrio2El = document.getElementById('roadmap-res-prio2');
+  const outPrio3El = document.getElementById('roadmap-res-prio3');
+  const outGainEl = document.getElementById('roadmap-res-gain');
+  const outTipEl = document.getElementById('roadmap-res-goldentip');
+
+  if (outPrio1El) {
+    outPrio1El.innerHTML = `
+      <div class="roadmap-prio-card prio1">
+        <div class="roadmap-prio-header">
+          <span class="roadmap-badge gold">${prio1.badge}</span>
+          <h4 class="roadmap-prio-title">${prio1.title}</h4>
+        </div>
+        <div class="roadmap-prio-desc">${prio1.desc}</div>
+        <div class="roadmap-prio-meta">
+          ${prio1.profit ? `<span class="roadmap-meta-chip profit">🎁 기대 효과: <b>${prio1.profit}</b></span>` : ''}
+          ${prio1.cost ? `<span class="roadmap-meta-chip cost">⏱️ 투자/비용: <b>${prio1.cost}</b></span>` : ''}
+        </div>
+        ${prio1.tip ? `<div class="roadmap-prio-tip">${prio1.tip}</div>` : ''}
+      </div>
+    `;
+  }
+
+  if (outPrio2El) {
+    outPrio2El.innerHTML = `
+      <div class="roadmap-prio-card prio2">
+        <div class="roadmap-prio-header">
+          <span class="roadmap-badge silver">${prio2.badge}</span>
+          <h4 class="roadmap-prio-title">${prio2.title}</h4>
+        </div>
+        <div class="roadmap-prio-desc">${prio2.desc}</div>
+        ${prio2.tip ? `<div class="roadmap-prio-tip">${prio2.tip}</div>` : ''}
+      </div>
+    `;
+  }
+
+  if (outPrio3El) {
+    outPrio3El.innerHTML = `
+      <div class="roadmap-prio-card prio3">
+        <div class="roadmap-prio-header">
+          <span class="roadmap-badge bronze">${prio3.badge}</span>
+          <h4 class="roadmap-prio-title">${prio3.title}</h4>
+        </div>
+        <div class="roadmap-prio-desc">${prio3.desc}</div>
+        ${prio3.tip ? `<div class="roadmap-prio-tip">${prio3.tip}</div>` : ''}
+      </div>
+    `;
+  }
+
+  if (outGainEl) {
+    if (weeklySeedGain > 0 || nextContent) {
+      outGainEl.style.display = 'block';
+      let gainText = weeklySeedGain > 0 ? `+약 ${(weeklySeedGain / 100000000).toFixed(2)}억 Seed` : '';
+      let contentText = nextContent ? `🔓 신규 해금: <b>${nextContent}</b>` : '';
+      outGainEl.innerHTML = `
+        <div class="roadmap-roi-banner">
+          <span class="roi-icon">💰</span>
+          <div>
+            <div style="font-weight:800; font-size:0.95rem; color:#fde68a;">
+              이 추천 과제를 달성하면 주간 확정 시드가 ${gainText} 증가합니다!
+            </div>
+            ${contentText ? `<div style="font-size:0.8rem; color:#cbd5e1; margin-top:2px;">${contentText}</div>` : ''}
+          </div>
+        </div>
+      `;
+    } else {
+      outGainEl.style.display = 'none';
+    }
+  }
+
+  if (outTipEl) {
+    outTipEl.innerHTML = goldenTip || '';
+  }
+}
+
+function applyRoadmapPreset(key) {
+  const awkEl = document.getElementById('roadmap-sel-awk');
+  const gearEl = document.getElementById('roadmap-sel-gear');
+  const etaEl = document.getElementById('roadmap-sel-eta');
+  const relicEl = document.getElementById('roadmap-sel-relic');
+  const abyssCoreEl = document.getElementById('roadmap-sel-abyss-core');
+  const mercCoreEl = document.getElementById('roadmap-sel-merc-core');
+  const eclCoreEl = document.getElementById('roadmap-sel-ecl-core');
+  const cuffEl = document.getElementById('roadmap-sel-cuff');
+
+  if (!awkEl) return;
+
+  if (key === 'fresh_5awk') {
+    awkEl.value = '5';
+    gearEl.value = 'abyss';
+    etaEl.value = '5';
+    if (relicEl) relicEl.value = 'under10_nodouble';
+    if (abyssCoreEl) abyssCoreEl.value = 'no';
+    if (mercCoreEl) mercCoreEl.value = 'no';
+    if (eclCoreEl) eclCoreEl.value = 'none';
+    if (cuffEl) cuffEl.value = 'none';
+  } else if (key === 'mid_core') {
+    awkEl.value = '5';
+    gearEl.value = 'abyss';
+    etaEl.value = '5';
+    if (relicEl) relicEl.value = 'under10_double';
+    if (abyssCoreEl) abyssCoreEl.value = 'yes';
+    if (mercCoreEl) mercCoreEl.value = 'yes';
+    if (eclCoreEl) eclCoreEl.value = 'step1';
+    if (cuffEl) cuffEl.value = 'none';
+  } else if (key === 'prep_mine') {
+    awkEl.value = '5';
+    gearEl.value = 'abyss';
+    etaEl.value = '10';
+    if (relicEl) relicEl.value = 'under10_double';
+    if (abyssCoreEl) abyssCoreEl.value = 'yes';
+    if (mercCoreEl) mercCoreEl.value = 'yes';
+    if (eclCoreEl) eclCoreEl.value = 'step2_4';
+    if (cuffEl) cuffEl.value = 'under140';
+  } else if (key === 'end_game') {
+    awkEl.value = '5';
+    gearEl.value = 'eclipse_part';
+    etaEl.value = '20';
+    if (relicEl) relicEl.value = 'done10';
+    if (abyssCoreEl) abyssCoreEl.value = 'yes';
+    if (mercCoreEl) mercCoreEl.value = 'yes';
+    if (eclCoreEl) eclCoreEl.value = 'master';
+    if (cuffEl) cuffEl.value = 'cuff200';
+  }
+
+  updateRoadmapRecommendation();
+}
+
+function syncProfileToRoadmap() {
+  const currentProfile = (typeof profiles !== 'undefined' && Array.isArray(profiles))
+    ? profiles.find(p => p.id === currentProfileId)
+    : null;
+  if (!currentProfile) return;
+
+  const etaEl = document.getElementById('roadmap-sel-eta');
+  if (etaEl && currentProfile.stats && currentProfile.stats.eta) {
+    const pEta = parseInt(currentProfile.stats.eta, 10);
+    if (pEta >= 21) etaEl.value = '21';
+    else if (pEta >= 20) etaEl.value = '20';
+    else if (pEta >= 11) etaEl.value = '11';
+    else if (pEta >= 10) etaEl.value = '10';
+    else if (pEta >= 6) etaEl.value = '6';
+    else if (pEta >= 5) etaEl.value = '5';
+    else etaEl.value = '1';
+  }
+
+  updateRoadmapRecommendation();
 }
 
 

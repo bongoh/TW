@@ -100,6 +100,7 @@
         <button class="growth-sub-btn" onclick="switchGrowthSection('growth-part5', this)">👑 5편: 코어 4진화 & 이클립스 진입</button>
         <button class="growth-sub-btn" onclick="switchGrowthSection('growth-prereq', this)">🗝️ 8대 필수 선행 퀘스트</button>
         <button class="growth-sub-btn" onclick="switchGrowthSection('growth-milestone', this)">✅ 초보자 12대 마일스톤</button>
+        <button class="growth-sub-btn" onclick="switchGrowthSection('growth-post5-roadmap', this)">🧭 5각·아일단 이후 스펙업 나침반</button>
       </div>
 
       <!-- SECTION 0: ROADMAP OVERVIEW -->
@@ -476,6 +477,264 @@
             <label class="milestone-item"><input type="checkbox" data-milestone="m10"> <span><b>Step 10.</b> 테시스 코어 4진화 & 4강화 (최종 뎀증 버프 획득)</span></label>
             <label class="milestone-item"><input type="checkbox" data-milestone="m11"> <span><b>Step 11.</b> 어벤던로드 30회 & 일일 보급품/별동대 시드 루틴 가동</span></label>
             <label class="milestone-item"><input type="checkbox" data-milestone="m12"> <span><b>Step 12.</b> Tab 2 패턴 도감 숙지 후 이클립스 6보스 토벌 성공!</span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 7: POST-5TH AWAKENING PROGRESSION ROADMAP & UPGRADE RECOMMENDER -->
+      <div id="growth-post5-roadmap" class="growth-section">
+        <div class="roadmap-compass-card">
+          <!-- Compass Header -->
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
+            <div>
+              <span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#fde68a; border-color:rgba(245, 158, 11, 0.4);">
+                🧭 실전 내실 & 장비 가이드
+              </span>
+              <h3 style="font-size:1.35rem; color:#fde68a; margin:0.35rem 0 0.25rem; font-weight:800;">
+                🧭 5각·아일단 이후 스펙업 & 파밍 나침반 (스펙별 맞춤 추천)
+              </h3>
+              <p style="font-size:0.88rem; color:#cbd5e1; line-height:1.6; margin:0;">
+                "5차 각성과 어비스 풀셋(아일단)을 맞췄는데, 이제 무엇부터 올려야 할까요?"<br>
+                선배 모험가들의 실전 공략을 분석하여, 현재 내 스펙에서 <b>가장 적은 비용으로 최대의 주간 확정 시드(주 15억+)와 던전</b>을 열 수 있는 최적의 스펙업 순서를 친절하게 안내해 드립니다.
+              </p>
+            </div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <a href="https://gall.dcinside.com/mini/board/view/?id=talesweaver&no=262032" target="_blank" rel="noopener" class="source-link-btn" style="background:#1e293b; border:1px solid #f59e0b; color:#fde68a; font-size:0.8rem; padding:0.4rem 0.75rem; border-radius:6px; text-decoration:none;">
+                <span>📖 원문 출처 (디시 테일즈위버 갤러리)</span> ↗
+              </a>
+            </div>
+          </div>
+
+          <!-- Quick Presets Bar -->
+          <div style="margin-bottom:1.25rem;">
+            <div style="font-size:0.82rem; color:#94a3b8; margin-bottom:0.4rem; font-weight:600;">⚡ 스펙 단계별 빠른 프리셋 선택:</div>
+            <div class="roadmap-preset-bar" style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+              <button type="button" class="btn-sm btn-outline" onclick="applyRoadmapPreset('fresh_5awk')">🌱 갓 5각·아일단 달성</button>
+              <button type="button" class="btn-sm btn-outline" onclick="applyRoadmapPreset('mid_core')">🪙 코마던 파밍 중 (주 13억+)</button>
+              <button type="button" class="btn-sm btn-outline" onclick="applyRoadmapPreset('prep_mine')">⛏️ 채굴장(에타20) 준비 단계</button>
+              <button type="button" class="btn-sm btn-outline" onclick="applyRoadmapPreset('end_game')">👑 커프 200 종결 & 부캐 확장</button>
+              <button type="button" class="btn-sm" onclick="syncProfileToRoadmap()" style="background:#0284c7; color:#fff; border:none;">🔄 현재 프로필 연동</button>
+            </div>
+          </div>
+
+          <!-- Interactive Evaluator Form -->
+          <div class="roadmap-form-panel" style="background:#0f172a; border:1px solid #334155; border-radius:10px; padding:1.25rem; margin-bottom:1.5rem;">
+            <h4 style="font-size:0.98rem; color:#38bdf8; margin:0 0 1rem; font-weight:700;">
+              ⚙️ 모험가님의 현재 캐릭터 스펙 현황을 선택해주세요
+            </h4>
+            <div class="roadmap-form-grid">
+              <!-- Field 1: Awakening -->
+              <div class="roadmap-field">
+                <label for="roadmap-sel-awk">각성 단계</label>
+                <select id="roadmap-sel-awk" class="calc-input">
+                  <option value="4">4차 각성 (상한 150만)</option>
+                  <option value="5" selected>5차 각성 (상한 200만+ 아일단)</option>
+                </select>
+              </div>
+
+              <!-- Field 2: Equipment Tier -->
+              <div class="roadmap-field">
+                <label for="roadmap-sel-gear">장비 티어</label>
+                <select id="roadmap-sel-gear" class="calc-input">
+                  <option value="infernal">인퍼널 풀세트 이하</option>
+                  <option value="aquilus">眞 아퀼루스 풀세트</option>
+                  <option value="abyss" selected>어비스 8세트 (아일단)</option>
+                  <option value="eclipse_part">이클립스 3~4신기 + 어비스</option>
+                  <option value="eclipse_full">이클립스 풀세트 이상</option>
+                </select>
+              </div>
+
+              <!-- Field 3: ETA Level -->
+              <div class="roadmap-field">
+                <label for="roadmap-sel-eta">에타의 의지 레벨</label>
+                <select id="roadmap-sel-eta" class="calc-input">
+                  <option value="1">Lv. 1 ~ 4 (기초)</option>
+                  <option value="5" selected>Lv. 5 (5각 달성 기준)</option>
+                  <option value="6">Lv. 6 ~ 9</option>
+                  <option value="10">Lv. 10 (훈련소 & 오딘 해금 컷)</option>
+                  <option value="11">Lv. 11 ~ 19</option>
+                  <option value="20">Lv. 20 (설계자의 채굴장 컷)</option>
+                  <option value="21">Lv. 21+ (최상위)</option>
+                </select>
+              </div>
+
+              <!-- Field 4: Relic Sanctuary -->
+              <div class="roadmap-field">
+                <label for="roadmap-sel-relic">고대 렐릭의 성소</label>
+                <select id="roadmap-sel-relic" class="calc-input">
+                  <option value="none">성소 미시작</option>
+                  <option value="under10_nodouble" selected>10강 미만 (더블리워드 미사용 ⚠️)</option>
+                  <option value="under10_double">10강 미만 (더블리워드 주 4,200 TP 가동 중)</option>
+                  <option value="done10">10강 완료 (성소 13단 진입 자격 획득 ☀️)</option>
+                </select>
+              </div>
+
+              <!-- Field 5: Abyss Core Master -->
+              <div class="roadmap-field">
+                <label for="roadmap-sel-abyss-core">어비스 코어 마스터 (어코마)</label>
+                <select id="roadmap-sel-abyss-core" class="calc-input">
+                  <option value="no" selected>미완성 (파밍 필요)</option>
+                  <option value="yes">완성 완료 (매주 확정 약 7억 Seed 해금 👑)</option>
+                </select>
+              </div>
+
+              <!-- Field 6: Mercurial Core Master -->
+              <div class="roadmap-field">
+                <label for="roadmap-sel-merc-core">머큐리얼 코어 마스터 (머코마)</label>
+                <select id="roadmap-sel-merc-core" class="calc-input">
+                  <option value="no" selected>미완성 (파밍 필요)</option>
+                  <option value="yes">완성 완료 (매주 확정 약 6억 Seed 해금 🔮)</option>
+                </select>
+              </div>
+
+              <!-- Field 7: Eclipse Core -->
+              <div class="roadmap-field">
+                <label for="roadmap-sel-ecl-core">이클립스 코어 상태</label>
+                <select id="roadmap-sel-ecl-core" class="calc-input">
+                  <option value="none" selected>미진행 (0강)</option>
+                  <option value="step1">1단계 진화 (1진 0강)</option>
+                  <option value="step2_4">2단계 4강 (최종뎀 1% 가성비 정지점 ⚡)</option>
+                  <option value="step3">3단계 이상</option>
+                  <option value="master">4진화 코어마스터 완성 (이클코마)</option>
+                </select>
+              </div>
+
+              <!-- Field 8: Raido Cuff / Excavation -->
+              <div class="roadmap-field">
+                <label for="roadmap-sel-cuff">라이도 커프 / 발굴지</label>
+                <select id="roadmap-sel-cuff" class="calc-input">
+                  <option value="none" selected>미진행 / 기본 커프</option>
+                  <option value="under140">발굴지 140 미만 작업 중</option>
+                  <option value="cuff200">설계자의 채굴장 주스탯 200 종결 💍</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Results Container -->
+          <div style="margin-bottom:2rem;">
+            <!-- Seed ROI & Content Unlock Banner -->
+            <div id="roadmap-res-gain" style="display:none; margin-bottom:1rem;"></div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <h4 style="font-size:1.05rem; color:#fde68a; margin:0; font-weight:800;">
+                🎯 모험가님을 위한 맞춤 스펙업 우선순위 추천
+              </h4>
+              <span style="font-size:0.78rem; color:#94a3b8;">스펙 변경 시 실시간 반영</span>
+            </div>
+
+            <!-- Priority 1 Card -->
+            <div id="roadmap-res-prio1" style="margin-bottom:0.85rem;"></div>
+
+            <!-- Priority 2 Card -->
+            <div id="roadmap-res-prio2" style="margin-bottom:0.85rem;"></div>
+
+            <!-- Priority 3 Card -->
+            <div id="roadmap-res-prio3" style="margin-bottom:1rem;"></div>
+
+            <!-- Golden Tip Box -->
+            <div id="roadmap-res-goldentip" class="roadmap-tip-box"></div>
+          </div>
+
+          <!-- Static Visual 3-Stage Progression Overview -->
+          <div class="roadmap-stages-wrap">
+            <h4 style="font-size:1.1rem; color:#7dd3fc; margin:0 0 0.85rem; font-weight:800;">
+              🗺️ 5각 아일단 이후 3단계 로드맵 전체 조망 (선배들의 추천 경로)
+            </h4>
+
+            <div class="roadmap-stages-grid">
+              <!-- Stage 1 Box -->
+              <div class="roadmap-stage-box" style="border-top:3px solid #34d399;">
+                <div class="roadmap-stage-badge" style="background:rgba(52, 211, 153, 0.15); color:#6ee7b7;">
+                  🌱 1단계: 4대 기초 내실 & 주간 15억+ 확정 수익
+                </div>
+                <div class="roadmap-stage-title">주간 확정 시드 수급 & 기초 체력 구축</div>
+                <p class="roadmap-stage-desc">
+                  고가 장비 구매보다 먼저 4대 기초 내실을 다져 매주 15억 이상의 확정 시드를 벌어들이는 자립 기반을 마련합니다.
+                </p>
+                <ul class="roadmap-stage-list">
+                  <li>
+                    <b>☀️ 고대 렐릭의 성소 (렐릭 10단):</b>
+                    <span style="color:#f87171; font-weight:700;">★ 더블리워드 쿠폰(주간 4,200 TP) 필수!</span>
+                    미사용 시 1년 소요, 사용 시 5~6개월로 단축. 10강이 없으면 추후 스펙이 높아도 성소 13단 진입이 불가능해집니다.
+                  </li>
+                  <li>
+                    <b>👑 어비스 코어 마스터 (어코마):</b>
+                    2주 집중 파밍 (주 14회 × 500 TP = 7,000 TP) ➔
+                    <span style="color:#fde68a; font-weight:700;">매주 확정 약 7억 Seed</span> + 어비스 재료 드랍. 패스 엘소(주 60만)로 강화.
+                  </li>
+                  <li>
+                    <b>🔮 머큐리얼 코어 마스터 (머코마):</b>
+                    명중/회피 부스탯 기준 1주 파밍 (주 7회 × 200 TP = 1,400 TP) ➔
+                    <span style="color:#fde68a; font-weight:700;">매주 확정 약 6억 Seed</span> + 경심/레심 수급.
+                  </li>
+                  <li>
+                    <b>⚡ 에타 10 & 이클립스 코어 120:</b>
+                    훈련소(주 7회: 2.45억 Seed + 경험치 50억 + 정수 17개) & 오딘(라피스) 해금.<br>
+                    <span style="color:#38bdf8;">★ 코어 120 꿀팁:</span> 진화권 2단계 사용 시 3진 0강으로 넘기지 말고 <b>'2진 4강'에서 멈춰 최종뎀 +1%</b>를 챙기세요!
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Stage 2 Box -->
+              <div class="roadmap-stage-box" style="border-top:3px solid #38bdf8;">
+                <div class="roadmap-stage-badge" style="background:rgba(56, 189, 248, 0.15); color:#7dd3fc;">
+                  🚀 2단계: 3·4신기 & 신규 채굴장(커프 200작)
+                </div>
+                <div class="roadmap-stage-title">설계자의 채굴장 진입 & 토벌전 4분 주파</div>
+                <p class="roadmap-stage-desc">
+                  기초 내실로 축적한 주간 시드를 투입하여 이클립스 신기를 장만하고, 핵심 내실인 채굴장 커프 200 종결을 달성합니다.
+                </p>
+                <ul class="roadmap-stage-list">
+                  <li>
+                    <b>⛏️ 설계자의 채굴장 (신규 채굴장):</b>
+                    입장 컷은 <b>에타의 의지 Lv.20 + 주스탯</b>입니다.
+                  </li>
+                  <li>
+                    <b>🛡️ 권장 장비 세팅선:</b><br>
+                    • 마방 캐릭터(비호 등): <b>이클립스 4신기 + 렐릭 8~9단 + 100효과</b><br>
+                    • 단일 공격 딜러: <b>이클립스 3신기 + 렐릭 8~9단 + 100효과</b>
+                  </li>
+                  <li>
+                    <b>⏱️ 토벌전 쾌속 주파 효과:</b>
+                    채굴장 컷에 도달하면 이클립스 6보스 토벌전이 <b>판당 4~5분대</b>로 단축되어 주간 숙제 피로도가 대폭 줄어듭니다.
+                  </li>
+                  <li>
+                    <b>💍 라이도 커프 200 종결:</b>
+                    일일 채굴장 조각 파밍으로 주스탯 +200 만수치를 완성하여 최상위 스펙 기반을 완성합니다.
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Stage 3 Box -->
+              <div class="roadmap-stage-box" style="border-top:3px solid #a855f7;">
+                <div class="roadmap-stage-badge" style="background:rgba(168, 85, 247, 0.15); color:#d8b4fe;">
+                  👑 3단계: 심화 내실 & 다캐릭(부캐) 복리 증식
+                </div>
+                <div class="roadmap-stage-title">성소 13단, 이클코마 & 부캐릭 복리 파이 확장</div>
+                <p class="roadmap-stage-desc">
+                  본캐의 최상위 내실을 완결짓고, 5각 부캐릭터를 육성하여 주간 득템 및 시드 파이를 배급 체제로 복리 증식시킵니다.
+                </p>
+                <ul class="roadmap-stage-list">
+                  <li>
+                    <b>☀️ 고대 렐릭의 성소 13단계 진입:</b>
+                    더블리워드로 완성한 렐릭 10단을 기반으로 성소 13단에 진입하여 상위 렐릭 스탯을 파밍합니다.
+                  </li>
+                  <li>
+                    <b>👑 이클립스 코어 마스터 (이클코마):</b>
+                    4진화 코어 강화를 완성하여 최종 피해량 및 생존력을 완성합니다.
+                  </li>
+                  <li>
+                    <b>💍 커프 부스탯 풀작:</b>
+                    채굴장에서 주스탯 200에 이어 명중률(DEX)과 크리티컬까지 200 완작으로 마무리합니다.
+                  </li>
+                  <li>
+                    <b>👥 부캐릭터 5각 육성 ➔ 이클코마던 투입:</b>
+                    본캐 완결 후 부캐 5각을 키워 이클코마에 투입하면, <b>주간 확정 시드 및 득템 파이가 2배, 3배로 복리 증식</b>합니다!
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -4219,6 +4478,7 @@
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-recipe', this)">📜 최상위 제작식</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-rune-book', this)">🌱 룬 도감 16종</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-gathering', this)">🌿 룬정원 채집 & 조제</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-roadmap', this)">🧭 스펙업 추천 나침반</button>
       </div>
 
       <!-- Sub-panel 1: Enchant & Refining -->
@@ -5574,6 +5834,27 @@
               <div class="recipe-mats"><b>필요 재료:</b> 고급 약초 추출물 + 각성의 가루</div>
               <div class="recipe-tip">💡 캐시샵/거래소 의존 없이 채집 허브 가공으로 자급자족하여 초보자의 귀중한 시드를 대폭 세이브합니다.</div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-panel 16: Post-5th Awakening Progression Compass Jump -->
+      <div id="craft-roadmap" class="craft-panel">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:12px; padding:2rem 1.5rem; text-align:center; max-width:800px; margin:0 auto;">
+          <span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#fde68a; border-color:rgba(245, 158, 11, 0.4); margin-bottom:0.75rem;">
+            🧭 스펙 맞춤형 내실 가이드
+          </span>
+          <h3 style="color:#fde68a; font-size:1.35rem; margin:0.5rem 0 0.5rem; font-weight:800;">
+            🧭 5각·아일단 이후 스펙업 & 파밍 나침반
+          </h3>
+          <p style="color:#cbd5e1; font-size:0.92rem; line-height:1.65; margin:0 auto 1.5rem; max-width:640px;">
+            "어비스 세트(아일단)를 맞췄는데, 이클립스 장비를 먼저 사야 할까요? 코어 마스터나 성소 10강을 먼저 해야 할까요?"<br>
+            모험가님의 현재 각성, 장비, 렐릭 성소, 코어 마스터 상태에 맞춰 <b>가장 적은 비용으로 매주 15억+ 확정 시드</b>를 창출하는 최적의 업그레이드 경로를 [Tab 1 육성 가이드]의 대화형 나침반에서 실시간 계산해 드립니다!
+          </p>
+          <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
+            <button type="button" class="btn-primary" onclick="switchTab('tab-growth'); switchGrowthSection('growth-post5-roadmap', document.querySelector('.growth-sub-btn[onclick*=\'growth-post5-roadmap\']'));" style="background:#f59e0b; color:#0f172a; font-weight:800; border:none; padding:0.75rem 1.5rem; border-radius:8px; cursor:pointer; font-size:0.95rem; box-shadow:0 4px 12px rgba(245, 158, 11, 0.3);">
+              🧭 스펙업 맞춤 추천 나침반 열기 ➔
+            </button>
           </div>
         </div>
       </div>
