@@ -1522,6 +1522,7 @@ function bootCompanion() {
   initBackToTopButton();
   renderGlossaryCards();
   initWeeklyTaskLootTracker();
+  initRuneCollectionTracker();
 }
 
 // ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
@@ -3648,6 +3649,174 @@ function updateTotalLootSeed(earnedGuaranteedSeed) {
   const combinedEl = document.getElementById('weekly-combined-total-seed');
   if (combinedEl) {
     combinedEl.textContent = `${(combinedTotal / 100000000).toFixed(2)}억 Seed`;
+  }
+}
+
+
+// ==================== 15. RUNE COLLECTION & GATHERING TRACKER LOGIC ====================
+const RUNE_COLLECTION_STORAGE_KEY = 'tw_rune_collection_v1';
+let runeCollectionState = {};
+
+function loadRuneCollectionState() {
+  try {
+    const raw = localStorage.getItem(RUNE_COLLECTION_STORAGE_KEY);
+    runeCollectionState = raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    runeCollectionState = {};
+  }
+}
+
+function saveRuneCollectionState() {
+  try {
+    localStorage.setItem(RUNE_COLLECTION_STORAGE_KEY, JSON.stringify(runeCollectionState));
+  } catch (e) {}
+}
+
+function toggleRuneCollectionItem(itemId, isChecked) {
+  if (isChecked) {
+    runeCollectionState[itemId] = true;
+  } else {
+    delete runeCollectionState[itemId];
+  }
+  saveRuneCollectionState();
+  updateRuneCollectionCardUI(itemId, isChecked);
+  updateRuneCollectionProgress();
+}
+
+function updateRuneCollectionCardUI(itemId, isChecked) {
+  const card = document.getElementById(`rune-card-${itemId}`);
+  if (card) {
+    if (isChecked) {
+      card.classList.add('checked');
+    } else {
+      card.classList.remove('checked');
+    }
+  }
+  const chk = document.getElementById(`rune-chk-${itemId}`);
+  if (chk && chk.checked !== isChecked) {
+    chk.checked = isChecked;
+  }
+}
+
+function setAllRuneCollection(isChecked) {
+  if (typeof RUNE_COLLECTION_DATA === 'undefined' || !RUNE_COLLECTION_DATA) return;
+  const allItems = [...RUNE_COLLECTION_DATA.brooms, ...RUNE_COLLECTION_DATA.wings];
+  allItems.forEach(item => {
+    if (isChecked) {
+      runeCollectionState[item.id] = true;
+    } else {
+      delete runeCollectionState[item.id];
+    }
+    updateRuneCollectionCardUI(item.id, isChecked);
+  });
+  saveRuneCollectionState();
+  updateRuneCollectionProgress();
+}
+
+function updateRuneCollectionProgress() {
+  if (typeof RUNE_COLLECTION_DATA === 'undefined' || !RUNE_COLLECTION_DATA) return;
+  const totalItems = RUNE_COLLECTION_DATA.brooms.length + RUNE_COLLECTION_DATA.wings.length;
+  let collectedCount = 0;
+
+  const allItems = [...RUNE_COLLECTION_DATA.brooms, ...RUNE_COLLECTION_DATA.wings];
+  allItems.forEach(item => {
+    if (runeCollectionState[item.id]) {
+      collectedCount++;
+    }
+  });
+
+  const percent = totalItems > 0 ? Math.round((collectedCount / totalItems) * 100) : 0;
+
+  const countEl = document.getElementById('rune-progress-count');
+  if (countEl) countEl.textContent = `${collectedCount} / ${totalItems}`;
+
+  const percentEl = document.getElementById('rune-progress-percent');
+  if (percentEl) percentEl.textContent = `${percent}%`;
+
+  const barEl = document.getElementById('rune-progress-bar-fill');
+  if (barEl) barEl.style.width = `${percent}%`;
+
+  const badgeEl = document.getElementById('rune-progress-status-badge');
+  if (badgeEl) {
+    if (percent === 100) {
+      badgeEl.className = 'rune-status-badge complete';
+      badgeEl.textContent = '🎉 16종 전종 수집 완료! 룬 스킬포인트 최대 획득';
+    } else if (percent > 0) {
+      badgeEl.className = 'rune-status-badge progress';
+      badgeEl.textContent = `⚡ ${collectedCount}종 등록 완료 (${percent}%) - 진행 중`;
+    } else {
+      badgeEl.className = 'rune-status-badge empty';
+      badgeEl.textContent = '⏳ 아직 등록된 아이템이 없습니다. 파밍을 시작해보세요!';
+    }
+  }
+}
+
+function renderRuneCollectionCards() {
+  if (typeof RUNE_COLLECTION_DATA === 'undefined' || !RUNE_COLLECTION_DATA) return;
+
+  const broomsContainer = document.getElementById('rune-brooms-list');
+  if (broomsContainer) {
+    broomsContainer.innerHTML = RUNE_COLLECTION_DATA.brooms.map(item => {
+      const isChecked = !!runeCollectionState[item.id];
+      return `
+        <div id="rune-card-${item.id}" class="rune-item-card ${isChecked ? 'checked' : ''}">
+          <div class="rune-item-top">
+            <label class="rune-chk-label">
+              <input type="checkbox" id="rune-chk-${item.id}" ${isChecked ? 'checked' : ''} onchange="toggleRuneCollectionItem('${item.id}', this.checked)">
+              <span class="rune-item-icon">🧹</span>
+              <span class="rune-item-name">${item.name}</span>
+            </label>
+            <span class="rune-loc-badge">📍 ${item.location}</span>
+          </div>
+          <div class="rune-item-desc">
+            <span class="rune-mob-tag">👾 ${item.mobType}</span>
+            <span class="rune-tip-text">${item.tip}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  const wingsContainer = document.getElementById('rune-wings-list');
+  if (wingsContainer) {
+    wingsContainer.innerHTML = RUNE_COLLECTION_DATA.wings.map(item => {
+      const isChecked = !!runeCollectionState[item.id];
+      return `
+        <div id="rune-card-${item.id}" class="rune-item-card ${isChecked ? 'checked' : ''}">
+          <div class="rune-item-top">
+            <label class="rune-chk-label">
+              <input type="checkbox" id="rune-chk-${item.id}" ${isChecked ? 'checked' : ''} onchange="toggleRuneCollectionItem('${item.id}', this.checked)">
+              <span class="rune-item-icon">🪽</span>
+              <span class="rune-item-name">${item.name}</span>
+            </label>
+            <span class="rune-loc-badge wing">📍 ${item.location}</span>
+          </div>
+          <div class="rune-item-desc">
+            <span class="rune-mob-tag wing">🎁 ${item.mobType}</span>
+            <span class="rune-tip-text">${item.tip}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function initRuneCollectionTracker() {
+  loadRuneCollectionState();
+  renderRuneCollectionCards();
+  updateRuneCollectionProgress();
+}
+
+function jumpToRuneCollection() {
+  const craftTabBtn = document.querySelector('.tab-btn[data-tab="tab-craft"]');
+  if (craftTabBtn) switchTab('tab-craft', craftTabBtn);
+
+  const runeSubBtn = document.querySelector('.craft-sub-btn[onclick*="craft-rune-book"]');
+  if (runeSubBtn) switchCraftSubTab('craft-rune-book', runeSubBtn);
+
+  const targetEl = document.getElementById('craft-rune-book');
+  if (targetEl) {
+    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
 

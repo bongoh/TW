@@ -3551,3 +3551,360 @@
   .loot-item-del:hover {
     color: #ef4444;
   }
+
+  /* ==================== RUNE COLLECTION & GATHERING STYLES ==================== */
+  .rune-hero-banner {
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.5), rgba(15, 23, 42, 0.85));
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.2rem;
+  }
+  .rune-hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.35rem;
+  }
+  .rune-reg-tip-box {
+    background: rgba(15, 23, 42, 0.65);
+    border-left: 3px solid #38bdf8;
+    padding: 0.55rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.83rem;
+    color: #93c5fd;
+    line-height: 1.5;
+  }
+
+  .rune-progress-dashboard {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.4rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  .rune-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+  }
+  .rune-progress-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .rune-status-badge {
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+  }
+  .rune-status-badge.empty {
+    background: rgba(148, 163, 184, 0.15);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    color: #94a3b8;
+  }
+  .rune-status-badge.progress {
+    background: rgba(56, 189, 248, 0.2);
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    color: #38bdf8;
+  }
+  .rune-status-badge.complete {
+    background: rgba(16, 185, 129, 0.25);
+    border: 1px solid rgba(16, 185, 129, 0.6);
+    color: #34d399;
+  }
+  .rune-progress-score {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+  .rune-progress-bar-track {
+    width: 100%;
+    height: 12px;
+    background: rgba(30, 41, 59, 0.85);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+    border: 1px solid rgba(51, 65, 85, 0.8);
+  }
+  .rune-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0284c7, #38bdf8, #10b981);
+    border-radius: 6px;
+    transition: width 0.35s ease;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+  }
+  .rune-progress-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .rune-ctrl-btn {
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(71, 85, 105, 0.7);
+    color: #cbd5e1;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.3rem 0.65rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .rune-ctrl-btn:hover {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #38bdf8;
+  }
+  .rune-ctrl-btn.reset:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #fca5a5;
+  }
+
+  .rune-section-title-wrap {
+    margin-bottom: 0.75rem;
+  }
+  .rune-section-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+  .rune-sec-tag {
+    font-size: 0.73rem;
+    font-weight: 700;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+
+  .rune-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 0.75rem;
+  }
+  .rune-item-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(51, 65, 85, 0.75);
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+    transition: all 0.2s ease;
+  }
+  .rune-item-card:hover {
+    border-color: rgba(56, 189, 248, 0.6);
+    background: rgba(15, 23, 42, 0.95);
+  }
+  .rune-item-card.checked {
+    border-color: rgba(16, 185, 129, 0.65);
+    background: rgba(6, 78, 59, 0.2);
+    box-shadow: inset 0 0 12px rgba(16, 185, 129, 0.15);
+  }
+  .rune-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.4rem;
+  }
+  .rune-chk-label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #f1f5f9;
+  }
+  .rune-chk-label input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    cursor: pointer;
+    accent-color: #10b981;
+  }
+  .rune-item-card.checked .rune-item-name {
+    color: #6ee7b7;
+    text-decoration: none;
+  }
+  .rune-item-icon {
+    font-size: 1.05rem;
+  }
+  .rune-loc-badge {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .rune-loc-badge.wing {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.35);
+  }
+  .rune-item-desc {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-left: 1.55rem;
+  }
+  .rune-mob-tag {
+    font-size: 0.74rem;
+    color: #94a3b8;
+    font-weight: 600;
+  }
+  .rune-mob-tag.wing {
+    color: #fcd34d;
+  }
+  .rune-tip-text {
+    font-size: 0.78rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+  }
+
+  .rune-skill-tree-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+  }
+  .rune-skill-prio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.75rem;
+  }
+  .rune-prio-item {
+    background: rgba(30, 41, 59, 0.65);
+    border: 1px solid rgba(71, 85, 105, 0.6);
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+  }
+  .rune-prio-rank {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin-bottom: 0.25rem;
+  }
+  .rune-prio-stat {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #fbbf24;
+    margin-bottom: 0.35rem;
+  }
+  .rune-prio-desc {
+    font-size: 0.79rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+  }
+
+  /* Gathering Styles */
+  .gathering-hero-banner {
+    background: linear-gradient(135deg, rgba(6, 78, 59, 0.5), rgba(15, 23, 42, 0.85));
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.2rem;
+  }
+  .gathering-hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.35rem;
+  }
+  .gathering-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1.2rem;
+  }
+  .gathering-step-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(51, 65, 85, 0.75);
+    border-radius: 8px;
+    padding: 0.9rem 1.05rem;
+  }
+  .gathering-step-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.55rem;
+  }
+  .gathering-step-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+  }
+  .gathering-recipes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 0.85rem;
+  }
+  .recipe-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(51, 65, 85, 0.75);
+    border-radius: 8px;
+    padding: 0.9rem 1.05rem;
+  }
+  .recipe-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.45rem;
+  }
+  .recipe-name {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #f1f5f9;
+  }
+  .recipe-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+  .recipe-effect {
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: #34d399;
+    margin-bottom: 0.35rem;
+  }
+  .recipe-mats {
+    font-size: 0.81rem;
+    color: #e2e8f0;
+    margin-bottom: 0.45rem;
+    line-height: 1.45;
+  }
+  .recipe-tip {
+    font-size: 0.77rem;
+    color: #94a3b8;
+    line-height: 1.45;
+  }

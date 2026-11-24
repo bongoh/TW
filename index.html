@@ -440,6 +440,19 @@
         </div>
       </div>
 
+      <!-- Rune Collection & Gathering Quick Callout Banner -->
+      <div class="info-box" style="border-color:rgba(56,189,248,0.45); margin-bottom:1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; background:rgba(15,23,42,0.85);">
+        <div>
+          <strong style="color:#38bdf8; font-size:0.95rem;">🌱 [초보자 필수 내실] 룬 스킬포인트가 부족한가요?</strong>
+          <div style="font-size:0.84rem; color:#cbd5e1; margin-top:0.25rem; line-height:1.5;">
+            저렙 마법 빗자루 10종 & 클래식 날개 6종을 룬 도감에 등록하고, 룬정원 채집 업적을 달성하면 <b>이동속도 · 마방 · 올스탯 룬 스킬</b>을 즉시 마스터할 수 있습니다!
+          </div>
+        </div>
+        <button type="button" class="tag tag-ready" style="font-size:0.82rem; padding:0.45rem 0.85rem; cursor:pointer; background:#0284c7; color:#fff; font-weight:700; border:none; border-radius:6px; transition:background 0.2s;" onclick="jumpToRuneCollection()">
+          🌱 16대 꿀 도감 파밍 가이드 바로가기 👉
+        </button>
+      </div>
+
       <!-- SECTION 6: BEGINNER MILESTONE CHECKLIST -->
       <div id="growth-milestone" class="growth-section active">
         <div class="pattern-card" style="border-left:4px solid #10b981;">
@@ -4177,13 +4190,13 @@
       <!-- Hero Banner -->
       <div class="growth-hero-card" style="border-color: rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, rgba(30, 27, 75, 0.75), rgba(15, 23, 42, 0.9));">
         <span class="badge" style="background:rgba(245, 158, 11, 0.15); color:#fbbf24; border-color:rgba(245, 158, 11, 0.4);">
-          🔨 제련 · 조합 · 인챈트 · 코어 30작 종합 공방
+          🔨 제련 · 조합 · 인챈트 · 코어 30작 & 룬 내실 공방
         </span>
         <h2 style="font-size:1.45rem; color:#fbbf24; margin:0.4rem 0 0.3rem;">
-          🔨 장비 제련 · 5각 조합 · 테시스 코어 & 인챈트 공방
+          🔨 장비 제련 · 5각 조합 · 코어 & 룬 도감 · 채집 공방
         </h2>
         <p style="font-size:0.88rem; color:#cbd5e1; line-height:1.6;">
-          비호정령의 핵심인 마방 인챈트, 5차 각성 개별 조합 수칙, 테시스 코어 30작 가성비 완성 트리 및 최상위 장비(眞아퀼/어비스/이클립스) 제작 레시피를 한곳에서 확인하세요!
+          비호정령의 핵심 마방 인챈트, 5각 낱개 조합 수칙, 테시스 코어 30작, 최상위 장비 제작식과 함께 <b>16대 꿀 룬 도감(빗자루 10종 & 날개 6종)</b> 및 <b>룬정원 채집·조제 가이드</b>를 한곳에서 확인하세요!
         </p>
       </div>
 
@@ -4194,6 +4207,8 @@
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-core', this)">👑 테시스 코어 30작</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-recipe', this)">📜 최상위 장비 제작식</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-ability', this)">✨ 어빌리티 & 옵션 전이</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-rune-book', this)">🌱 룬 도감 & 스킬포인트</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-gathering', this)">🌿 룬정원 채집 & 조제</button>
       </div>
 
       <!-- Sub-panel 1: Enchant & Refining -->
@@ -4409,6 +4424,184 @@
             <div class="craft-card-title" style="color:#fca5a5;">⚠️ 옵션 전이 시 주의사항</div>
             <div style="font-size:0.86rem; color:#e2e8f0; line-height:1.6;">
               옵션 전이가 완료되면 <b>베이스(기존) 장비는 영구 소멸</b>합니다. 대상 장비와 이전할 장비의 위치를 반드시 두 번 확인하고 진행하세요.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-panel 6: Rune Collection & Skill Points -->
+      <div id="craft-rune-book" class="craft-panel">
+        <!-- Explanatory Hero Card -->
+        <div class="rune-hero-banner">
+          <div class="rune-hero-badge">✨ 초보자 필수 내실 1순위: 추가 룬 스킬포인트 파밍</div>
+          <h3 style="color:#38bdf8; font-size:1.25rem; margin:0.4rem 0 0.35rem; font-weight:800;">
+            🌱 16대 꿀 도감 컬렉션 (저렙 빗자루 10종 & 클래식 날개 6종)
+          </h3>
+          <p style="font-size:0.87rem; color:#cbd5e1; line-height:1.65; margin-bottom:0.6rem;">
+            <b>Q. 왜 저레벨 빗자루와 옛 던전 날개를 파밍해야 하나요?</b><br>
+            테일즈위버는 만렙(룬 Lv.40)을 달성해도 기본 레벨업 포인트만으로는 <b>이동속도, 마법방어력(MR), 올스탯, 피해량 증가</b> 등 핵심 룬 스킬을 전부 마스터할 수 없습니다.
+            이 16종의 아이템을 모아 게임 내 룬 창(<code>Ctrl + R</code>) ➔ <b>[룬 도감]</b> 탭에 등록하면 영구 룬 경험치와 함께 <b>추가 룬 스킬포인트</b>를 대량으로 즉시 지급합니다! (계정 내 전체 캐릭터 영구 공유)
+          </p>
+          <div class="rune-reg-tip-box">
+            💡 <b>인게임 등록 방법:</b> 아이템 획득 ➔ 키보드 <code>Ctrl + R</code> (룬의 서) ➔ 상단 <b>[룬 도감]</b> 탭 클릭 ➔ 해당 아이템 등록 (등록 시 아이템은 소모되지만 계정 영구 보너스 스킬포인트 획득)
+          </div>
+        </div>
+
+        <!-- Live Progress Dashboard -->
+        <div class="rune-progress-dashboard">
+          <div class="rune-progress-header">
+            <div class="rune-progress-title-wrap">
+              <span style="font-weight:700; color:#e2e8f0; font-size:0.95rem;">🎯 룬 도감 16대 필수 컬렉션 수집률</span>
+              <span id="rune-progress-status-badge" class="rune-status-badge empty">⏳ 아직 등록된 아이템이 없습니다.</span>
+            </div>
+            <div class="rune-progress-score">
+              <span id="rune-progress-count" style="font-size:1.15rem; font-weight:800; color:#38bdf8;">0 / 16</span>
+              <span id="rune-progress-percent" style="font-size:0.9rem; color:#94a3b8; font-weight:600;">(0%)</span>
+            </div>
+          </div>
+          <div class="rune-progress-bar-track">
+            <div id="rune-progress-bar-fill" class="rune-progress-bar-fill" style="width: 0%;"></div>
+          </div>
+          <div class="rune-progress-controls">
+            <button type="button" class="rune-ctrl-btn" onclick="setAllRuneCollection(true)">✅ 16종 전체 완료 체크</button>
+            <button type="button" class="rune-ctrl-btn reset" onclick="setAllRuneCollection(false)">🔄 진행률 초기화</button>
+            <span style="font-size:0.78rem; color:#94a3b8; margin-left:auto;">※ 체크 시 브라우저에 자동 저장됩니다.</span>
+          </div>
+        </div>
+
+        <!-- Section 1: 10 Low-Level Brooms -->
+        <div class="rune-section-title-wrap">
+          <div class="rune-section-title">
+            <span>🧹 저렙용 마법 빗자루 10종</span>
+            <span class="rune-sec-tag" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.4);">사냥터 잡몹 드롭 · 난이도 매우 쉬움</span>
+          </div>
+          <div style="font-size:0.83rem; color:#94a3b8; line-height:1.5;">
+            초반 필드 및 던전의 일반 몬스터를 처치하면 쉽게 드롭됩니다. 순간이동 카드(워프)를 타고 해당 맵에 진입하여 몇 분만 사냥하면 손쉽게 수집 가능합니다.
+          </div>
+        </div>
+        <div id="rune-brooms-list" class="rune-cards-grid">
+          <!-- Rendered dynamically by renderRuneCollectionCards() -->
+        </div>
+
+        <!-- Section 2: 6 Classic Wings & Gear -->
+        <div class="rune-section-title-wrap" style="margin-top:1.8rem;">
+          <div class="rune-section-title">
+            <span>🪽 데린세히르 · 시오칸하임 · 네오테시스 6대 날개 & 장신구</span>
+            <span class="rune-sec-tag" style="background:rgba(245,158,11,0.15); color:#fbbf24; border-color:rgba(245,158,11,0.4);">던전 드롭 & 훈장 확정 교환</span>
+          </div>
+          <div style="font-size:0.83rem; color:#94a3b8; line-height:1.5;">
+            과거 대표적인 국민 던전의 보스 드롭 및 퀘스트 보상 장비입니다. 데린세히르 수호자의 훈장 60개로 확정 교환하거나 네오테시스 1인 클리어로 획득할 수 있습니다.
+          </div>
+        </div>
+        <div id="rune-wings-list" class="rune-cards-grid">
+          <!-- Rendered dynamically by renderRuneCollectionCards() -->
+        </div>
+
+        <!-- Section 3: Rune Skill Priority Tree -->
+        <div class="rune-skill-tree-card" style="margin-top:2rem;">
+          <h4 style="color:#fbbf24; font-size:1.05rem; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+            <span>⭐ 초보자 룬 스킬포인트 추천 투자 순위 (비호정령 & 전직업 공통)</span>
+          </h4>
+          <div class="rune-skill-prio-grid">
+            <div class="rune-prio-item" style="border-top:3px solid #38bdf8;">
+              <div class="rune-prio-rank">🥇 1순위: 이동속도 증가</div>
+              <div class="rune-prio-stat">이속 +1 ~ +3 (필수 마스터)</div>
+              <div class="rune-prio-desc">보스 장판 회피, 신어헬오방 무빙, 마을 및 던전 주행 필수. 비호정령의 포지셔닝에 생명과도 같은 룬 스킬입니다.</div>
+            </div>
+            <div class="rune-prio-item" style="border-top:3px solid #a855f7;">
+              <div class="rune-prio-rank">🥈 2순위: 마법방어력 / 공격력</div>
+              <div class="rune-prio-stat">MR / 주력 스탯 증폭</div>
+              <div class="rune-prio-desc">비호정령의 힐량 계수와 버프 배율을 대폭 끌어올려 주며, 솔플 및 파티 딜링을 동시에 강화합니다.</div>
+            </div>
+            <div class="rune-prio-item" style="border-top:3px solid #f59e0b;">
+              <div class="rune-prio-rank">🥉 3순위: 올스탯 / 명중 / 크리티컬</div>
+              <div class="rune-prio-stat">ALL STATS / DEX / CRI</div>
+              <div class="rune-prio-desc">상위 레이드 명중컷(미스 방지)을 맞추고 크리티컬 확률을 보강하여 장비 세팅 진입장벽을 낮춥니다.</div>
+            </div>
+            <div class="rune-prio-item" style="border-top:3px solid #10b981;">
+              <div class="rune-prio-rank">🎖️ 4순위: 피격 대미지 감소 / 체력</div>
+              <div class="rune-prio-stat">피격 댐감 % / 최대 HP</div>
+              <div class="rune-prio-desc">어비스 지옥, 이클립스 등 고난도 보스전에서 광역기 피격 시 의문사를 방지하는 방어형 패시브입니다.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-panel 7: Rune Garden Gathering & Alchemy -->
+      <div id="craft-gathering" class="craft-panel">
+        <div class="gathering-hero-banner">
+          <div class="gathering-hero-badge">🌿 룬정원 생활 스킬: 도핑비 절약 & 룬 업적</div>
+          <h3 style="color:#34d399; font-size:1.25rem; margin:0.4rem 0 0.35rem; font-weight:800;">
+            🌿 룬정원 채집 & 조제 가이드 (괴력의 햄 · 퇴마사의 은총 자급자족)
+          </h3>
+          <p style="font-size:0.87rem; color:#cbd5e1; line-height:1.65;">
+            매일 룬정원(<code>ESC ➔ 룬의 정원</code>)에 피어나는 자생 허브를 채집하면 <b>룬 업적 [채집의 달인]</b> 점수가 누적되어 <b>추가 룬 스킬포인트</b>를 획득할 수 있습니다.
+            또한 비호정령의 최고 존엄 버프인 <b>괴력의 햄(마방+15, 대미지+5%)</b>과 생존 비약을 직접 만들어 매주 수천만~수억 시드의 도핑비를 아낄 수 있습니다!
+          </p>
+        </div>
+
+        <div class="gathering-steps-grid">
+          <!-- Step 1: Learning Gathering -->
+          <div class="gathering-step-card">
+            <div class="gathering-step-title">
+              <span>Step 1. 채집 & 조제 스킬 배우기</span>
+              <span class="gathering-step-badge">기초 준비</span>
+            </div>
+            <div style="font-size:0.85rem; color:#cbd5e1; line-height:1.6;">
+              • <b>습득 NPC:</b> <b>나르비크 서쪽 화원의 '플레르' NPC</b> 또는 네냐플 라이프 스킬 퀘스트 수행.<br>
+              • <b>스킬 창 확인:</b> 단축키 <code>S</code> ➔ [라이프 스킬] 탭에서 '채집'과 '조제' 스킬이 활성화되었는지 확인하세요.<br>
+              • <b>채집 도구:</b> 초보자용 채집 도구를 장착하거나 클릭하여 필드/룬정원 약초를 바로 채집할 수 있습니다.
+            </div>
+          </div>
+
+          <!-- Step 2: Rune Garden Routine -->
+          <div class="gathering-step-card">
+            <div class="gathering-step-title">
+              <span>Step 2. 룬정원 일일 허브 채집 루틴</span>
+              <span class="gathering-step-badge" style="background:rgba(56,189,248,0.2); color:#38bdf8; border-color:rgba(56,189,248,0.4);">매일 자정 리셋</span>
+            </div>
+            <div style="font-size:0.85rem; color:#cbd5e1; line-height:1.6;">
+              • <b>룬정원 입장:</b> 메뉴 ➔ <code>ESC</code> ➔ <b>'룬의 정원'</b> 입장.<br>
+              • <b>자생 허브 위치:</b> 정원 외곽 잔디밭 및 중앙 화단 주변에 매일 허브가 피어납니다.<br>
+              • <b>채집 업적 꿀팁:</b> 매일 허브를 꾸준히 캐면 <b>[채집의 달인] 룬 업적</b>이 자동 달성되어 <b>룬 경험치와 추가 룬 스킬포인트</b>를 수급합니다!
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Key Recipes -->
+        <div style="margin-top:1.5rem;">
+          <h4 style="color:#34d399; font-size:1.05rem; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+            <span>🍳 비호정령 실전 필수 3대 조제 레시피</span>
+          </h4>
+          <div class="gathering-recipes-grid">
+            <div class="recipe-card" style="border-top:3px solid #f59e0b;">
+              <div class="recipe-card-header">
+                <span class="recipe-name">🍔 괴력의 햄</span>
+                <span class="recipe-tag" style="background:rgba(245,158,11,0.2); color:#fbbf24; border-color:rgba(245,158,11,0.4);">비호 종결 도핑</span>
+              </div>
+              <div class="recipe-effect">효과: 마법방어력(MR) +15, 공격 피해량 +5% 지속 증가</div>
+              <div class="recipe-mats"><b>필요 재료:</b> 신선한 햄 1개 + 바닐라 2개 + 허브 조미료 1개</div>
+              <div class="recipe-tip">💡 상점/거래소에서 사면 회당 수백만 시드가 소모되지만, 룬정원에서 바닐라를 직접 캐면 공짜로 무한 생산 가능합니다!</div>
+            </div>
+
+            <div class="recipe-card" style="border-top:3px solid #38bdf8;">
+              <div class="recipe-card-header">
+                <span class="recipe-name">🛡️ 퇴마사의 은총</span>
+                <span class="recipe-tag" style="background:rgba(56,189,248,0.2); color:#38bdf8; border-color:rgba(56,189,248,0.4);">생존 특화</span>
+              </div>
+              <div class="recipe-effect">효과: 받는 마법 피해 10% 감소 및 상태이상 내성</div>
+              <div class="recipe-mats"><b>필요 재료:</b> 마나 허브 3개 + 정제수 1개 + 은총의 가루</div>
+              <div class="recipe-tip">💡 신어헬오방 보스 레이드 및 어비스 심층에서 비호의 돌연사를 막아주는 든든한 방어형 비약입니다.</div>
+            </div>
+
+            <div class="recipe-card" style="border-top:3px solid #a855f7;">
+              <div class="recipe-card-header">
+                <span class="recipe-name">🧪 改-각성의 비약 / 改-신뢰의 물약</span>
+                <span class="recipe-tag" style="background:rgba(168,85,247,0.2); color:#c084fc; border-color:rgba(168,85,247,0.4);">시드 절약형</span>
+              </div>
+              <div class="recipe-effect">효과: 주요 능력치 증폭 및 딜링 대미지 극대화</div>
+              <div class="recipe-mats"><b>필요 재료:</b> 고급 약초 추출물 + 각성의 가루</div>
+              <div class="recipe-tip">💡 캐시샵/거래소 의존 없이 채집 허브 가공으로 자급자족하여 초보자의 귀중한 시드를 대폭 세이브합니다.</div>
             </div>
           </div>
         </div>
