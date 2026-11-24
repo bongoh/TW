@@ -754,6 +754,16 @@
     color: #d8b4fe;
     border: 1px solid rgba(192, 132, 252, 0.35);
   }
+  .pill-pre {
+    flex-shrink: 0;
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.45);
+  }
   .task-desc { font-size: 0.84rem; color: var(--muted); margin-top: 0.25rem; }
   footer {
     text-align: center;
@@ -2644,4 +2654,94 @@
     width: 16px;
     height: 16px;
     cursor: pointer;
+  }
+
+  /* Prerequisite Matrix & Entry Quest Styles */
+  .prereq-matrix-card {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+  .prereq-matrix-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
+  }
+  .prereq-matrix-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #7dd3fc;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .prereq-table-wrap {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid rgba(51, 65, 85, 0.8);
+  }
+  .prereq-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    text-align: left;
+    background: #0f172a;
+    min-width: 720px;
+  }
+  .prereq-table th {
+    background: rgba(30, 41, 59, 0.95);
+    color: #94a3b8;
+    font-weight: 700;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.8);
+    white-space: nowrap;
+  }
+  .prereq-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid rgba(30, 41, 59, 0.7);
+    color: #cbd5e1;
+    line-height: 1.45;
+    vertical-align: middle;
+  }
+  .prereq-table tr:hover {
+    background: rgba(56, 189, 248, 0.05);
+  }
+  .prereq-badge-step {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(129, 140, 248, 0.2);
+    color: #a5b4fc;
+    border: 1px solid rgba(129, 140, 248, 0.4);
+    white-space: nowrap;
+  }
+  .prereq-badge-req {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    white-space: nowrap;
+  }
+  .prereq-badge-item {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(244, 63, 94, 0.18);
+    color: #fda4af;
+    border: 1px solid rgba(244, 63, 94, 0.35);
+    white-space: nowrap;
   }
