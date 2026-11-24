@@ -3908,3 +3908,167 @@
     color: #94a3b8;
     line-height: 1.45;
   }
+
+  /* ==================== ENHANCED DIRECT CRAFTING & WORKSHOP EXTENSION STYLES ==================== */
+  .equip-multiselect-card {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.1rem;
+  }
+  .equip-preset-btns {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .equip-parts-chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  .equip-part-check-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(71, 85, 105, 0.6);
+    padding: 0.3rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .equip-part-check-item.active {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: #38bdf8;
+    color: #38bdf8;
+  }
+  .equip-part-check-item input[type="checkbox"] {
+    accent-color: #38bdf8;
+    width: 15px;
+    height: 15px;
+  }
+
+  .equip-aggregated-card {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  .equip-agg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .grand-total-seed-badge {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .equip-card.dimmed {
+    opacity: 0.45;
+    filter: grayscale(0.5);
+  }
+
+  /* Cuff Styles */
+  .cuff-hero-banner {
+    background: linear-gradient(135deg, rgba(120, 53, 15, 0.45), rgba(15, 23, 42, 0.85));
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.2rem;
+  }
+  .cuff-hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.35rem;
+  }
+
+  /* Eta Styles */
+  .eta-hero-banner {
+    background: linear-gradient(135deg, rgba(76, 29, 149, 0.45), rgba(15, 23, 42, 0.85));
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.2rem;
+  }
+  .eta-hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #c084fc;
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.35rem;
+  }
+  .eta-rank-query-card {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+  }
+  .eta-rank-input-row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  /* Pitta Styles */
+  .pitta-hero-banner {
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(15, 23, 42, 0.85));
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.2rem;
+  }
+  .pitta-hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.35rem;
+  }
+
+  /* Transfer Styles */
+  .transfer-hero-banner {
+    background: linear-gradient(135deg, rgba(146, 64, 14, 0.45), rgba(15, 23, 42, 0.85));
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.2rem;
+  }
+  .transfer-hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.35rem;
+  }

@@ -860,20 +860,142 @@ function updateEquipPrice(key, val) {
   updateEquipTotalsOnly();
 }
 
+let selectedEquipParts = {
+  aquilus: [0, 1, 2, 3, 4, 5, 6, 7],
+  abyss: [0, 1, 2, 3, 4, 5, 6, 7],
+  eclipse: [0, 1, 2, 3, 4, 5, 6, 7]
+};
+let ownedEquipMats = {};
+
+function toggleEquipPart(partIdx, isChecked) {
+  const tierEl = document.getElementById('equip-tier-select');
+  const tier = tierEl ? tierEl.value : 'abyss';
+  if (!selectedEquipParts[tier]) selectedEquipParts[tier] = [];
+
+  partIdx = Number(partIdx);
+  if (isChecked) {
+    if (!selectedEquipParts[tier].includes(partIdx)) {
+      selectedEquipParts[tier].push(partIdx);
+    }
+  } else {
+    selectedEquipParts[tier] = selectedEquipParts[tier].filter(i => i !== partIdx);
+  }
+  updateEquipTotalsOnly();
+}
+
+function setEquipPartPreset(presetName) {
+  const tierEl = document.getElementById('equip-tier-select');
+  const tier = tierEl ? tierEl.value : 'abyss';
+
+  if (presetName === 'all') {
+    selectedEquipParts[tier] = [0, 1, 2, 3, 4, 5, 6, 7];
+  } else if (presetName === 'armor') {
+    selectedEquipParts[tier] = [1, 2, 3, 5, 7]; // 투구, 갑옷, 머리, 손, 신발
+  } else if (presetName === 'weapon_wrist') {
+    selectedEquipParts[tier] = [0, 4]; // 무기, 손목
+  } else if (presetName === 'clear') {
+    selectedEquipParts[tier] = [];
+  }
+  renderEquipCalc();
+}
+
+function updateOwnedEquipMat(matKey, val) {
+  ownedEquipMats[matKey] = Math.max(0, Number(val) || 0);
+  updateEquipTotalsOnly();
+}
+
 function updateEquipTotalsOnly() {
   const tierEl = document.getElementById('equip-tier-select');
   if (!tierEl) return;
-  const tier = tierEl.value;
+  const tier = tierEl.value || 'abyss';
   const recipe = equipRecipes[tier];
   if (!recipe || !recipe.parts) return;
+
+  const activeIndices = selectedEquipParts[tier] || [];
+
+  // 1. Update individual part cards
   recipe.parts.forEach((p, idx) => {
-    let total = 0;
+    let partCost = 0;
     p.mats.forEach(m => {
-      total += (equipUnitPrices[m.key] || 0) * m.qty;
+      partCost += (Number(equipUnitPrices[m.key]) || 0) * m.qty;
     });
     const el = document.getElementById(`eq-total-${tier}-${idx}`);
-    if (el) el.textContent = `총 ${total.toLocaleString()} Seed`;
+    if (el) el.textContent = `총 ${partCost.toLocaleString()} Seed`;
+
+    const cardEl = document.getElementById(`eq-card-${tier}-${idx}`);
+    if (cardEl) {
+      if (activeIndices.includes(idx)) {
+        cardEl.classList.remove('dimmed');
+      } else {
+        cardEl.classList.add('dimmed');
+      }
+    }
   });
+
+  // 2. Aggregate required materials across all selected parts
+  const aggregated = {};
+  recipe.sharedPrices.forEach(sp => {
+    aggregated[sp.key] = {
+      key: sp.key,
+      name: sp.name,
+      totalQty: 0
+    };
+  });
+
+  activeIndices.forEach(idx => {
+    const p = recipe.parts[idx];
+    if (p && p.mats) {
+      p.mats.forEach(m => {
+        if (!aggregated[m.key]) {
+          aggregated[m.key] = { key: m.key, name: m.label || m.key, totalQty: 0 };
+        }
+        aggregated[m.key].totalQty += m.qty;
+      });
+    }
+  });
+
+  // 3. Render Aggregated Material Table & Grand Seed
+  let grandTotalSeed = 0;
+  let totalShortageItems = 0;
+
+  const tbody = document.getElementById('equip-aggregated-tbody');
+  if (tbody) {
+    tbody.innerHTML = Object.values(aggregated).map(item => {
+      const unitPrice = Number(equipUnitPrices[item.key]) || 0;
+      const owned = Number(ownedEquipMats[item.key]) || 0;
+      const shortage = Math.max(0, item.totalQty - owned);
+      const cost = shortage * unitPrice;
+      grandTotalSeed += cost;
+      if (shortage > 0) totalShortageItems++;
+
+      return `
+        <tr>
+          <td style="font-weight:700; color:#e2e8f0;">${item.name}</td>
+          <td style="text-align:center; font-weight:800; color:#38bdf8;">${item.totalQty.toLocaleString()}개</td>
+          <td style="text-align:center;">
+            <input type="number" min="0" class="num-input-price" style="width:75px; text-align:center; padding:0.2rem;"
+                   value="${owned > 0 ? owned : ''}" placeholder="0"
+                   oninput="updateOwnedEquipMat('${item.key}', this.value)">
+          </td>
+          <td style="text-align:center; font-weight:800; color:${shortage > 0 ? '#f87171' : '#34d399'};">
+            ${shortage.toLocaleString()}개
+          </td>
+          <td style="text-align:right; color:#cbd5e1;">${unitPrice.toLocaleString()} Seed</td>
+          <td style="text-align:right; font-weight:800; color:#fbbf24;">${cost.toLocaleString()} Seed</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  const grandSeedEl = document.getElementById('equip-grand-total-seed');
+  if (grandSeedEl) {
+    grandSeedEl.textContent = `${(grandTotalSeed / 100000000).toFixed(2)}억 Seed (${grandTotalSeed.toLocaleString()} Seed)`;
+  }
+
+  const partsCountEl = document.getElementById('equip-selected-parts-count');
+  if (partsCountEl) {
+    partsCountEl.textContent = `${activeIndices.length} / 8부위 선택됨`;
+  }
 }
 
 function renderEquipCalc() {
@@ -883,54 +1005,95 @@ function renderEquipCalc() {
   const recipe = equipRecipes[tier];
   if (!recipe) return;
 
-  const priceGrid = document.getElementById('equip-price-grid');
-  if (!priceGrid) return;
-  priceGrid.innerHTML = recipe.sharedPrices.map(sp => {
-    const val = equipUnitPrices[sp.key] || '';
-    return `
-      <div style="background: rgba(30,41,59,0.75); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.55rem 0.75rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
-        <span style="font-size:0.84rem; font-weight:700; color:#e2e8f0;">${sp.name}</span>
-        <input type="number" min="0" class="num-input-price" value="${val}" placeholder="단가 입력"
-               oninput="updateEquipPrice('${sp.key}', this.value)">
-      </div>
-    `;
-  }).join('');
+  if (!selectedEquipParts[tier]) {
+    selectedEquipParts[tier] = [0, 1, 2, 3, 4, 5, 6, 7];
+  }
+  const activeIndices = selectedEquipParts[tier];
 
-  const cardsGrid = document.getElementById('equip-cards-grid');
-  if (!cardsGrid) return;
-  cardsGrid.innerHTML = recipe.parts.map((p, idx) => {
-    let total = 0;
-    const matLines = p.mats.map(m => {
-      const unit = equipUnitPrices[m.key] || 0;
-      total += unit * m.qty;
+  // 1. Render Part Selector Checkboxes
+  const partCheckboxesEl = document.getElementById('equip-part-checkboxes');
+  if (partCheckboxesEl) {
+    partCheckboxesEl.innerHTML = recipe.parts.map((p, idx) => {
+      const isChecked = activeIndices.includes(idx);
       return `
-        <div class="mat-row">
-          <span>${m.label} <b>(${m.qty}개)</b></span>
-          <span style="color:#94a3b8;">${(unit * m.qty).toLocaleString()}</span>
+        <label class="equip-part-check-item ${isChecked ? 'active' : ''}">
+          <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleEquipPart(${idx}, this.checked)">
+          <span>${p.part.replace('아퀼루스 ', '').replace('어비스 ', '').replace('이클립스 ', '')}</span>
+        </label>
+      `;
+    }).join('');
+  }
+
+  // 2. Render Shared Unit Prices Grid
+  const priceGrid = document.getElementById('equip-price-grid');
+  if (priceGrid) {
+    priceGrid.innerHTML = recipe.sharedPrices.map(sp => {
+      const val = equipUnitPrices[sp.key] || '';
+      return `
+        <div style="background: rgba(30,41,59,0.75); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.55rem 0.75rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+          <span style="font-size:0.84rem; font-weight:700; color:#e2e8f0;">${sp.name}</span>
+          <input type="number" min="0" class="num-input-price" value="${val}" placeholder="단가 입력"
+                 oninput="updateEquipPrice('${sp.key}', this.value)">
         </div>
       `;
     }).join('');
+  }
 
-    return `
-      <div class="equip-card">
-        <div class="equip-card-header">
-          <span class="equip-card-title">${p.part}</span>
-          <span class="equip-base-tag">재료 장비: ${p.base}</span>
+  // 3. Render Individual Equipment Parts Grid
+  const cardsGrid = document.getElementById('equip-cards-grid');
+  if (cardsGrid) {
+    cardsGrid.innerHTML = recipe.parts.map((p, idx) => {
+      let total = 0;
+      const isSelected = activeIndices.includes(idx);
+      const matLines = p.mats.map(m => {
+        const unit = Number(equipUnitPrices[m.key]) || 0;
+        total += unit * m.qty;
+        return `
+          <div class="mat-row">
+            <span>${m.label} <b>(${m.qty}개)</b></span>
+            <span style="color:#94a3b8;">${(unit * m.qty).toLocaleString()}</span>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div id="eq-card-${tier}-${idx}" class="equip-card ${isSelected ? '' : 'dimmed'}">
+          <div class="equip-card-header">
+            <span class="equip-card-title">${p.part}</span>
+            <span class="equip-base-tag">재료 장비: ${p.base}</span>
+          </div>
+          <div>${matLines}</div>
+          <div class="equip-card-footer">
+            <span>예상 제작 비용</span>
+            <span id="eq-total-${tier}-${idx}">총 ${total.toLocaleString()} Seed</span>
+          </div>
         </div>
-        <div>${matLines}</div>
-        <div class="equip-card-footer">
-          <span>예상 제작 비용</span>
-          <span id="eq-total-${tier}-${idx}">총 ${total.toLocaleString()} Seed</span>
-        </div>
-      </div>
-    `;
-  }).join('');
+      `;
+    }).join('');
+  }
+
+  updateEquipTotalsOnly();
 }
 
 function resetEquipPrices() {
   equipUnitPrices = {};
+  ownedEquipMats = {};
   renderEquipCalc();
 }
+
+function openOfficialEtaRanking() {
+  const serverEl = document.getElementById('eta-server-select');
+  const nameEl = document.getElementById('eta-char-name-input');
+  const sc = serverEl ? serverEl.value : '7';
+  const name = nameEl ? nameEl.value.trim() : '';
+
+  let url = `https://tales.nexon.com/Community/Ranking/EtaRank?sc=${sc}`;
+  if (name) {
+    url += `&sn=${encodeURIComponent(name)}`;
+  }
+  window.open(url, '_blank');
+}
+
 
 
 // ==================== MULTI-CHARACTER PROFILE & GLOBAL STATE ====================
