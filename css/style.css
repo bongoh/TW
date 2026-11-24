@@ -6009,3 +6009,368 @@
     max-height: 94vh;
   }
 }
+
+
+/* ==================== 26-2. DETAILED ENHANCEMENT, OPTIONS & PROFILE BASE STYLES ==================== */
+.specup-quick-actions-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+  padding-bottom: 0.85rem;
+}
+.specup-template-btn-group {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+.specup-action-btn {
+  background: #0f172a;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.42rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.specup-action-btn:hover {
+  background: #1e293b;
+  color: #f8fafc;
+}
+.specup-action-btn.btn-korean-std {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fde68a;
+  font-weight: 800;
+}
+.specup-action-btn.btn-korean-std:hover {
+  background: rgba(245, 158, 11, 0.3);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+}
+.specup-action-btn.btn-reset-profile {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #7dd3fc;
+}
+.specup-action-btn.btn-reset-profile:hover {
+  background: rgba(56, 189, 248, 0.25);
+}
+.specup-action-btn.btn-save-profile {
+  background: rgba(52, 211, 153, 0.12);
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #6ee7b7;
+}
+.specup-action-btn.btn-save-profile:hover {
+  background: rgba(52, 211, 153, 0.25);
+}
+
+/* Enhancement Level Bar (0~11강) */
+.specup-enhance-bar {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.specup-enhance-btn {
+  flex: 1;
+  min-width: 68px;
+  background: #0f172a;
+  border: 1px solid #475569;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.45rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+.specup-enhance-btn:hover {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #64748b;
+}
+.specup-enhance-btn.active {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+.specup-enhance-btn.std-badge.active {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  border-color: #f59e0b;
+  color: #ffffff;
+  font-weight: 900;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.45);
+}
+.specup-enhance-btn.limit-badge.active {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  border-color: #fb7185;
+  color: #ffffff;
+  font-weight: 900;
+  box-shadow: 0 2px 12px rgba(225, 29, 72, 0.5);
+}
+.badge-enhance-summary {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+}
+.pill-tag {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: normal;
+  opacity: 0.9;
+}
+
+/* Secondary Options Grid */
+.specup-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+@media (max-width: 768px) {
+  .specup-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.specup-option-group {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 0.45rem 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.specup-option-group .group-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #94a3b8;
+  min-width: 72px;
+}
+.specup-option-chips {
+  display: flex;
+  gap: 0.35rem;
+  flex: 1;
+}
+.specup-chip-btn {
+  flex: 1;
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.3rem 0.45rem;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.specup-chip-btn:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+.specup-chip-btn.active {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  font-weight: 800;
+}
+
+/* Formula Breakdown Card */
+.specup-breakdown-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+  padding-bottom: 0.4rem;
+}
+.breakdown-title {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.breakdown-total-kpi {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #fde68a;
+}
+.breakdown-formula-flow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+.breakdown-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid #475569;
+  border-radius: 5px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.76rem;
+}
+.breakdown-badge b {
+  color: #f8fafc;
+}
+.breakdown-badge.enhance {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.1);
+}
+.breakdown-badge.enhance b {
+  color: #fde68a;
+}
+.breakdown-badge.option {
+  border-color: rgba(168, 85, 247, 0.4);
+  background: rgba(168, 85, 247, 0.1);
+}
+.breakdown-badge.option b {
+  color: #d8b4fe;
+}
+.breakdown-note {
+  font-size: 0.73rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* Profile Modal Extended Styles */
+.profile-modal-box {
+  max-width: 620px !important;
+  width: 92vw;
+}
+.profile-modal-tabs {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.55rem 1.15rem;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+  overflow-x: auto;
+}
+.profile-modal-tab {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.profile-modal-tab:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+.profile-modal-tab.active {
+  background: #38bdf8;
+  color: #0f172a;
+  border-color: #38bdf8;
+  font-weight: 800;
+}
+.profile-modal-body {
+  padding: 1.15rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.prof-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.65rem;
+}
+@media (max-width: 580px) {
+  .prof-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.prof-yeonma-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.55rem;
+}
+@media (max-width: 580px) {
+  .prof-yeonma-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.prof-chk-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.prof-chk-label:hover {
+  background: #1e293b;
+  border-color: #475569;
+}
+.prof-chk-label input[type="checkbox"] {
+  accent-color: #38bdf8;
+  width: 16px;
+  height: 16px;
+}
+.prof-gear-summary-box {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+  font-size: 0.8rem;
+}
+.prof-gear-summary-box .summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #94a3b8;
+}
+.prof-gear-summary-box .summary-line b {
+  color: #fde68a;
+}
+.btn-korean-std {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #fde68a;
+  font-weight: 800;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-korean-std:hover {
+  background: rgba(245, 158, 11, 0.35);
+}

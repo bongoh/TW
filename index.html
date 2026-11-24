@@ -5475,16 +5475,28 @@
               </div>
             </div>
 
-            <!-- MODE 2: Part-by-Part Controls (떡락작/국민작/한계작 & 수치 미세조정) -->
+            <!-- MODE 2: Part-by-Part Controls (떡락작/국민작/한계작 & 강화/부가옵션 공식 정밀 비교) -->
             <div id="specup-part-controls" class="specup-part-container" style="display:none;">
+              <!-- Profile & Template Action Row -->
               <div class="specup-part-header-row">
-                <div style="flex:1;">
+                <div style="flex:1; min-width:240px;">
                   <label for="specup-part-cur-gear-select" style="font-size:0.8rem; font-weight:700; color:#94a3b8; display:block; margin-bottom:0.35rem;">
                     📌 [A. 현재 내 장비 기준 선택]
                   </label>
                   <select id="specup-part-cur-gear-select" class="calc-input" style="width:100%; font-size:0.85rem; padding:0.45rem;">
                     <!-- Populated dynamically by CURRENT_GEAR_PRESETS -->
                   </select>
+                </div>
+                <div class="specup-template-btn-group">
+                  <button type="button" class="specup-action-btn btn-reset-profile" onclick="resetComparatorToProfile()" title="내 캐릭터 프로필의 현재 세팅값으로 즉시 복구">
+                    🔄 내 프로필 기본값 복구
+                  </button>
+                  <button type="button" class="specup-action-btn btn-korean-std" onclick="applyStandardTemplateToComparator()" title="실전 표준 국템 (10강 국민작) 템플릿 즉시 적용">
+                    ⚖️ 국템 표준 (10강 국민작)
+                  </button>
+                  <button type="button" class="specup-action-btn btn-save-profile" onclick="saveComparatorGearToProfile()" title="현재 튜닝된 장비 수치를 내 캐릭터 프로필에 저장">
+                    💾 프로필에 저장
+                  </button>
                 </div>
               </div>
 
@@ -5505,21 +5517,89 @@
                 </div>
               </div>
 
+              <!-- Enhancement Level (0~11강) Selector with Official Formula -->
+              <div style="margin-top:0.85rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap; gap:0.35rem;">
+                  <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1;">
+                    🔨 공식 강화 단계 (0~11강 공식 증가치) 선택:
+                  </div>
+                  <span id="specup-enhance-summary-badge" class="badge-enhance-summary">10강 (+64, DEX +18, 계수 x32.5)</span>
+                </div>
+                <div class="specup-enhance-bar">
+                  <button type="button" class="specup-enhance-btn" data-enhance="0" onclick="selectComparatorEnhance(0, this)">0강 (노강)</button>
+                  <button type="button" class="specup-enhance-btn" data-enhance="5" onclick="selectComparatorEnhance(5, this)">5강 <small>(안전)</small></button>
+                  <button type="button" class="specup-enhance-btn" data-enhance="7" onclick="selectComparatorEnhance(7, this)">7강</button>
+                  <button type="button" class="specup-enhance-btn" data-enhance="8" onclick="selectComparatorEnhance(8, this)">8강</button>
+                  <button type="button" class="specup-enhance-btn" data-enhance="9" onclick="selectComparatorEnhance(9, this)">9강</button>
+                  <button type="button" class="specup-enhance-btn active std-badge" data-enhance="10" onclick="selectComparatorEnhance(10, this)">
+                    ⭐ 10강 <span class="pill-tag">국템 표준</span>
+                  </button>
+                  <button type="button" class="specup-enhance-btn limit-badge" data-enhance="11" onclick="selectComparatorEnhance(11, this)">
+                    👑 11강 <span class="pill-tag">초월 종결</span>
+                  </button>
+                </div>
+              </div>
+
               <!-- Quality Selector (떡락작 vs 국민작 vs 한계작) -->
               <div style="margin-top:0.85rem;">
                 <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1; margin-bottom:0.4rem;">
-                  💎 작 상태 (인챈트·강화 품질) 3단계 선택:
+                  💎 인챈트 품질 (떡작 vs 국민작 vs 한계작):
                 </div>
                 <div class="specup-quality-bar">
                   <button type="button" class="specup-quality-btn budget" data-quality="budget" onclick="selectComparatorQuality('budget', this)">
-                    📉 떡락작 / 노작 (가성비 입문)
+                    📉 떡락작 / 노작 (+3 / 가성비 입문)
                   </button>
                   <button type="button" class="specup-quality-btn standard active" data-quality="standard" onclick="selectComparatorQuality('standard', this)">
-                    ⚖️ 국민작 (실전 표준작 / 8~10강)
+                    ⚖️ 국민작 (+15 / 실전 국템 표준)
                   </button>
                   <button type="button" class="specup-quality-btn limit" data-quality="limit" onclick="selectComparatorQuality('limit', this)">
-                    👑 종결 한계작 (한계 돌파 / 11강 / 극마방)
+                    👑 종결 한계작 (+30 / 극인챈 돌파)
                   </button>
+                </div>
+              </div>
+
+              <!-- Secondary Options Selector: Ability & 3 Random Options -->
+              <div style="margin-top:0.85rem;">
+                <div style="font-size:0.8rem; font-weight:700; color:#cbd5e1; margin-bottom:0.4rem;">
+                  🔮 부가 옵션 (어빌리티 및 전이석 랜덤 옵션 3종) 선택:
+                </div>
+                <div class="specup-options-grid">
+                  <!-- Ability -->
+                  <div class="specup-option-group">
+                    <span class="group-label">어빌리티:</span>
+                    <div class="specup-option-chips" id="specup-ability-chips">
+                      <button type="button" class="specup-chip-btn" data-val="none" onclick="selectComparatorAbility('none', this)">없음</button>
+                      <button type="button" class="specup-chip-btn" data-val="normal" onclick="selectComparatorAbility('normal', this)">상급 (+2%)</button>
+                      <button type="button" class="specup-chip-btn active" data-val="superior" onclick="selectComparatorAbility('superior', this)">최상급 (+3% 국템)</button>
+                    </div>
+                  </div>
+                  <!-- Random Opt 1: Damage % -->
+                  <div class="specup-option-group">
+                    <span class="group-label">1옵 피해량:</span>
+                    <div class="specup-option-chips" id="specup-opt-dmg-chips">
+                      <button type="button" class="specup-chip-btn" data-val="0" onclick="selectComparatorRandomOpt('dmg', 0, this)">0%</button>
+                      <button type="button" class="specup-chip-btn active" data-val="3" onclick="selectComparatorRandomOpt('dmg', 3, this)">+3% (국민)</button>
+                      <button type="button" class="specup-chip-btn" data-val="5" onclick="selectComparatorRandomOpt('dmg', 5, this)">+5% (종결)</button>
+                    </div>
+                  </div>
+                  <!-- Random Opt 2: Accuracy -->
+                  <div class="specup-option-group">
+                    <span class="group-label">2옵 명중치:</span>
+                    <div class="specup-option-chips" id="specup-opt-acc-chips">
+                      <button type="button" class="specup-chip-btn" data-val="0" onclick="selectComparatorRandomOpt('acc', 0, this)">+0</button>
+                      <button type="button" class="specup-chip-btn active" data-val="15" onclick="selectComparatorRandomOpt('acc', 15, this)">+15 (국민)</button>
+                      <button type="button" class="specup-chip-btn" data-val="25" onclick="selectComparatorRandomOpt('acc', 25, this)">+25 (종결)</button>
+                    </div>
+                  </div>
+                  <!-- Random Opt 3: Element / Reduction -->
+                  <div class="specup-option-group">
+                    <span class="group-label">3옵 속성치:</span>
+                    <div class="specup-option-chips" id="specup-opt-elem-chips">
+                      <button type="button" class="specup-chip-btn" data-val="0" onclick="selectComparatorRandomOpt('elem', 0, this)">+0</button>
+                      <button type="button" class="specup-chip-btn active" data-val="10" onclick="selectComparatorRandomOpt('elem', 10, this)">+10 (국민)</button>
+                      <button type="button" class="specup-chip-btn" data-val="15" onclick="selectComparatorRandomOpt('elem', 15, this)">+15 (종결)</button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -5549,6 +5629,11 @@
                     <input type="range" id="specup-stat-slider-dex" class="specup-range-slider" min="0" max="150" value="50" oninput="onCustomStatSliderChange('dex', this.value)">
                   </div>
                 </div>
+              </div>
+
+              <!-- Formula Stat Breakdown Card -->
+              <div id="specup-breakdown-card" class="specup-breakdown-card">
+                <!-- Dynamically rendered by renderFormulaBreakdownCard() -->
               </div>
             </div>
 
@@ -6602,44 +6687,177 @@
 </div>
 
 <!-- Character Profile Modal -->
+<!-- Character Profile Modal with Base Stats, Yeonma, Equipment & Title/Pet Tabs -->
 <div id="profile-modal" class="modal-backdrop">
-  <div class="modal-box">
+  <div class="modal-box profile-modal-box">
     <div class="modal-header">
-      <h3 id="modal-title">캐릭터 프로필 등록/수정</h3>
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size:1.15rem;">👤</span>
+        <h3 id="modal-title" style="margin:0;">내 캐릭터 프로필 & 기본 베이스 설정</h3>
+      </div>
       <button class="modal-close-btn" onclick="closeProfileModal()">&times;</button>
     </div>
-    <div class="modal-body">
+
+    <!-- Modal Sub Tabs -->
+    <div class="profile-modal-tabs">
+      <button type="button" class="profile-modal-tab active" data-tab="basic" onclick="switchProfileModalTab('basic', this)">👤 1. 기본 정보</button>
+      <button type="button" class="profile-modal-tab" data-tab="stats" onclick="switchProfileModalTab('stats', this)">⚔️ 2. 스탯 & 연마 상태</button>
+      <button type="button" class="profile-modal-tab" data-tab="gear" onclick="switchProfileModalTab('gear', this)">🛡️ 3. 착용 장비 & 국템 베이스</button>
+      <button type="button" class="profile-modal-tab" data-tab="bonus" onclick="switchProfileModalTab('bonus', this)">🎖️ 4. 칭호 · 펫 · 아바타</button>
+    </div>
+
+    <div class="modal-body profile-modal-body">
       <input type="hidden" id="modal-profile-id">
-      <div class="form-group">
-        <label for="modal-char-name">캐릭터 닉네임 / 이름</label>
-        <input type="text" id="modal-char-name" class="form-control" placeholder="예: 비호정령 (본캐)">
+
+      <!-- TAB 1: BASIC INFO -->
+      <div id="prof-tab-basic" class="prof-tab-content active">
+        <div class="form-group">
+          <label for="modal-char-name">캐릭터 닉네임 / 이름</label>
+          <input type="text" id="modal-char-name" class="form-control" placeholder="예: 비호정령 (본캐)">
+        </div>
+        <div class="form-group">
+          <label for="modal-char-job">직업군 (계열)</label>
+          <select id="modal-char-job" class="form-control">
+            <option value="anais_biho">비호정령 (아나이스 - 마방·서포터)</option>
+            <option value="anais_bear">곰나이스 (마법인형 - 셉터 물복)</option>
+            <option value="roamini">로아미니 (디버프·마공 딜러)</option>
+            <option value="yepnen">예프넨 (만능형 메인 딜러)</option>
+            <option value="tichiel_white">티치엘 (백법 - 퓨어 서포터)</option>
+            <option value="cloe">클로에 (원거리 마법 딜러)</option>
+            <option value="naya">나야트레이 (물리복합 / 찌르기)</option>
+            <option value="benya">벤야 (햄벤 마방 / 낫벤 베기)</option>
+            <option value="isolet">이솔렛 (티엘라 쌍검 / 찬트 홀)</option>
+            <option value="lucian">루시안 (찌르기 / 베기 / 물복)</option>
+            <option value="boris">보리스 (베기 / 대검 물복 / 마검)</option>
+            <option value="siblyn">시벨린 (창 찌르기 / 봉 물복)</option>
+            <option value="other">기타 딜러 / 서포터</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="modal-char-memo">메모 / 장비 목표</label>
+          <input type="text" id="modal-char-memo" class="form-control" placeholder="예: 어비스 8셋 10강 국민작 완료, 에타 21 준비 중">
+        </div>
+        <div style="background:rgba(30, 41, 59, 0.6); border:1px solid #334155; padding:0.75rem; border-radius:8px; font-size:0.8rem; color:#94a3b8; line-height:1.5;">
+          💡 <b>베이스 프로필 연동 안내:</b> 여기서 저장한 기본 스탯, 연마 상태, 장비 세팅이 <b>스펙 판독기(Tab 2), 계수 계산기(Tab 6), 스펙업 비교기</b>의 초기 기준값으로 자동 상속됩니다.
+        </div>
       </div>
-      <div class="form-group">
-        <label for="modal-char-job">직업군 (계열)</label>
-        <select id="modal-char-job" class="form-control">
-          <option value="anais_biho">비호정령 (아나이스 - 마방·서포터)</option>
-          <option value="anais_bear">곰나이스 (마법인형 - 셉터 물복)</option>
-          <option value="roamini">로아미니 (디버프·마공 딜러)</option>
-          <option value="yepnen">예프넨 (만능형 메인 딜러)</option>
-          <option value="tichiel_white">티치엘 (백법 - 퓨어 서포터)</option>
-          <option value="cloe">클로에 (원거리 마법 딜러)</option>
-          <option value="naya">나야트레이 (물리복합 / 찌르기)</option>
-          <option value="benya">벤야 (햄벤 마방 / 낫벤 베기)</option>
-          <option value="isolet">이솔렛 (티엘라 쌍검 / 찬트 홀)</option>
-          <option value="lucian">루시안 (찌르기 / 베기 / 물복)</option>
-          <option value="boris">보리스 (베기 / 대검 물복 / 마검)</option>
-          <option value="siblyn">시벨린 (창 찌르기 / 봉 물복)</option>
-          <option value="other">기타 딜러 / 서포터</option>
-        </select>
+
+      <!-- TAB 2: STATS & YEONMA -->
+      <div id="prof-tab-stats" class="prof-tab-content" style="display:none;">
+        <div style="font-size:0.82rem; font-weight:700; color:#fde68a; margin-bottom:0.5rem;">
+          📊 캐릭터 순수 스탯 (기본 스탯 포인트)
+        </div>
+        <div class="prof-stats-grid">
+          <div class="form-group">
+            <label for="modal-stat-stab">STAB (찌르기)</label>
+            <input type="number" id="modal-stat-stab" class="form-control" value="0">
+          </div>
+          <div class="form-group">
+            <label for="modal-stat-hack">HACK (베기)</label>
+            <input type="number" id="modal-stat-hack" class="form-control" value="0">
+          </div>
+          <div class="form-group">
+            <label for="modal-stat-int">INT (마법공격)</label>
+            <input type="number" id="modal-stat-int" class="form-control" value="0">
+          </div>
+          <div class="form-group">
+            <label for="modal-stat-mr">MR (마법방어)</label>
+            <input type="number" id="modal-stat-mr" class="form-control" value="1400">
+          </div>
+          <div class="form-group">
+            <label for="modal-stat-dex">DEX (명중치)</label>
+            <input type="number" id="modal-stat-dex" class="form-control" value="1300">
+          </div>
+          <div class="form-group">
+            <label for="modal-stat-def">DEF (물리방어)</label>
+            <input type="number" id="modal-stat-def" class="form-control" value="0">
+          </div>
+        </div>
+
+        <div style="font-size:0.82rem; font-weight:700; color:#fde68a; margin-top:0.85rem; margin-bottom:0.5rem;">
+          ✨ 연마강 및 에타 상태
+        </div>
+        <div class="prof-yeonma-grid">
+          <label class="prof-chk-label">
+            <input type="checkbox" id="modal-chk-weapon-yeonma" checked> <span>⚔️ 무기 연마 마스터</span>
+          </label>
+          <label class="prof-chk-label">
+            <input type="checkbox" id="modal-chk-armor-yeonma" checked> <span>🥋 방어구 연마 마스터</span>
+          </label>
+          <label class="prof-chk-label">
+            <input type="checkbox" id="modal-chk-elem-yeonma" checked> <span>🔥 속성 연마 마스터</span>
+          </label>
+          <label class="prof-chk-label">
+            <input type="checkbox" id="modal-chk-third-sien" checked> <span>⚡ 서드시엔 습득</span>
+          </label>
+        </div>
+        <div class="form-group" style="margin-top:0.75rem;">
+          <label for="modal-stat-eta">에타 레벨 (1~30)</label>
+          <input type="number" id="modal-stat-eta" class="form-control" value="1" min="0" max="30">
+        </div>
       </div>
-      <div class="form-group">
-        <label for="modal-char-memo">메모 / 장비 목표</label>
-        <input type="text" id="modal-char-memo" class="form-control" placeholder="예: 어비스 4셋 목표, 에타 21 준비 중">
+
+      <!-- TAB 3: GEAR BASE & KOREAN STANDARD -->
+      <div id="prof-tab-gear" class="prof-tab-content" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.4rem;">
+          <div style="font-size:0.82rem; font-weight:700; color:#fde68a;">
+            🛡️ 기본 착용 장비 베이스 (국템 세팅)
+          </div>
+          <button type="button" class="btn-sm btn-korean-std" onclick="applyKoreanStandardToModal()" style="font-size:0.76rem; padding:0.3rem 0.6rem;">
+            ⚖️ 10강 국민작 국템 템플릿 자동 채우기
+          </button>
+        </div>
+        <div class="form-group">
+          <label for="modal-gear-preset">장비 세트 템플릿 선택</label>
+          <select id="modal-gear-preset" class="form-control" onchange="onModalGearPresetChange(this.value)">
+            <option value="abyss_10_std">⚖️ [국템 표준] 어비스 8세트 10강 국민작 (최상급 어빌/3% 15 10)</option>
+            <option value="aquilus_all">🛡️ [가성비 입문] 眞 아퀼루스 풀세트 (8강 국민작)</option>
+            <option value="eclipse_3_abyss_5">⭐ [상위 도약] 이클립스 3셋 + 어비스 5셋 (10강 표준)</option>
+            <option value="eclipse_all_limit">👑 [초월 종결] 이클립스 풀세트 11강 한계작 (극마방/극대미지)</option>
+            <option value="custom">🛠️ 직접 입력 / 커스텀</option>
+          </select>
+        </div>
+        <div class="prof-gear-summary-box">
+          <div class="summary-line"><span>무기 강화 / 인챈트:</span> <b id="modal-gear-weapon-desc">10강 어비스 무기 (국민작 +15, 딜+3%)</b></div>
+          <div class="summary-line"><span>방어구 강화 / 인챈트:</span> <b id="modal-gear-armor-desc">10강 어비스 로브/메일 (국민작 +15)</b></div>
+          <div class="summary-line"><span>날개 / 손목 / 효과:</span> <b id="modal-gear-sub-desc">10강 날개/손목 + 60마방 효과 + 140 라이도 커프</b></div>
+        </div>
+      </div>
+
+      <!-- TAB 4: TITLE, PET, AVATAR -->
+      <div id="prof-tab-bonus" class="prof-tab-content" style="display:none;">
+        <div class="form-group">
+          <label for="modal-bonus-title-name">장착 칭호</label>
+          <input type="text" id="modal-bonus-title-name" class="form-control" placeholder="예: 시련의 서약자 / 진혼의 지배자" value="시련의 서약자 (DEX +80, 주스탯 +80)">
+        </div>
+        <div class="prof-stats-grid">
+          <div class="form-group">
+            <label for="modal-bonus-title-main">칭호 주스탯 증가치</label>
+            <input type="number" id="modal-bonus-title-main" class="form-control" value="80">
+          </div>
+          <div class="form-group">
+            <label for="modal-bonus-title-dex">칭호 DEX 증가치</label>
+            <input type="number" id="modal-bonus-title-dex" class="form-control" value="80">
+          </div>
+        </div>
+
+        <div style="font-size:0.82rem; font-weight:700; color:#fde68a; margin-top:0.85rem; margin-bottom:0.5rem;">
+          🐾 펫 & 아바타 보너스
+        </div>
+        <div class="prof-yeonma-grid">
+          <label class="prof-chk-label">
+            <input type="checkbox" id="modal-chk-pet-concentration" checked> <span>🎯 펫 집중 스킬 보유 (명중 +150 보정)</span>
+          </label>
+          <label class="prof-chk-label">
+            <input type="checkbox" id="modal-chk-avatar-set" checked> <span>👗 아바타 5세트 보너스 (주스탯 +10, DEX +10)</span>
+          </label>
+        </div>
       </div>
     </div>
+
     <div class="modal-footer">
       <button class="btn-sm btn-outline" onclick="closeProfileModal()">취소</button>
-      <button class="btn-sm btn-primary-soft" onclick="saveProfileFromModal()">저장 완료</button>
+      <button class="btn-sm btn-primary-soft" onclick="saveProfileFromModal()">💾 프로필 저장 완료</button>
     </div>
   </div>
 </div>

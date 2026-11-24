@@ -1330,10 +1330,12 @@ function applyProfile(id) {
   if (charSelect) charSelect.value = selectedCharacterId;
   updateArchetypeDropdownForChar(selectedCharacterId, p.branchId || p.archetype || 'magic_def');
 
-  if (document.getElementById('in-mdef')) document.getElementById('in-mdef').value = p.mdef || '';
-  if (document.getElementById('in-acc'))  document.getElementById('in-acc').value  = p.acc  || '';
-  if (document.getElementById('in-elem')) document.getElementById('in-elem').value = p.elem || '';
-  if (document.getElementById('in-eta'))  document.getElementById('in-eta').value  = p.eta  || '';
+  const effMain = (p.baseStats && p.baseStats.mr) || p.mdef || 1400;
+  const effAcc = (p.baseStats && p.baseStats.dex) || p.acc || 1300;
+  if (document.getElementById('in-mdef')) document.getElementById('in-mdef').value = effMain;
+  if (document.getElementById('in-acc'))  document.getElementById('in-acc').value  = effAcc;
+  if (document.getElementById('in-elem')) document.getElementById('in-elem').value = p.elem || 165;
+  if (document.getElementById('in-eta'))  document.getElementById('in-eta').value  = p.eta  || 1;
   if (document.getElementById('target-dungeon')) document.getElementById('target-dungeon').value = p.target || 'rokagos';
   
   inputMode = p.inputMode || 'nobuff';
@@ -1354,6 +1356,27 @@ function applyProfile(id) {
     selectedArchetype = p.archetype;
     const archSelect = document.getElementById('char-archetype-select');
     if (archSelect) archSelect.value = p.branchId || p.archetype;
+  }
+
+  // Cascade to Tab 6 (Coeff Calculator) if profile has base stats
+  if (p.baseStats && typeof getActiveCoeffProfile === 'function') {
+    const coeffProf = getActiveCoeffProfile();
+    if (coeffProf) {
+      if (coeffProf.baseStats) {
+        coeffProf.baseStats = { ...coeffProf.baseStats, ...p.baseStats };
+      }
+      if (p.titlePet && coeffProf.bonusStats) {
+        if (coeffProf.bonusStats.title) {
+          coeffProf.bonusStats.title.dex = p.titlePet.titleDex || 80;
+          coeffProf.bonusStats.title.mr = p.titlePet.titleMain || 80;
+        }
+      }
+    }
+  }
+
+  // Cascade to Upgrade Comparator
+  if (typeof updateSpecupComparison === 'function') {
+    updateSpecupComparison();
   }
 
   evaluateStats();
@@ -1392,9 +1415,82 @@ function saveCurrentStateToProfile() {
   } catch (e) {}
 }
 
+function switchProfileModalTab(tabKey, btnEl) {
+  document.querySelectorAll('.profile-modal-tab').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  const tabBasic = document.getElementById('prof-tab-basic');
+  const tabStats = document.getElementById('prof-tab-stats');
+  const tabGear  = document.getElementById('prof-tab-gear');
+  const tabBonus = document.getElementById('prof-tab-bonus');
+
+  if (tabBasic) tabBasic.style.display = tabKey === 'basic' ? 'block' : 'none';
+  if (tabStats) tabStats.style.display = tabKey === 'stats' ? 'block' : 'none';
+  if (tabGear)  tabGear.style.display  = tabKey === 'gear'  ? 'block' : 'none';
+  if (tabBonus) tabBonus.style.display = tabKey === 'bonus' ? 'block' : 'none';
+}
+
+function onModalGearPresetChange(val) {
+  const wDesc = document.getElementById('modal-gear-weapon-desc');
+  const aDesc = document.getElementById('modal-gear-armor-desc');
+  const sDesc = document.getElementById('modal-gear-sub-desc');
+  if (!wDesc || !aDesc || !sDesc) return;
+
+  if (val === 'abyss_10_std') {
+    wDesc.textContent = "10강 어비스 무기 (국민작 +15, 딜+3%)";
+    aDesc.textContent = "10강 어비스 로브/메일 (국민작 +15)";
+    sDesc.textContent = "10강 날개/손목 + 60마방 효과 + 140 라이도 커프";
+  } else if (val === 'aquilus_all') {
+    wDesc.textContent = "8강 眞 아퀼루스 무기 (국민작 +12)";
+    aDesc.textContent = "8강 眞 아퀼루스 방어구 5세트";
+    sDesc.textContent = "8강 날개 + 40효과 + 100 라이도 커프";
+  } else if (val === 'eclipse_3_abyss_5') {
+    wDesc.textContent = "10강 이클립스 무기 (국민작 +16, 딜+5%)";
+    aDesc.textContent = "10강 이클립스 로브/메일 + 어비스 3셋";
+    sDesc.textContent = "10강 이클립스 날개 + 60마방 효과 + 160 라이도 커프";
+  } else if (val === 'eclipse_all_limit') {
+    wDesc.textContent = "11강 이클립스 무기 (한계작 +32, 딜+5% 극인챈)";
+    aDesc.textContent = "11강 이클립스 풀세트 한계작 (+30)";
+    sDesc.textContent = "11강 이클립스 날개/손목 + 100효과 + 180 커프";
+  } else {
+    wDesc.textContent = "커스텀 세팅 (사용자 직접 지정)";
+    aDesc.textContent = "커스텀 세팅 (사용자 직접 지정)";
+    sDesc.textContent = "커스텀 세팅 (사용자 직접 지정)";
+  }
+}
+
+function applyKoreanStandardToModal() {
+  const presetSel = document.getElementById('modal-gear-preset');
+  if (presetSel) {
+    presetSel.value = 'abyss_10_std';
+    onModalGearPresetChange('abyss_10_std');
+  }
+  const job = document.getElementById('modal-char-job') ? document.getElementById('modal-char-job').value : 'anais_biho';
+  const isMagicDef = job === 'anais_biho' || job === 'tichiel_white';
+  const isHack = job === 'yepnen' || job === 'boris' || job === 'benya';
+  const isStab = job === 'lucian' || job === 'siblyn';
+  
+  if (document.getElementById('modal-stat-mr')) document.getElementById('modal-stat-mr').value = isMagicDef ? 1400 : 200;
+  if (document.getElementById('modal-stat-hack')) document.getElementById('modal-stat-hack').value = isHack ? 750 : 0;
+  if (document.getElementById('modal-stat-stab')) document.getElementById('modal-stat-stab').value = isStab ? 750 : 0;
+  if (document.getElementById('modal-stat-int')) document.getElementById('modal-stat-int').value = (!isMagicDef && !isHack && !isStab) ? 800 : 0;
+  if (document.getElementById('modal-stat-dex')) document.getElementById('modal-stat-dex').value = 1300;
+  if (document.getElementById('modal-stat-def')) document.getElementById('modal-stat-def').value = 450;
+  if (document.getElementById('modal-stat-eta')) document.getElementById('modal-stat-eta').value = 5;
+
+  if (document.getElementById('modal-chk-weapon-yeonma')) document.getElementById('modal-chk-weapon-yeonma').checked = true;
+  if (document.getElementById('modal-chk-armor-yeonma')) document.getElementById('modal-chk-armor-yeonma').checked = true;
+  if (document.getElementById('modal-chk-elem-yeonma')) document.getElementById('modal-chk-elem-yeonma').checked = true;
+  if (document.getElementById('modal-chk-third-sien')) document.getElementById('modal-chk-third-sien').checked = true;
+  if (document.getElementById('modal-chk-pet-concentration')) document.getElementById('modal-chk-pet-concentration').checked = true;
+  if (document.getElementById('modal-chk-avatar-set')) document.getElementById('modal-chk-avatar-set').checked = true;
+}
+
 function openProfileModal(mode) {
   const modal = document.getElementById('profile-modal');
   modal.classList.add('active');
+  switchProfileModalTab('basic', document.querySelector('.profile-modal-tab[data-tab="basic"]'));
+  
   const title = document.getElementById('modal-title');
   const idInput = document.getElementById('modal-profile-id');
   const nameInput = document.getElementById('modal-char-name');
@@ -1407,13 +1503,46 @@ function openProfileModal(mode) {
     nameInput.value = '';
     jobInput.value = 'anais_biho';
     memoInput.value = '';
+    applyKoreanStandardToModal();
   } else {
-    const cur = profiles.find(p => p.id === currentProfileId);
-    title.textContent = '✏️ 캐릭터 프로필 설정';
+    const cur = profiles.find(p => p.id === currentProfileId) || profiles[0];
+    title.textContent = '✏️ 캐릭터 프로필 설정 (' + cur.name + ')';
     idInput.value = cur.id;
     nameInput.value = cur.name;
     jobInput.value = cur.job || 'anais_biho';
     memoInput.value = cur.memo || '';
+
+    // Load stats
+    const bStats = cur.baseStats || { stab: 0, hack: 0, int: 0, mr: cur.mdef || 1400, dex: cur.acc || 1300, def: 0 };
+    if (document.getElementById('modal-stat-stab')) document.getElementById('modal-stat-stab').value = bStats.stab || 0;
+    if (document.getElementById('modal-stat-hack')) document.getElementById('modal-stat-hack').value = bStats.hack || 0;
+    if (document.getElementById('modal-stat-int')) document.getElementById('modal-stat-int').value = bStats.int || 0;
+    if (document.getElementById('modal-stat-mr')) document.getElementById('modal-stat-mr').value = bStats.mr || cur.mdef || 1400;
+    if (document.getElementById('modal-stat-dex')) document.getElementById('modal-stat-dex').value = bStats.dex || cur.acc || 1300;
+    if (document.getElementById('modal-stat-def')) document.getElementById('modal-stat-def').value = bStats.def || 0;
+    if (document.getElementById('modal-stat-eta')) document.getElementById('modal-stat-eta').value = cur.eta || 1;
+
+    // Load yeonma
+    const ym = cur.yeonma || { weapon: true, armor: true, elem: true, thirdSien: true };
+    if (document.getElementById('modal-chk-weapon-yeonma')) document.getElementById('modal-chk-weapon-yeonma').checked = !!ym.weapon;
+    if (document.getElementById('modal-chk-armor-yeonma')) document.getElementById('modal-chk-armor-yeonma').checked = !!ym.armor;
+    if (document.getElementById('modal-chk-elem-yeonma')) document.getElementById('modal-chk-elem-yeonma').checked = !!ym.elem;
+    if (document.getElementById('modal-chk-third-sien')) document.getElementById('modal-chk-third-sien').checked = !!ym.thirdSien;
+
+    // Load gear preset
+    const preset = cur.gearPreset || 'abyss_10_std';
+    if (document.getElementById('modal-gear-preset')) {
+      document.getElementById('modal-gear-preset').value = preset;
+      onModalGearPresetChange(preset);
+    }
+
+    // Load title/pet
+    const tp = cur.titlePet || { title: '시련의 서약자 (DEX +80, 주스탯 +80)', titleMain: 80, titleDex: 80, petConc: true, avatarSet: true };
+    if (document.getElementById('modal-bonus-title-name')) document.getElementById('modal-bonus-title-name').value = tp.title || '';
+    if (document.getElementById('modal-bonus-title-main')) document.getElementById('modal-bonus-title-main').value = tp.titleMain || 80;
+    if (document.getElementById('modal-bonus-title-dex')) document.getElementById('modal-bonus-title-dex').value = tp.titleDex || 80;
+    if (document.getElementById('modal-chk-pet-concentration')) document.getElementById('modal-chk-pet-concentration').checked = !!tp.petConc;
+    if (document.getElementById('modal-chk-avatar-set')) document.getElementById('modal-chk-avatar-set').checked = !!tp.avatarSet;
   }
 }
 
@@ -1444,6 +1573,33 @@ function saveProfileFromModal() {
   };
   const meta = jobMap[job] || jobMap.other;
 
+  const baseStats = {
+    stab: Number(document.getElementById('modal-stat-stab').value) || 0,
+    hack: Number(document.getElementById('modal-stat-hack').value) || 0,
+    int:  Number(document.getElementById('modal-stat-int').value)  || 0,
+    mr:   Number(document.getElementById('modal-stat-mr').value)   || 0,
+    dex:  Number(document.getElementById('modal-stat-dex').value)  || 0,
+    def:  Number(document.getElementById('modal-stat-def').value)  || 0
+  };
+
+  const yeonma = {
+    weapon: document.getElementById('modal-chk-weapon-yeonma') ? document.getElementById('modal-chk-weapon-yeonma').checked : true,
+    armor:  document.getElementById('modal-chk-armor-yeonma') ? document.getElementById('modal-chk-armor-yeonma').checked : true,
+    elem:   document.getElementById('modal-chk-elem-yeonma') ? document.getElementById('modal-chk-elem-yeonma').checked : true,
+    thirdSien: document.getElementById('modal-chk-third-sien') ? document.getElementById('modal-chk-third-sien').checked : true
+  };
+
+  const gearPreset = document.getElementById('modal-gear-preset') ? document.getElementById('modal-gear-preset').value : 'abyss_10_std';
+  const etaLevel = Number(document.getElementById('modal-stat-eta').value) || 1;
+
+  const titlePet = {
+    title: document.getElementById('modal-bonus-title-name') ? document.getElementById('modal-bonus-title-name').value : '',
+    titleMain: Number(document.getElementById('modal-bonus-title-main').value) || 0,
+    titleDex: Number(document.getElementById('modal-bonus-title-dex').value) || 0,
+    petConc: document.getElementById('modal-chk-pet-concentration') ? document.getElementById('modal-chk-pet-concentration').checked : true,
+    avatarSet: document.getElementById('modal-chk-avatar-set') ? document.getElementById('modal-chk-avatar-set').checked : true
+  };
+
   let p = profiles.find(x => x.id === id);
   if (!p) {
     p = {
@@ -1454,14 +1610,19 @@ function saveProfileFromModal() {
       branchId: meta.branchId,
       archetype: meta.arch,
       memo: memo,
-      mdef: 1400,
-      acc: 1300,
+      mdef: baseStats.mr || 1400,
+      acc: baseStats.dex || 1300,
       elem: 165,
-      eta: 1,
+      eta: etaLevel,
       target: 'shinjo',
       inputMode: 'nobuff',
       buffs: ['buff_trust'],
-      tasks: {}
+      tasks: {},
+      baseStats: baseStats,
+      yeonma: yeonma,
+      gearPreset: gearPreset,
+      titlePet: titlePet,
+      gearBase: {}
     };
     profiles.push(p);
   } else {
@@ -1471,11 +1632,21 @@ function saveProfileFromModal() {
     p.characterId = meta.charId;
     p.branchId = meta.branchId;
     p.archetype = meta.arch;
+    p.baseStats = baseStats;
+    p.mdef = baseStats.mr;
+    p.acc = baseStats.dex;
+    p.eta = etaLevel;
+    p.yeonma = yeonma;
+    p.gearPreset = gearPreset;
+    p.titlePet = titlePet;
   }
 
   currentProfileId = id;
-  localStorage.setItem('tw_companion_profiles_v3', JSON.stringify(profiles));
-  localStorage.setItem('tw_companion_active_id', id);
+  try {
+    localStorage.setItem('tw_companion_profiles_v3', JSON.stringify(profiles));
+    localStorage.setItem('tw_companion_active_id', id);
+  } catch (e) {}
+
   closeProfileModal();
   renderProfileSelect();
   applyProfile(id);
@@ -5051,6 +5222,9 @@ let specupCompareMode = 'bundle'; // 'bundle', 'part', 'ranking'
 let activeSlotKey = 'wings';
 let activeQualityKey = 'standard';
 let customStatBonus = { main: 130, dex: 50 };
+let customEnhanceLevel = 10;
+let customAbilityKey = 'superior';
+let customRandomOpts = { dmg: 3, acc: 15, elem: 10 };
 
 function initSpecupComparator() {
   const curSel = document.getElementById('specup-cur-gear-select');
@@ -5089,7 +5263,7 @@ function initSpecupComparator() {
   });
 
   // Init custom sliders and inputs
-  syncQualityStatsToSliders();
+  calculateSlotStatBreakdown();
   renderSlotEfficiencyRankingTable();
   updateSpecupComparison();
 }
@@ -5134,7 +5308,16 @@ function selectComparatorSlot(slotKey, btnEl) {
   document.querySelectorAll('.specup-slot-btn').forEach(b => b.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
 
-  syncQualityStatsToSliders();
+  calculateSlotStatBreakdown();
+  updateSpecupComparison();
+}
+
+function selectComparatorEnhance(level, btnEl) {
+  customEnhanceLevel = parseInt(level, 10) || 0;
+  document.querySelectorAll('.specup-enhance-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  calculateSlotStatBreakdown();
   updateSpecupComparison();
 }
 
@@ -5143,27 +5326,206 @@ function selectComparatorQuality(qualityKey, btnEl) {
   document.querySelectorAll('.specup-quality-btn').forEach(b => b.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
 
-  syncQualityStatsToSliders();
+  calculateSlotStatBreakdown();
   updateSpecupComparison();
 }
 
+function selectComparatorAbility(abilityKey, btnEl) {
+  customAbilityKey = abilityKey;
+  document.querySelectorAll('#specup-ability-chips .specup-chip-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  calculateSlotStatBreakdown();
+  updateSpecupComparison();
+}
+
+function selectComparatorRandomOpt(type, val, btnEl) {
+  customRandomOpts[type] = Number(val) || 0;
+  const chipContainer = document.getElementById(`specup-opt-${type}-chips`);
+  if (chipContainer) {
+    chipContainer.querySelectorAll('.specup-chip-btn').forEach(b => b.classList.remove('active'));
+  }
+  if (btnEl) btnEl.classList.add('active');
+
+  calculateSlotStatBreakdown();
+  updateSpecupComparison();
+}
+
+function calculateSlotStatBreakdown() {
+  const isWeapon = activeSlotKey === 'weapon';
+  const enhTable = isWeapon 
+    ? (typeof ENHANCE_STAT_TABLE !== 'undefined' ? ENHANCE_STAT_TABLE.weapon : null)
+    : (typeof ENHANCE_STAT_TABLE !== 'undefined' ? ENHANCE_STAT_TABLE.armor : null);
+  const enhData = (enhTable && enhTable[customEnhanceLevel]) || { stat: isWeapon ? 64 : 45, dex: isWeapon ? 18 : 10 };
+  
+  const encData = (typeof ENCHANT_TIER_TABLE !== 'undefined' && ENCHANT_TIER_TABLE[activeQualityKey]) 
+    || { mainBonus: 15, dexBonus: 10, name: "국민작" };
+  
+  const slot = (typeof SLOT_UPGRADE_DATA !== 'undefined' && SLOT_UPGRADE_DATA[activeSlotKey]) 
+    || { slotName: "장비", mainStatGain: 60, dexGain: 20 };
+  const baseMain = slot.mainStatGain || 60;
+  const baseDex = slot.dexGain || 20;
+
+  const abilData = (typeof EQUIP_OPTIONS_DB !== 'undefined' && EQUIP_OPTIONS_DB.abilities[customAbilityKey]) 
+    || { stat: 25, dex: 12, dmg: 3, name: "최상급 (+3%)" };
+  
+  const optDmg = Number(customRandomOpts.dmg) || 0;
+  const optAcc = Number(customRandomOpts.acc) || 0;
+  const optElem = Number(customRandomOpts.elem) || 0;
+
+  // Regular equipment stats subject to 20.5 coefficient
+  const regularMain = baseMain + encData.mainBonus + abilData.stat;
+  const regularCoeff = Math.round(regularMain * 20.5);
+
+  // 0~11 Enhancement stats subject to 32.5 coefficient multiplier (official TalesWeaver formula)
+  const enhanceMain = enhData.stat;
+  const enhanceCoeff = Math.round(enhanceMain * 32.5);
+
+  const totalMain = regularMain + enhanceMain;
+  const totalDex = baseDex + encData.dexBonus + enhData.dex + abilData.dex + optAcc;
+  const totalCoeffGain = regularCoeff + enhanceCoeff;
+
+  customStatBonus.main = totalMain;
+  customStatBonus.dex = totalDex;
+
+  // Update inputs and sliders
+  const sMain = document.getElementById('specup-stat-slider-main');
+  const iMain = document.getElementById('specup-stat-input-main');
+  const sDex = document.getElementById('specup-stat-slider-dex');
+  const iDex = document.getElementById('specup-stat-input-dex');
+  if (sMain) sMain.value = totalMain;
+  if (iMain) iMain.value = totalMain;
+  if (sDex) sDex.value = totalDex;
+  if (iDex) iDex.value = totalDex;
+
+  // Update summary badge
+  const enhBadge = document.getElementById('specup-enhance-summary-badge');
+  if (enhBadge) {
+    enhBadge.textContent = `${customEnhanceLevel}강 (+${enhanceMain}, DEX +${enhData.dex}, 계수 x32.5)`;
+  }
+
+  // Render Formula Breakdown Card
+  const breakdownCard = document.getElementById('specup-breakdown-card');
+  if (breakdownCard) {
+    breakdownCard.innerHTML = `
+      <div class="breakdown-header">
+        <div class="breakdown-title">
+          <span>📐 테일즈위버 공식 스탯 & 계수 기여도 정밀 분해</span>
+        </div>
+        <div class="breakdown-total-kpi">
+          총합 계수 가산: <span style="color:#38bdf8;">+${totalCoeffGain.toLocaleString()}</span> (주스탯 +${totalMain} · DEX +${totalDex})
+        </div>
+      </div>
+      <div class="breakdown-formula-flow">
+        <span class="breakdown-badge">
+          베이스+인챈트 <b>+${baseMain + encData.mainBonus}</b> (x20.5 = +${Math.round((baseMain + encData.mainBonus) * 20.5).toLocaleString()})
+        </span>
+        <span>+</span>
+        <span class="breakdown-badge enhance">
+          🔨 <b>${customEnhanceLevel}강 강화</b> +${enhanceMain} (x32.5 = <b>+${enhanceCoeff.toLocaleString()}</b>)
+        </span>
+        <span>+</span>
+        <span class="breakdown-badge option">
+          🔮 부가옵: <b>어빌 딜+${abilData.dmg}%</b>, <b>1옵 딜+${optDmg}%</b>, <b>2옵 명중+${optAcc}</b>, <b>3옵 속성+${optElem}</b>
+        </span>
+      </div>
+      <div class="breakdown-note">
+        ※ <b>공식 반영:</b> 강화 스탯은 장비 기본치(x20.5)보다 높은 <b>32.5배 가중치</b>가 적용되며, 10강 국템 기준 무기 +64(계수 +2,080), 방어구 +45(계수 +1,462.5)가 정밀 가산됩니다.
+      </div>
+    `;
+  }
+
+  return {
+    regularMain,
+    regularCoeff,
+    enhanceMain,
+    enhanceCoeff,
+    totalMain,
+    totalDex,
+    totalCoeffGain,
+    optDmg: abilData.dmg + optDmg,
+    optAcc,
+    optElem
+  };
+}
+
+function resetComparatorToProfile() {
+  const p = profiles.find(x => x.id === currentProfileId);
+  if (p && p.gearBase && p.gearBase[activeSlotKey]) {
+    const g = p.gearBase[activeSlotKey];
+    customEnhanceLevel = g.enhance !== undefined ? g.enhance : 10;
+    activeQualityKey = g.quality || 'standard';
+    customAbilityKey = g.ability || 'superior';
+    customRandomOpts = {
+      dmg: g.optDmg !== undefined ? g.optDmg : 3,
+      acc: g.optAcc !== undefined ? g.optAcc : 15,
+      elem: g.optElem !== undefined ? g.optElem : 10
+    };
+  } else {
+    customEnhanceLevel = 10;
+    activeQualityKey = 'standard';
+    customAbilityKey = 'superior';
+    customRandomOpts = { dmg: 3, acc: 15, elem: 10 };
+  }
+  syncComparatorControlUI();
+  calculateSlotStatBreakdown();
+  updateSpecupComparison();
+  alert(`'${p ? p.name : '내 캐릭터'}' 프로필의 ${activeSlotKey} 세팅값으로 복구되었습니다.`);
+}
+
+function applyStandardTemplateToComparator() {
+  customEnhanceLevel = 10;
+  activeQualityKey = 'standard';
+  customAbilityKey = 'superior';
+  customRandomOpts = { dmg: 3, acc: 15, elem: 10 };
+  syncComparatorControlUI();
+  calculateSlotStatBreakdown();
+  updateSpecupComparison();
+}
+
+function saveComparatorGearToProfile() {
+  const p = profiles.find(x => x.id === currentProfileId);
+  if (!p) return;
+  if (!p.gearBase) p.gearBase = {};
+  p.gearBase[activeSlotKey] = {
+    enhance: customEnhanceLevel,
+    quality: activeQualityKey,
+    ability: customAbilityKey,
+    optDmg: customRandomOpts.dmg,
+    optAcc: customRandomOpts.acc,
+    optElem: customRandomOpts.elem,
+    mainStat: customStatBonus.main,
+    dex: customStatBonus.dex
+  };
+  try {
+    localStorage.setItem('tw_companion_profiles_v3', JSON.stringify(profiles));
+    alert(`'${p.name}' 프로필에 ${activeSlotKey} (${customEnhanceLevel}강 / ${activeQualityKey} / 국템) 세팅이 저장되었습니다!`);
+  } catch (e) {}
+}
+
+function syncComparatorControlUI() {
+  document.querySelectorAll('.specup-enhance-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.enhance, 10) === customEnhanceLevel);
+  });
+  document.querySelectorAll('.specup-quality-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.quality === activeQualityKey);
+  });
+  document.querySelectorAll('#specup-ability-chips .specup-chip-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.val === customAbilityKey);
+  });
+  document.querySelectorAll('#specup-opt-dmg-chips .specup-chip-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.val) === customRandomOpts.dmg);
+  });
+  document.querySelectorAll('#specup-opt-acc-chips .specup-chip-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.val) === customRandomOpts.acc);
+  });
+  document.querySelectorAll('#specup-opt-elem-chips .specup-chip-btn').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.val) === customRandomOpts.elem);
+  });
+}
+
 function syncQualityStatsToSliders() {
-  if (typeof SLOT_UPGRADE_DATA === 'undefined') return;
-  const slot = SLOT_UPGRADE_DATA[activeSlotKey] || SLOT_UPGRADE_DATA.wings;
-  const q = slot.qualities[activeQualityKey] || slot.qualities.standard;
-
-  customStatBonus.main = q.mainStat;
-  customStatBonus.dex = q.dex;
-
-  const sliderMain = document.getElementById('specup-stat-slider-main');
-  const inputMain = document.getElementById('specup-stat-input-main');
-  const sliderDex = document.getElementById('specup-stat-slider-dex');
-  const inputDex = document.getElementById('specup-stat-input-dex');
-
-  if (sliderMain) sliderMain.value = q.mainStat;
-  if (inputMain) inputMain.value = q.mainStat;
-  if (sliderDex) sliderDex.value = q.dex;
-  if (inputDex) inputDex.value = q.dex;
+  calculateSlotStatBreakdown();
 }
 
 function onCustomStatSliderChange(statType, val) {
@@ -5202,7 +5564,7 @@ function renderSlotEfficiencyRankingTable() {
   `).join('');
 }
 
-function calculateCombatMetricsHelper(coeff, dex, target, skill, isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey) {
+function calculateCombatMetricsHelper(coeff, dex, target, skill, isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey, extraDmgPct = 0) {
   const effDex = (Number(dex) || 1500) + (isPetConc ? 150 : 0);
   const dexDiff = effDex - target.eva;
   let hitRate = 100;
@@ -5229,7 +5591,7 @@ function calculateCombatMetricsHelper(coeff, dex, target, skill, isCrit, isThird
   const isMagical = (typeKey === 'magic_def' || typeKey === 'magic_atk' || typeKey === 'magic_slash');
   const targetDef = isMagical ? target.mdef : target.pdef;
 
-  const rawHit = ((coeff * (effMult / 100) * (1 + dopingBuffPct / 100) * 18) / effHits);
+  const rawHit = ((coeff * (effMult / 100) * (1 + dopingBuffPct / 100) * (1 + (extraDmgPct || 0) / 100) * 18) / effHits);
   let hitDmg = Math.max(1000, Math.round(rawHit - (targetDef * 12)));
   if (isCrit) {
     hitDmg = Math.round(hitDmg * 1.65);
@@ -5290,25 +5652,22 @@ function updateSpecupComparison() {
   let recBadgeColor = "gold";
   let recTip = "";
   let recCostDesc = "";
+  let extraDmgPct = 0;
 
-  if (specupCompareMode === 'part' && typeof SLOT_UPGRADE_DATA !== 'undefined') {
-    const slot = SLOT_UPGRADE_DATA[activeSlotKey] || SLOT_UPGRADE_DATA.wings;
-    const q = slot.qualities[activeQualityKey] || slot.qualities.standard;
+  if (specupCompareMode === 'part') {
+    const bd = calculateSlotStatBreakdown();
+    recCoeff = curCoeff + bd.totalCoeffGain;
+    recDex = curDex + bd.totalDex;
+    extraDmgPct = bd.optDmg;
 
-    const mainBonus = customStatBonus.main;
-    const dexBonus = customStatBonus.dex;
-
-    // Coeff formula scale: ~54 per main stat point for endgame
-    const coeffDelta = Math.round(mainBonus * 54);
-    recCoeff = curCoeff + coeffDelta;
-    recDex = curDex + dexBonus;
-
-    recTitle = `${slot.slotName} ➔ ${q.name}`;
-    recDesc = `선택 수치: 주스탯 <b>+${mainBonus}</b> · DEX <b>+${dexBonus}</b> (슬라이더 미세조정 반영)`;
-    recBadge = `${q.tag} (${q.efficiencyStar})`;
-    recBadgeColor = q.tagColor === 'budget' ? 'amber' : (q.tagColor === 'limit' ? 'rose' : 'sky');
-    recTip = `<b>[${q.tag} 특징]</b> ${q.desc}<br>💡 <b>실전 가성비 팁:</b> ${q.tip}`;
-    recCostDesc = `예상 시세: <b>${q.costEstimate}</b>`;
+    const slot = (typeof SLOT_UPGRADE_DATA !== 'undefined' && SLOT_UPGRADE_DATA[activeSlotKey]) || { slotName: "장비" };
+    const qName = activeQualityKey === 'limit' ? '👑 종결 한계작' : (activeQualityKey === 'budget' ? '📉 떡락작/노작' : '⚖️ 국민작 국템');
+    recTitle = `${slot.slotName} ➔ ${customEnhanceLevel}강 ${qName}`;
+    recDesc = `장비 강화: <b>${customEnhanceLevel}강</b> · 인챈트: <b>${activeQualityKey === 'limit' ? '한계작(+30)' : (activeQualityKey === 'budget' ? '떡작(+3)' : '국민작(+15)')}</b> · 어빌: <b>${customAbilityKey === 'superior' ? '최상급(+3%)' : (customAbilityKey === 'normal' ? '상급(+2%)' : '노어빌')}</b> · 부가옵(딜+${customRandomOpts.dmg}%, 명중+${customRandomOpts.acc}, 속성+${customRandomOpts.elem})`;
+    recBadge = activeQualityKey === 'limit' ? '👑 종결 한계작' : (activeQualityKey === 'budget' ? '📉 떡락/노작' : '⚖️ 국민작 국템');
+    recBadgeColor = activeQualityKey === 'limit' ? 'rose' : (activeQualityKey === 'budget' ? 'amber' : 'sky');
+    recTip = `<b>[${customEnhanceLevel}강 ${qName} 특징]</b> 공식 계수 가산(+${bd.enhanceCoeff.toLocaleString()}) 및 인챈트/어빌/랜덤옵션 대미지 증폭 <b>+${bd.optDmg}%</b>가 적용되었습니다.<br>💡 <b>실전 가성비 팁:</b> 10강 국민작 국템은 모든 상위 던전 파티 권장 기준이며, 11강 한계작은 극딜 종결을 노릴 때 교체합니다.`;
+    recCostDesc = activeQualityKey === 'limit' ? '예상 시세: <b>150~220억 Seed</b>' : (activeQualityKey === 'budget' ? '예상 시세: <b>15~30억 Seed</b>' : '예상 시세: <b>50~80억 Seed</b>');
   } else {
     const recId = recSel ? recSel.value : 'up_abyss_to_ecl3';
     const rec = (typeof EQUIP_UPGRADE_RECOMMENDATIONS !== 'undefined' ? EQUIP_UPGRADE_RECOMMENDATIONS.find(r => r.id === recId) : null) || {
@@ -5357,8 +5716,8 @@ function updateSpecupComparison() {
   const dopingBuffPct = (prof && prof.applyDoping) ? 30 : 0;
 
   // Compute metrics
-  const curMetrics = calculateCombatMetricsHelper(curCoeff, curDex, target, skill, isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey);
-  const recMetrics = calculateCombatMetricsHelper(recCoeff, recDex, target, skill, isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey);
+  const curMetrics = calculateCombatMetricsHelper(curCoeff, curDex, target, skill, isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey, 0);
+  const recMetrics = calculateCombatMetricsHelper(recCoeff, recDex, target, skill, isCrit, isThirdSien, isPetConc, dopingBuffPct, typeKey, extraDmgPct);
 
   // Compute Diffs
   const hitDmgDiff = recMetrics.hitDmg - curMetrics.hitDmg;

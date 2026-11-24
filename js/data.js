@@ -3128,3 +3128,103 @@ const SLOT_EFFICIENCY_RANKING = [
   { rank: 7, slot: "⚔️ 이클립스 무기 (한계작)", roi: "중 (★★★★☆)", cost: "160~240억 Seed", gainDmg: "+25~35%", gainDex: "+65", note: "시드 투자는 크지만 1방 컷 구간 뚫어내는 극딜 종결" },
   { rank: 8, slot: "🥋 이클립스 갑옷 (국민작)", roi: "중 (★★★☆☆)", cost: "60~85억 Seed", gainDmg: "+12~17%", gainDex: "+50", note: "방어력 및 생존력 우수, 3신기 이후 교체 권장" }
 ];
+
+// ==================== 28. 공식 기반 단계별 장비 강화 / 인챈트 / 부가 옵션 정밀 데이터 ====================
+
+// 1. 0~11강 강화 공식 수치 테이블 (무기 / 방어구 / DEX 증가치)
+const ENHANCE_STAT_TABLE = {
+  // 무기 강화 단계별 누적 증가 스탯 (주스탯, DEX)
+  weapon: {
+    0:  { stat: 0,   dex: 0,  desc: "노강화 (기본 상태)" },
+    1:  { stat: 2,   dex: 0,  desc: "1강화" },
+    2:  { stat: 4,   dex: 0,  desc: "2강화" },
+    3:  { stat: 6,   dex: 0,  desc: "3강화" },
+    4:  { stat: 8,   dex: 0,  desc: "4강화" },
+    5:  { stat: 10,  dex: 0,  desc: "5강화 (안전 구간 완료)" },
+    6:  { stat: 14,  dex: 2,  desc: "6강화" },
+    7:  { stat: 18,  dex: 5,  desc: "7강화" },
+    8:  { stat: 28,  dex: 8,  desc: "8강화 (실전 입문 구간)" },
+    9:  { stat: 42,  dex: 12, desc: "9강화 (상위 징검다리)" },
+    10: { stat: 64,  dex: 18, desc: "10강화 (⚖️ 국민작 표준 / 국템)" },
+    11: { stat: 102, dex: 28, desc: "11강화 (👑 초월 종결 엔드 스펙)" }
+  },
+  // 방어구 (갑옷, 날개, 손목, 투구, 아티팩트 등) 강화 단계별 누적 증가 스탯
+  armor: {
+    0:  { stat: 0,  dex: 0,  desc: "노강화 (기본 상태)" },
+    1:  { stat: 2,  dex: 0,  desc: "1강화" },
+    2:  { stat: 4,  dex: 0,  desc: "2강화" },
+    3:  { stat: 6,  dex: 0,  desc: "3강화" },
+    4:  { stat: 8,  dex: 0,  desc: "4강화" },
+    5:  { stat: 10, dex: 0,  desc: "5강화 (안전 구간 완료)" },
+    6:  { stat: 13, dex: 1,  desc: "6강화" },
+    7:  { stat: 16, dex: 2,  desc: "7강화" },
+    8:  { stat: 22, dex: 4,  desc: "8강화" },
+    9:  { stat: 30, dex: 6,  desc: "9강화" },
+    10: { stat: 45, dex: 10, desc: "10강화 (⚖️ 국민작 표준 / 국템)" },
+    11: { stat: 70, dex: 16, desc: "11강화 (👑 초월 종결 엔드 스펙)" }
+  }
+};
+
+// 2. 인챈트 품질별 공식 수치 (떡작 vs 국민작 vs 한계작)
+const ENCHANT_TIER_TABLE = {
+  budget: {
+    id: "budget",
+    name: "📉 떡작 / 노작 (하급작)",
+    mainBonus: 3,
+    dexBonus: 2,
+    desc: "인챈트 수치가 최저치(+0~5)로 낮게 붙은 가성비 매물"
+  },
+  standard: {
+    id: "standard",
+    name: "⚖️ 국민작 (실전 표준 국템)",
+    mainBonus: 15,
+    dexBonus: 10,
+    desc: "실전에서 가장 널리 쓰이는 표준 인챈트(+12~16) 완료 매물"
+  },
+  limit: {
+    id: "limit",
+    name: "👑 종결 한계작 (극인챈 만수치)",
+    mainBonus: 30,
+    dexBonus: 20,
+    desc: "인크립트 한계 돌파 후 최상급 주문서로 +25~35+ 채운 종결작"
+  }
+};
+
+// 3. 부가 옵션 (어빌리티 & 3대 전이석 랜덤 옵션) 데이터
+const EQUIP_OPTIONS_DB = {
+  abilities: {
+    none:     { id: "none",     name: "없음 (노어빌)",          stat: 0,  dex: 0,  dmg: 0 },
+    normal:   { id: "normal",   name: "상급 어빌리티 (딜+2%)",   stat: 18, dex: 8,  dmg: 2 },
+    superior: { id: "superior", name: "최상급 어빌리티 (딜+3%)", stat: 25, dex: 12, dmg: 3 }
+  },
+  randomOptions: {
+    dmg: [
+      { id: "none", name: "0% (없음)", val: 0 },
+      { id: "dmg_3", name: "+3% (국민)", val: 3 },
+      { id: "dmg_5", name: "+5% (종결)", val: 5 }
+    ],
+    acc: [
+      { id: "none", name: "+0", val: 0 },
+      { id: "acc_15", name: "+15 (국민)", val: 15 },
+      { id: "acc_25", name: "+25 (종결)", val: 25 }
+    ],
+    elem: [
+      { id: "none", name: "+0", val: 0 },
+      { id: "elem_10", name: "+10 (국민)", val: 10 },
+      { id: "elem_15", name: "+15 (종결)", val: 15 }
+    ]
+  }
+};
+
+// 4. 국템(표준 국민작) 템플릿 기본값
+const KOREAN_STANDARD_TEMPLATE = {
+  name: "⚖️ 실전 국템 (어비스 8세트 10강 국민작 기준)",
+  weapon: { tier: "abyss", enhance: 10, quality: "standard", customStat: 15, customDex: 10, ability: "superior", optDmg: 3, optAcc: 15, optElem: 10 },
+  armor:  { tier: "abyss", enhance: 10, quality: "standard", customStat: 15, customDex: 10, ability: "superior", optDmg: 0, optAcc: 15, optElem: 10 },
+  wings:  { tier: "abyss", enhance: 10, quality: "standard", customStat: 15, customDex: 10, ability: "superior", optDmg: 0, optAcc: 15, optElem: 10 },
+  wrist:  { tier: "abyss", enhance: 10, quality: "standard", customStat: 15, customDex: 10, ability: "superior", optDmg: 0, optAcc: 15, optElem: 10 },
+  effect: { tier: "60effect", enhance: 0, quality: "standard", customStat: 60, customDex: 35, ability: "none", optDmg: 0, optAcc: 0, optElem: 0 },
+  cuff:   { tier: "cuff140",  enhance: 0, quality: "standard", customStat: 140, customDex: 35, ability: "none", optDmg: 0, optAcc: 0, optElem: 0 },
+  artifact:{ tier: "abyss", enhance: 10, quality: "standard", customStat: 15, customDex: 10, ability: "superior", optDmg: 0, optAcc: 15, optElem: 10 },
+  relic:  { tier: "relic8",   enhance: 8, quality: "standard", customStat: 80, customDex: 30, ability: "none", optDmg: 0, optAcc: 0, optElem: 0 }
+};
