@@ -669,6 +669,30 @@
   3. **🛡️ 엄격한 보안 및 금지어 정책 준수**:
      - 전 소스코드 및 문서 내 금지 단어 0건 검증 완료.
 
+### [v0.030] - 2026-11-24
+#### 📱 모바일 화면 깨짐 및 레이아웃 오버플로우 전면 해결 (Mobile First 최적화)
+- **배경 및 목적**:
+  - 모바일 스마트폰(화면 폭 360px ~ 430px) 환경에서 발생하던 레이아웃 깨짐, 네비게이션 탭의 세로 4단 높이 과다 점유(~160px) 및 버튼 텍스트 말줄임(...) 현상, 일부 표(테이블)의 가로 넘침(오버플로우) 현상을 전면 점검 및 해결.
+- **주요 개선 내역**:
+  1. **📱 메인 네비게이션 탭 스와이프형 가로 스크롤 전환**:
+     - 기존 `@media (max-width: 580px)`에서 강제되던 2열 그리드(4개 행으로 쌓여 상단 고정 시 화면 25% 가림 현상) 제거.
+     - 모바일 및 태블릿(`max-width: 768px`) 구간에서 모바일 앱 형태의 슬릭한 단일 행 가로 스크롤 바(`overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none;`)로 전면 개편.
+     - 8개 탭의 전체 타이틀과 아이콘이 잘림 없이 100% 명확히 노출되며 고정 높이를 44px로 대폭 절감.
+  2. **📑 공방 15종 서브 탭 & 보스 도감 & 계산기 탭 가로 터치 스크롤 지원**:
+     - 공방(`.craft-nav`)의 15개 서브 버튼군이 모바일에서 6~7단으로 수직 적체되던 문제를 모바일 터치 스와이프 스크롤로 깔끔하게 정리.
+     - 주간 보스 도감 버튼군(`.boss-sub-nav`), 계산기 서브 탭(`.sub-nav`), 원클릭 도핑 프리셋 바(`.preset-bar`), 용어 사전 카테고리 칩(`.glossary-chips-wrap`) 모두 동일하게 가로 스와이프 UI 적용.
+  3. **📊 14개 전체 표(테이블) 오버플로우 보호막 100% 구축**:
+     - 래퍼가 누락되었던 로카고스 대사 유형 표, 계수 추가 보너스 표(`.coeff-bonus-table`), 계수 최종 집계 표(`.coeff-sum-table`) 3종에 `.table-container` 래퍼 추가.
+     - 가로 스크롤 컨테이너 전역 CSS(`-webkit-overflow-scrolling: touch; overflow-x: auto; max-width: 100%;`)를 적용하여 어떤 스마트폰에서도 표 때문에 페이지 전체가 옆으로 찢어지거나 튕기는 현상 완전 차단.
+  4. **📐 2열/3열 고정 그리드 ➔ 모바일 1열 반응형 자동 변환**:
+     - `minmax(360px)` 또는 `minmax(320px)` 등 모바일 화면 폭(360px)을 초과하던 모든 그리드(`.task-items-grid`, `.glossary-grid`, `.craft-card-grid`, `.rune-cards-grid`, `.gathering-steps-grid`, `.gathering-recipes-grid`, `.coeff-boss-grid`, `.equip-card-grid`, `.combat-arena-panel`, `.party-slots-grid` 등)을 모바일에서 `1fr`(단일 열 100% 폭)로 자동 폴백.
+  5. **👤 캐릭터 프로필 바 & 시뮬레이터 툴바 모바일 정렬 최적화**:
+     - `.profile-manager-bar`, `.sim-toolbar` 등 복잡한 인풋과 버튼이 뒤섞이던 툴바를 모바일 화면에서 세로 방향(`flex-direction: column; align-items: stretch;`)으로 가지런히 정돈.
+     - 파티 알림 토스트(`.party-toast`)의 고정 폭(380px)을 모바일 화면 비율(`calc(100% - 24px)`)에 맞춰 자동 축소되도록 반응형 수정.
+- **검증 및 무결성**:
+  - Python 기반 14개 테이블 전수 래퍼 존재 검증 통과.
+  - 전 저장소 대상 금지 단어 0건 검증 통과.
+
 ---
 
 ## 🏗️ 시스템 아키텍처 및 데이터 흐름도

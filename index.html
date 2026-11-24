@@ -2342,24 +2342,26 @@
             <span class="tag tag-critical">최우선 기믹 · 스택 -3</span>
           </div>
           <p>맵이 4개 구역(<b>A: 알파, B: 브라보, C: 찰리, D: 델타</b>)으로 나뉘며 로카고스가 출력하는 대사를 보고 안전 구역으로 이동해야 합니다.</p>
-          <table>
-            <thead>
-              <tr>
-                <th>로카고스 대사 유형</th>
-                <th>안전 구역 (이동 위치)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>"<b>알파</b> 구역에 마법 공격 지원 바란다"</td>
-                <td><b>A(알파)를 제외한</b> 나머지 구역(B, C, D)으로 이동</td>
-              </tr>
-              <tr>
-                <td>"<b>델타를 제외한</b> 구역에 마법 공격 지원 바란다"</td>
-                <td>오직 <b>D(델타) 구역</b>으로만 이동</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>로카고스 대사 유형</th>
+                  <th>안전 구역 (이동 위치)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>"<b>알파</b> 구역에 마법 공격 지원 바란다"</td>
+                  <td><b>A(알파)를 제외한</b> 나머지 구역(B, C, D)으로 이동</td>
+                </tr>
+                <tr>
+                  <td>"<b>델타를 제외한</b> 구역에 마법 공격 지원 바란다"</td>
+                  <td>오직 <b>D(델타) 구역</b>으로만 이동</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <p style="color: var(--warning); font-size: 0.9rem;">※ <b>광폭화 주의:</b> 체력이 일정 이하로 내려가 광폭화에 진입하면 A·B·C·D 구역 위치가 <b>무작위로 뒤바뀌므로</b> 반드시 바닥에 표시된 알파벳을 확인하세요.</p>
           <div class="diagram-wrapper">
             <img src="assets/images/rokagos_pattern_2.png" alt="A B C D 4구역 폭격 회피 도식">
@@ -5690,36 +5692,38 @@
               <div class="coeff-card-title">
                 <span>✨ 추가 보너스 & 코어 (아바타 / 펫 / 내실)</span>
               </div>
-              <table class="coeff-bonus-table">
-                <thead>
-                  <tr>
-                    <th>항목</th>
-                    <th><span id="coeff-label-main">STAB</span></th>
-                    <th><span id="coeff-label-sub">HACK</span></th>
-                    <th>DEX</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="color:#cbd5e1; font-weight:600;">아바타 (5셋)</td>
-                    <td><input type="number" id="coeff-avatar-main" value="10" onchange="onBonusDynamicChange('avatar', 'main', this.value)"></td>
-                    <td><input type="number" id="coeff-avatar-sub"  value="10" onchange="onBonusDynamicChange('avatar', 'sub', this.value)"></td>
-                    <td><input type="number" id="coeff-avatar-dex"  value="10" onchange="onBonusDynamicChange('avatar', 'dex', this.value)"></td>
-                  </tr>
-                  <tr>
-                    <td style="color:#38bdf8; font-weight:600;">🐾 펫 (S스킬/명중)</td>
-                    <td><input type="number" id="coeff-pet-main" value="0" placeholder="0" onchange="onBonusDynamicChange('pet', 'main', this.value)"></td>
-                    <td><input type="number" id="coeff-pet-sub"  value="0" placeholder="0" onchange="onBonusDynamicChange('pet', 'sub', this.value)"></td>
-                    <td><input type="number" id="coeff-pet-dex"  value="0" placeholder="0" onchange="onBonusDynamicChange('pet', 'dex', this.value)"></td>
-                  </tr>
-                  <tr>
-                    <td style="color:#a78bfa; font-weight:600;">🃏 룬/카드/칭호</td>
-                    <td><input type="number" id="coeff-etc-main" value="0" placeholder="0" onchange="onBonusDynamicChange('etc', 'main', this.value)"></td>
-                    <td><input type="number" id="coeff-etc-sub"  value="0" placeholder="0" onchange="onBonusDynamicChange('etc', 'sub', this.value)"></td>
-                    <td><input type="number" id="coeff-etc-dex"  value="0" placeholder="0" onchange="onBonusDynamicChange('etc', 'dex', this.value)"></td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="table-container">
+                <table class="coeff-bonus-table">
+                  <thead>
+                    <tr>
+                      <th>항목</th>
+                      <th><span id="coeff-label-main">STAB</span></th>
+                      <th><span id="coeff-label-sub">HACK</span></th>
+                      <th>DEX</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="color:#cbd5e1; font-weight:600;">아바타 (5셋)</td>
+                      <td><input type="number" id="coeff-avatar-main" value="10" onchange="onBonusDynamicChange('avatar', 'main', this.value)"></td>
+                      <td><input type="number" id="coeff-avatar-sub"  value="10" onchange="onBonusDynamicChange('avatar', 'sub', this.value)"></td>
+                      <td><input type="number" id="coeff-avatar-dex"  value="10" onchange="onBonusDynamicChange('avatar', 'dex', this.value)"></td>
+                    </tr>
+                    <tr>
+                      <td style="color:#38bdf8; font-weight:600;">🐾 펫 (S스킬/명중)</td>
+                      <td><input type="number" id="coeff-pet-main" value="0" placeholder="0" onchange="onBonusDynamicChange('pet', 'main', this.value)"></td>
+                      <td><input type="number" id="coeff-pet-sub"  value="0" placeholder="0" onchange="onBonusDynamicChange('pet', 'sub', this.value)"></td>
+                      <td><input type="number" id="coeff-pet-dex"  value="0" placeholder="0" onchange="onBonusDynamicChange('pet', 'dex', this.value)"></td>
+                    </tr>
+                    <tr>
+                      <td style="color:#a78bfa; font-weight:600;">🃏 룬/카드/칭호</td>
+                      <td><input type="number" id="coeff-etc-main" value="0" placeholder="0" onchange="onBonusDynamicChange('etc', 'main', this.value)"></td>
+                      <td><input type="number" id="coeff-etc-sub"  value="0" placeholder="0" onchange="onBonusDynamicChange('etc', 'sub', this.value)"></td>
+                      <td><input type="number" id="coeff-etc-dex"  value="0" placeholder="0" onchange="onBonusDynamicChange('etc', 'dex', this.value)"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
               <!-- Quick Pet Preset Helper -->
               <div style="margin-top:0.75rem; padding:0.6rem; background:#0f172a; border-radius:6px; border:1px solid #1e293b; font-size:0.78rem;">
@@ -5796,40 +5800,42 @@
         <div class="coeff-summary-box">
           <!-- Left: Summary Table & Formula Banner -->
           <div>
-            <table class="coeff-sum-table">
-              <thead>
-                <tr>
-                  <th>구분</th>
-                  <th>기본 스탯</th>
-                  <th>장비/어빌 합</th>
-                  <th>강화 합계</th>
-                  <th>최종 합계</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="stat-highlight" id="sum-row-main-name">STAB</td>
-                  <td id="sum-char-main">658</td>
-                  <td id="sum-equip-main">1,400</td>
-                  <td id="sum-enf-main" style="color:#34d399;">235</td>
-                  <td id="sum-tot-main" class="total-highlight">2,293</td>
-                </tr>
-                <tr>
-                  <td class="stat-highlight" id="sum-row-sub-name">HACK</td>
-                  <td id="sum-char-sub">66</td>
-                  <td id="sum-equip-sub">770</td>
-                  <td id="sum-enf-sub">0</td>
-                  <td id="sum-tot-sub" class="total-highlight">836</td>
-                </tr>
-                <tr>
-                  <td class="stat-highlight" style="color:#facc15;">DEX</td>
-                  <td id="sum-char-dex">708</td>
-                  <td id="sum-equip-dex">891</td>
-                  <td id="sum-enf-dex">-</td>
-                  <td id="sum-tot-dex" class="total-highlight" style="color:#facc15;">1,599</td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="table-container">
+              <table class="coeff-sum-table">
+                <thead>
+                  <tr>
+                    <th>구분</th>
+                    <th>기본 스탯</th>
+                    <th>장비/어빌 합</th>
+                    <th>강화 합계</th>
+                    <th>최종 합계</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="stat-highlight" id="sum-row-main-name">STAB</td>
+                    <td id="sum-char-main">658</td>
+                    <td id="sum-equip-main">1,400</td>
+                    <td id="sum-enf-main" style="color:#34d399;">235</td>
+                    <td id="sum-tot-main" class="total-highlight">2,293</td>
+                  </tr>
+                  <tr>
+                    <td class="stat-highlight" id="sum-row-sub-name">HACK</td>
+                    <td id="sum-char-sub">66</td>
+                    <td id="sum-equip-sub">770</td>
+                    <td id="sum-enf-sub">0</td>
+                    <td id="sum-tot-sub" class="total-highlight">836</td>
+                  </tr>
+                  <tr>
+                    <td class="stat-highlight" style="color:#facc15;">DEX</td>
+                    <td id="sum-char-dex">708</td>
+                    <td id="sum-equip-dex">891</td>
+                    <td id="sum-enf-dex">-</td>
+                    <td id="sum-tot-dex" class="total-highlight" style="color:#facc15;">1,599</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <div id="coeff-formula-display" class="coeff-formula-banner">
               <!-- Populated dynamically -->
