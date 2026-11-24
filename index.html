@@ -6971,121 +6971,212 @@
   </div>
 </div>
 
-<!-- Slot Tuning Popover Modal (인게임 장비창 슬롯 원클릭 튜너) -->
+<!-- Slot Tuning Popover Modal (인게임 장비창 슬롯 원클릭 튜너 V2 - 대칭 RPG 정밀 그리드) -->
 <div id="tw-slot-popover-modal" class="modal-backdrop">
-  <div class="modal-box tw-popover-box">
+  <div class="modal-box tw-popover-box-v2">
     <div class="modal-header tw-popover-header">
-      <div style="display:flex; align-items:center; gap:0.5rem;">
-        <span id="popover-slot-icon" style="font-size:1.3rem;">⚔️</span>
-        <h3 id="popover-slot-title" style="margin:0; font-size:1.05rem; color:#fde68a;">장비 슬롯 정밀 튜닝</h3>
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <span id="popover-slot-icon" style="font-size:1.35rem;">⚔️</span>
+        <div>
+          <h3 id="popover-slot-title" style="margin:0; font-size:1.05rem; color:#fde68a; font-weight:800;">장비 슬롯 정밀 튜닝</h3>
+          <div id="popover-slot-subtitle" style="font-size:0.72rem; color:#94a3b8; margin-top:2px;">인게임 공식 강화(0~12강) · 인챈트 · 전이석 10대 옵션</div>
+        </div>
       </div>
       <button class="modal-close-btn" onclick="closeSlotTunerModal()">&times;</button>
     </div>
-    <div class="modal-body tw-popover-body">
+
+    <div class="modal-body tw-popover-body-v2">
       <input type="hidden" id="popover-slot-key" value="arms">
 
-      <!-- Preset Quick Bar -->
-      <div class="tw-popover-quick-bar">
-        <button type="button" class="tw-quick-pill" onclick="applyQuickPresetToPopover('budget')">📉 떡락작 / 노작</button>
-        <button type="button" class="tw-quick-pill active" onclick="applyQuickPresetToPopover('standard')">⚖️ 국민작 국템 (10강)</button>
-        <button type="button" class="tw-quick-pill limit" onclick="applyQuickPresetToPopover('limit')">👑 초월 종결 (11강 한계작)</button>
-      </div>
-
-      <!-- Item Tier Select -->
-      <div class="form-group" style="margin-bottom:0.75rem;">
-        <label for="popover-tier-select" style="font-size:0.8rem; font-weight:700; color:#cbd5e1; display:block; margin-bottom:0.3rem;">
-          🛡️ 장비 티어 선택:
-        </label>
-        <select id="popover-tier-select" class="calc-input" style="width:100%; font-size:0.86rem; padding:0.45rem;" onchange="onPopoverTierChange(this.value)">
-          <option value="abyss">어비스 장비 (실전 국민 세팅)</option>
-          <option value="eclipse">이클립스 장비 (상위 종결 세팅)</option>
-          <option value="aquilus">眞 아퀼루스 장비 (가성비 입문)</option>
-        </select>
-      </div>
-
-      <!-- Enhancement Bar (0~11강) -->
-      <div style="margin-bottom:0.75rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
-          <span style="font-size:0.8rem; font-weight:700; color:#cbd5e1;">🔨 공식 강화 단계 (0~11강):</span>
-          <span id="popover-enhance-summary" style="font-size:0.74rem; color:#fde68a; font-weight:800;">10강 (+64, x32.5 공식 계수)</span>
-        </div>
-        <div class="specup-enhance-bar" id="popover-enhance-bar">
-          <button type="button" class="specup-enhance-btn" data-enhance="0" onclick="setPopoverEnhance(0, this)">0강</button>
-          <button type="button" class="specup-enhance-btn" data-enhance="5" onclick="setPopoverEnhance(5, this)">5강</button>
-          <button type="button" class="specup-enhance-btn" data-enhance="7" onclick="setPopoverEnhance(7, this)">7강</button>
-          <button type="button" class="specup-enhance-btn" data-enhance="8" onclick="setPopoverEnhance(8, this)">8강</button>
-          <button type="button" class="specup-enhance-btn" data-enhance="9" onclick="setPopoverEnhance(9, this)">9강</button>
-          <button type="button" class="specup-enhance-btn active std-badge" data-enhance="10" onclick="setPopoverEnhance(10, this)">
-            ⭐ 10강 <span class="pill-tag">국템 표준</span>
-          </button>
-          <button type="button" class="specup-enhance-btn limit-badge" data-enhance="11" onclick="setPopoverEnhance(11, this)">
-            👑 11강 <span class="pill-tag">초월 종결</span>
-          </button>
+      <!-- 1. 퀵 세팅 프리셋 (균등 4열 그리드) -->
+      <div class="tw-popover-section">
+        <div class="tw-section-title">⚡ 퀵 세팅 프리셋</div>
+        <div class="tw-quick-grid-4">
+          <button type="button" class="tw-quick-btn" onclick="applyQuickPresetToPopover('budget')">📉 떡작 (5강/노옵)</button>
+          <button type="button" class="tw-quick-btn active" onclick="applyQuickPresetToPopover('standard')">⚖️ 국민작 국템 (10강)</button>
+          <button type="button" class="tw-quick-btn" onclick="applyQuickPresetToPopover('limit')">👑 한계작 종결 (11강)</button>
+          <button type="button" class="tw-quick-btn hyper" onclick="applyQuickPresetToPopover('hyper')">🔥 초월 극한 (12강)</button>
         </div>
       </div>
 
-      <!-- Quality Bar (떡작 vs 국민작 vs 한계작) -->
-      <div style="margin-bottom:0.75rem;">
-        <span style="font-size:0.8rem; font-weight:700; color:#cbd5e1; display:block; margin-bottom:0.35rem;">
-          💎 인챈트 품질:
-        </span>
-        <div class="specup-quality-bar" id="popover-quality-bar">
-          <button type="button" class="specup-quality-btn budget" data-quality="budget" onclick="setPopoverQuality('budget', this)">
-            📉 떡작 (+3)
-          </button>
-          <button type="button" class="specup-quality-btn standard active" data-quality="standard" onclick="setPopoverQuality('standard', this)">
-            ⚖️ 국민작 (+15 국템)
-          </button>
-          <button type="button" class="specup-quality-btn limit" data-quality="limit" onclick="setPopoverQuality('limit', this)">
-            👑 한계작 (+30 종결)
-          </button>
+      <!-- 2. 장비 티어 & 인챈트 접두어 (균등 2열 그리드) -->
+      <div class="tw-popover-section">
+        <div class="tw-2col-grid">
+          <div class="form-group" style="margin:0;">
+            <label for="popover-tier-select" class="tw-label">🛡️ 장비 티어 선택</label>
+            <select id="popover-tier-select" class="calc-input tw-select" onchange="onPopoverTierChange(this.value)">
+              <option value="abyss">어비스 장비 (실전 국민 세팅)</option>
+              <option value="eclipse">이클립스 장비 (상위 종결 세팅)</option>
+              <option value="aquilus">眞 아퀼루스 장비 (가성비 입문)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="popover-prefix-select" class="tw-label">🏷️ 인챈트 접두어</label>
+            <select id="popover-prefix-select" class="calc-input tw-select" onchange="onPopoverPrefixChange(this.value)">
+              <option value="none">일반 (접두어 없음)</option>
+              <option value="sharp" selected>예리한 (마공/마방/대미지 특화)</option>
+              <option value="swift">신속한 (명중/DEX/딜레이 특화)</option>
+              <option value="strong">강력한 (물리 베기/찌르기 특화)</option>
+              <option value="critical">치명적인 (크리티컬 특화)</option>
+              <option value="solid">단단한 (DEF/HP 특화)</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <!-- Secondary Options Grid -->
-      <div style="margin-bottom:0.75rem;">
-        <span style="font-size:0.8rem; font-weight:700; color:#cbd5e1; display:block; margin-bottom:0.35rem;">
-          🔮 부가 옵션 (어빌리티 & 3대 전이석 옵션):
-        </span>
-        <div class="specup-options-grid">
-          <div class="specup-option-group">
-            <span class="group-label">어빌리티:</span>
-            <div class="specup-option-chips" id="popover-ability-chips">
-              <button type="button" class="specup-chip-btn" data-val="none" onclick="setPopoverAbility('none', this)">없음</button>
-              <button type="button" class="specup-chip-btn" data-val="normal" onclick="setPopoverAbility('normal', this)">상급(+2%)</button>
-              <button type="button" class="specup-chip-btn active" data-val="superior" onclick="setPopoverAbility('superior', this)">최상급(+3%)</button>
+      <!-- 3. 공식 강화 단계 (0~12강 완전 대칭 7열 그리드) -->
+      <div class="tw-popover-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+          <span class="tw-section-title" style="margin:0;">🔨 공식 강화 단계 (0~12강)</span>
+          <span id="popover-enhance-summary" class="tw-enhance-badge">10강 (+64, DEX +18, 계수 x32.5)</span>
+        </div>
+        <div class="tw-enhance-grid" id="popover-enhance-bar">
+          <button type="button" class="tw-enh-btn" data-enhance="0" onclick="setPopoverEnhance(0, this)">0강</button>
+          <button type="button" class="tw-enh-btn" data-enhance="1" onclick="setPopoverEnhance(1, this)">1강</button>
+          <button type="button" class="tw-enh-btn" data-enhance="2" onclick="setPopoverEnhance(2, this)">2강</button>
+          <button type="button" class="tw-enh-btn" data-enhance="3" onclick="setPopoverEnhance(3, this)">3강</button>
+          <button type="button" class="tw-enh-btn" data-enhance="4" onclick="setPopoverEnhance(4, this)">4강</button>
+          <button type="button" class="tw-enh-btn" data-enhance="5" onclick="setPopoverEnhance(5, this)">5강</button>
+          <button type="button" class="tw-enh-btn" data-enhance="6" onclick="setPopoverEnhance(6, this)">6강</button>
+          <button type="button" class="tw-enh-btn" data-enhance="7" onclick="setPopoverEnhance(7, this)">7강</button>
+          <button type="button" class="tw-enh-btn" data-enhance="8" onclick="setPopoverEnhance(8, this)">8강</button>
+          <button type="button" class="tw-enh-btn" data-enhance="9" onclick="setPopoverEnhance(9, this)">9강</button>
+          <button type="button" class="tw-enh-btn std active" data-enhance="10" onclick="setPopoverEnhance(10, this)">⭐ 10강</button>
+          <button type="button" class="tw-enh-btn limit" data-enhance="11" onclick="setPopoverEnhance(11, this)">👑 11강</button>
+          <button type="button" class="tw-enh-btn hyper" data-enhance="12" onclick="setPopoverEnhance(12, this)">🔥 12강</button>
+        </div>
+      </div>
+
+      <!-- 4. 인챈트 품질 & 스탯 직접 미세조정 그리드 -->
+      <div class="tw-popover-section">
+        <div class="tw-section-title">💎 인챈트 품질 & 스탯 직접 미세조정</div>
+        <div class="tw-quality-grid-4" id="popover-quality-bar">
+          <button type="button" class="tw-q-btn" data-quality="budget" onclick="setPopoverQuality('budget', this)">📉 떡작 (+3)</button>
+          <button type="button" class="tw-q-btn std active" data-quality="standard" onclick="setPopoverQuality('standard', this)">⚖️ 국민작 (+15)</button>
+          <button type="button" class="tw-q-btn limit" data-quality="limit" onclick="setPopoverQuality('limit', this)">👑 한계작 (+30)</button>
+          <button type="button" class="tw-q-btn hyper" data-quality="hyper_limit" onclick="setPopoverQuality('hyper_limit', this)">🔥 초한계 (+35)</button>
+        </div>
+        <div class="tw-2col-grid" style="margin-top:0.55rem;">
+          <div style="background:#0f172a; padding:0.4rem 0.6rem; border-radius:6px; border:1px solid #334155; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.75rem; color:#cbd5e1; font-weight:700;">주 공격스탯 인챈트:</span>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <input type="number" id="popover-stat-custom-val" class="calc-input" style="width:65px; padding:2px 6px; font-size:0.8rem; text-align:right;" value="15" min="0" max="60" oninput="onPopoverCustomStatChange()">
+              <span style="font-size:0.75rem; color:#94a3b8;">증가</span>
             </div>
           </div>
-          <div class="specup-option-group">
-            <span class="group-label">1옵 피해량:</span>
-            <div class="specup-option-chips" id="popover-opt-dmg-chips">
-              <button type="button" class="specup-chip-btn" data-val="0" onclick="setPopoverRandomOpt('dmg', 0, this)">0%</button>
-              <button type="button" class="specup-chip-btn active" data-val="3" onclick="setPopoverRandomOpt('dmg', 3, this)">+3% (국민)</button>
-              <button type="button" class="specup-chip-btn" data-val="5" onclick="setPopoverRandomOpt('dmg', 5, this)">+5% (종결)</button>
+          <div style="background:#0f172a; padding:0.4rem 0.6rem; border-radius:6px; border:1px solid #334155; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.75rem; color:#cbd5e1; font-weight:700;">명중(DEX) 인챈트:</span>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <input type="number" id="popover-dex-custom-val" class="calc-input" style="width:65px; padding:2px 6px; font-size:0.8rem; text-align:right;" value="15" min="0" max="40" oninput="onPopoverCustomDexChange()">
+              <span style="font-size:0.75rem; color:#94a3b8;">증가</span>
             </div>
           </div>
-          <div class="specup-option-group">
-            <span class="group-label">2옵 명중치:</span>
-            <div class="specup-option-chips" id="popover-opt-acc-chips">
-              <button type="button" class="specup-chip-btn" data-val="0" onclick="setPopoverRandomOpt('acc', 0, this)">+0</button>
-              <button type="button" class="specup-chip-btn active" data-val="15" onclick="setPopoverRandomOpt('acc', 15, this)">+15 (국민)</button>
-              <button type="button" class="specup-chip-btn" data-val="25" onclick="setPopoverRandomOpt('acc', 25, this)">+25 (종결)</button>
+        </div>
+      </div>
+
+      <!-- 5. 어빌리티 & 10대 실전 전이석 옵션 풀 (1열당 1옵션 깔끔 정렬) -->
+      <div class="tw-popover-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+          <span class="tw-section-title" style="margin:0;">🔮 어빌리티 & 3대 전이석 옵션 (10대 실전 풀)</span>
+          <div style="display:flex; gap:0.25rem;">
+            <button type="button" class="btn-sm" style="font-size:0.68rem; padding:1px 6px; background:#1e293b; border:1px solid #475569; color:#94a3b8;" onclick="applyQuickOptPreset('std')">국템3옵</button>
+            <button type="button" class="btn-sm" style="font-size:0.68rem; padding:1px 6px; background:#1e293b; border:1px solid #475569; color:#94a3b8;" onclick="applyQuickOptPreset('boss')">극딜3옵</button>
+            <button type="button" class="btn-sm" style="font-size:0.68rem; padding:1px 6px; background:#1e293b; border:1px solid #475569; color:#94a3b8;" onclick="applyQuickOptPreset('delay')">후딜고정</button>
+          </div>
+        </div>
+
+        <div class="tw-options-table-grid">
+          <!-- Ability Row -->
+          <div class="tw-opt-row">
+            <span class="tw-opt-row-label">어빌리티:</span>
+            <div class="tw-opt-row-body">
+              <select id="popover-ability-type" class="calc-input tw-select-sm" onchange="onPopoverAbilityTypeChange(this.value)">
+                <option value="destruct" selected>파괴의 증표 (대미지 증가)</option>
+                <option value="gale">질풍의 칼날 (후딜레이 고정/감소)</option>
+                <option value="accuracy">적중의 문양 (명중률/DEX 보정)</option>
+                <option value="vitality">생명력의 축복 (최대 HP 증가)</option>
+                <option value="element">원소의 결정 (속성 공격력 강화)</option>
+                <option value="none">장착 안 함</option>
+              </select>
+              <div class="tw-opt-chips" id="popover-ability-chips">
+                <button type="button" class="tw-chip-btn" data-val="none" onclick="setPopoverAbility('none', this)">없음</button>
+                <button type="button" class="tw-chip-btn" data-val="normal" onclick="setPopoverAbility('normal', this)">상급 (+2%)</button>
+                <button type="button" class="tw-chip-btn active" data-val="superior" onclick="setPopoverAbility('superior', this)">최상급 (+3%)</button>
+              </div>
             </div>
           </div>
-          <div class="specup-option-group">
-            <span class="group-label">3옵 속성치:</span>
-            <div class="specup-option-chips" id="popover-opt-elem-chips">
-              <button type="button" class="specup-chip-btn" data-val="0" onclick="setPopoverRandomOpt('elem', 0, this)">+0</button>
-              <button type="button" class="specup-chip-btn active" data-val="10" onclick="setPopoverRandomOpt('elem', 10, this)">+10 (국민)</button>
-              <button type="button" class="specup-chip-btn" data-val="15" onclick="setPopoverRandomOpt('elem', 15, this)">+15 (종결)</button>
+
+          <!-- Option 1 Row -->
+          <div class="tw-opt-row">
+            <span class="tw-opt-row-label">1번 전이옵:</span>
+            <div class="tw-opt-row-body">
+              <select id="popover-opt1-type" class="calc-input tw-select-sm" onchange="onPopoverOptTypeChange(1, this.value)">
+                <option value="dmg" selected>💥 공격 대미지 증가</option>
+                <option value="delay_fix">⚡ 후딜레이 고정 / 중딜 감소</option>
+                <option value="crit_dmg">🎯 크리티컬 대미지 증가</option>
+                <option value="boss_dmg">👑 보스 몬스터 추가 피해</option>
+                <option value="def_ignore">🛡️ 적 방어력 무시</option>
+                <option value="main_stat">🔮 주스탯 증가 (MR/STAB/HACK)</option>
+                <option value="dex_acc">🏹 명중치 (DEX) 증가</option>
+                <option value="element">🔥 속성 공격력 증가</option>
+                <option value="dmg_reduce">🥋 피격 대미지 감소</option>
+                <option value="max_hp">❤️ 최대 HP 증가</option>
+              </select>
+              <div class="tw-opt-chips" id="popover-opt1-chips">
+                <!-- Dynamically populated chips -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Option 2 Row -->
+          <div class="tw-opt-row">
+            <span class="tw-opt-row-label">2번 전이옵:</span>
+            <div class="tw-opt-row-body">
+              <select id="popover-opt2-type" class="calc-input tw-select-sm" onchange="onPopoverOptTypeChange(2, this.value)">
+                <option value="dmg">💥 공격 대미지 증가</option>
+                <option value="delay_fix">⚡ 후딜레이 고정 / 중딜 감소</option>
+                <option value="crit_dmg">🎯 크리티컬 대미지 증가</option>
+                <option value="boss_dmg">👑 보스 몬스터 추가 피해</option>
+                <option value="def_ignore">🛡️ 적 방어력 무시</option>
+                <option value="main_stat">🔮 주스탯 증가 (MR/STAB/HACK)</option>
+                <option value="dex_acc" selected>🏹 명중치 (DEX) 증가</option>
+                <option value="element">🔥 속성 공격력 증가</option>
+                <option value="dmg_reduce">🥋 피격 대미지 감소</option>
+                <option value="max_hp">❤️ 최대 HP 증가</option>
+              </select>
+              <div class="tw-opt-chips" id="popover-opt2-chips">
+                <!-- Dynamically populated chips -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Option 3 Row -->
+          <div class="tw-opt-row">
+            <span class="tw-opt-row-label">3번 전이옵:</span>
+            <div class="tw-opt-row-body">
+              <select id="popover-opt3-type" class="calc-input tw-select-sm" onchange="onPopoverOptTypeChange(3, this.value)">
+                <option value="dmg">💥 공격 대미지 증가</option>
+                <option value="delay_fix">⚡ 후딜레이 고정 / 중딜 감소</option>
+                <option value="crit_dmg">🎯 크리티컬 대미지 증가</option>
+                <option value="boss_dmg">👑 보스 몬스터 추가 피해</option>
+                <option value="def_ignore">🛡️ 적 방어력 무시</option>
+                <option value="main_stat">🔮 주스탯 증가 (MR/STAB/HACK)</option>
+                <option value="dex_acc">🏹 명중치 (DEX) 증가</option>
+                <option value="element" selected>🔥 속성 공격력 증가</option>
+                <option value="dmg_reduce">🥋 피격 대미지 감소</option>
+                <option value="max_hp">❤️ 최대 HP 증가</option>
+              </select>
+              <div class="tw-opt-chips" id="popover-opt3-chips">
+                <!-- Dynamically populated chips -->
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-sm btn-outline" onclick="closeSlotTunerModal()">취소</button>
-      <button class="btn-sm btn-primary-soft" onclick="saveSlotTunerModal()">⭐ To-Be 템창에 적용</button>
+    <div class="modal-footer" style="background:#0f1424; border-top:1px solid #28334f; padding:0.65rem 1rem;">
+      <button type="button" class="btn-sm btn-outline" onclick="closeSlotTunerModal()">취소</button>
+      <button type="button" id="popover-confirm-btn" class="btn-sm btn-primary-soft" onclick="saveSlotTunerModal()">⭐ To-Be 템창에 적용</button>
     </div>
   </div>
 </div>

@@ -1525,18 +1525,18 @@ function renderModalGearGrid(state) {
     const it = state[itemDef.key] || {};
     const tierStyle = (typeof TW_TIER_STYLES !== 'undefined' && TW_TIER_STYLES[it.tier]) || { class: 'tw-rarity-abyss' };
     const name = it.name || "미착용";
-    const qName = it.quality === 'limit' ? '한계작(+30)' : (it.quality === 'budget' ? '떡작(+3)' : '국민작(+15)');
-    const qClass = it.quality === 'limit' ? 'limit' : '';
+    const qName = it.quality === 'hyper_limit' ? '초한계(+35)' : (it.quality === 'limit' ? '한계작(+30)' : (it.quality === 'budget' ? '떡작(+3)' : '국민작(+15)'));
+    const qClass = (it.quality === 'hyper_limit' || it.quality === 'limit') ? 'limit' : '';
     const abText = it.ability === 'superior' ? '최상급(3%)' : (it.ability === 'normal' ? '상급(2%)' : '');
     const optText = (it.optDmg ? `딜+${it.optDmg}%` : '') + (it.optAcc ? ` 명+${it.optAcc}` : '');
 
     return `
-      <div class="modal-gear-card" onclick="jumpToDualEquipWindowFromModal('${itemDef.key}')" title="클릭하여 6번 탭 인게임 템창에서 이 슬롯 정밀 튜닝">
+      <div class="modal-gear-card" onclick="openSlotTunerModal('${itemDef.key}', 'modal')" title="클릭하여 ${itemDef.label} 정밀 튜닝">
         <div class="modal-gear-card-icon">${itemDef.icon}</div>
         <div class="modal-gear-card-body">
           <div class="modal-gear-card-top">
             <span>${itemDef.label}</span>
-            <span style="color:#60a5fa; font-size:0.65rem;">튜닝 ➔</span>
+            <span style="color:#60a5fa; font-size:0.65rem;">정밀 튜닝 ⚙️</span>
           </div>
           <div class="modal-gear-card-name ${tierStyle.class}">
             ${name}
@@ -5548,9 +5548,16 @@ let toBeEquipState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
 let popoverSlotKey = 'arms';
 let popoverTarget = 'tobe';
 let popoverTier = 'abyss';
+let popoverPrefix = 'sharp';
 let popoverEnhance = 10;
 let popoverQuality = 'standard';
+let popoverCustomStat = 15;
+let popoverCustomDex = 10;
+let popoverAbilityType = 'destruct';
 let popoverAbility = 'superior';
+let popoverOpt1 = { type: 'dmg', val: 3 };
+let popoverOpt2 = { type: 'dex_acc', val: 15 };
+let popoverOpt3 = { type: 'element', val: 10 };
 let popoverRandomOpts = { dmg: 3, acc: 15, elem: 10 };
 
 function initInGameEquipWindows() {
@@ -5573,11 +5580,15 @@ function isSlotUpgraded(slotKey) {
   if (!asIs || !toBe) return false;
   return (
     asIs.tier !== toBe.tier ||
+    asIs.prefix !== toBe.prefix ||
     asIs.enhance !== toBe.enhance ||
     asIs.quality !== toBe.quality ||
+    asIs.customStat !== toBe.customStat ||
+    asIs.customDex !== toBe.customDex ||
     asIs.ability !== toBe.ability ||
     asIs.optDmg !== toBe.optDmg ||
     asIs.optAcc !== toBe.optAcc ||
+    asIs.optElem !== toBe.optElem ||
     asIs.stat !== toBe.stat
   );
 }
@@ -5705,21 +5716,32 @@ function openSlotTunerModal(slotKey, target = 'tobe') {
   popoverSlotKey = slotKey;
   popoverTarget = target || 'tobe';
   const state = popoverTarget === 'modal' ? (modalGearState || TW_DEFAULT_EQUIP_STATE) : toBeEquipState;
-  const item = state[slotKey] || {};
+  const item = (state && state[slotKey]) ? state[slotKey] : {};
 
   popoverTier = item.tier || 'abyss';
+  popoverPrefix = item.prefix || 'sharp';
   popoverEnhance = item.enhance !== undefined ? item.enhance : 10;
   popoverQuality = item.quality || 'standard';
+
+  const defaultQ = (typeof ENCHANT_TIER_TABLE !== 'undefined' && ENCHANT_TIER_TABLE[popoverQuality]) || { mainBonus: 15, dexBonus: 10 };
+  popoverCustomStat = item.customStat !== undefined ? item.customStat : (defaultQ.mainBonus || 15);
+  popoverCustomDex = item.customDex !== undefined ? item.customDex : (defaultQ.dexBonus || 10);
+
+  popoverAbilityType = item.abilityType || (item.ability === 'none' ? 'none' : 'destruct');
   popoverAbility = item.ability || 'superior';
-  popoverRandomOpts = {
-    dmg: item.optDmg !== undefined ? item.optDmg : 3,
-    acc: item.optAcc !== undefined ? item.optAcc : 15,
-    elem: item.optElem !== undefined ? item.optElem : 10
-  };
+
+  popoverOpt1 = item.opt1 || { type: 'dmg', val: item.optDmg !== undefined ? item.optDmg : 3 };
+  popoverOpt2 = item.opt2 || { type: 'dex_acc', val: item.optAcc !== undefined ? item.optAcc : 15 };
+  popoverOpt3 = item.opt3 || { type: 'element', val: item.optElem !== undefined ? item.optElem : 10 };
 
   const titleEl = document.getElementById('popover-slot-title');
   const iconEl = document.getElementById('popover-slot-icon');
   const tierSelect = document.getElementById('popover-tier-select');
+  const confirmBtn = document.getElementById('popover-confirm-btn');
+
+  if (confirmBtn) {
+    confirmBtn.textContent = (popoverTarget === 'modal' ? '💾 프로필 장비에 적용' : '⭐ To-Be 템창에 적용');
+  }
 
   const slotLabels = {
     arms: { name: "무기 (REAL ARMS)", icon: "⚔️" },
@@ -5786,6 +5808,27 @@ function openSlotTunerModal(slotKey, target = 'tobe') {
     }
   }
 
+  // Populate input values
+  const pfxSel = document.getElementById('popover-prefix-select');
+  if (pfxSel) pfxSel.value = popoverPrefix;
+  const abTypeSel = document.getElementById('popover-ability-type');
+  if (abTypeSel) abTypeSel.value = popoverAbilityType;
+  const statIn = document.getElementById('popover-stat-custom-val');
+  if (statIn) statIn.value = popoverCustomStat;
+  const dexIn = document.getElementById('popover-dex-custom-val');
+  if (dexIn) dexIn.value = popoverCustomDex;
+
+  const s1 = document.getElementById('popover-opt1-type');
+  const s2 = document.getElementById('popover-opt2-type');
+  const s3 = document.getElementById('popover-opt3-type');
+  if (s1) s1.value = popoverOpt1.type;
+  if (s2) s2.value = popoverOpt2.type;
+  if (s3) s3.value = popoverOpt3.type;
+
+  renderPopoverOptChips(1, popoverOpt1.type, popoverOpt1.val);
+  renderPopoverOptChips(2, popoverOpt2.type, popoverOpt2.val);
+  renderPopoverOptChips(3, popoverOpt3.type, popoverOpt3.val);
+
   syncPopoverModalUI();
   const modal = document.getElementById('tw-slot-popover-modal');
   if (modal) modal.classList.add('active');
@@ -5797,7 +5840,7 @@ function closeSlotTunerModal() {
 }
 
 function syncPopoverModalUI() {
-  document.querySelectorAll('#popover-enhance-bar .specup-enhance-btn').forEach(btn => {
+  document.querySelectorAll('#popover-enhance-bar .tw-enh-btn').forEach(btn => {
     btn.classList.toggle('active', Number(btn.dataset.enhance) === popoverEnhance);
   });
   const enhSumEl = document.getElementById('popover-enhance-summary');
@@ -5807,20 +5850,11 @@ function syncPopoverModalUI() {
     const d = (t && t[popoverEnhance]) || { stat: 45, dex: 10 };
     enhSumEl.textContent = `${popoverEnhance}강 (+${d.stat}, DEX +${d.dex}, 공식 계수 x32.5)`;
   }
-  document.querySelectorAll('#popover-quality-bar .specup-quality-btn').forEach(btn => {
+  document.querySelectorAll('#popover-quality-bar .tw-q-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.quality === popoverQuality);
   });
-  document.querySelectorAll('#popover-ability-chips .specup-chip-btn').forEach(btn => {
+  document.querySelectorAll('#popover-ability-chips .tw-chip-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.val === popoverAbility);
-  });
-  document.querySelectorAll('#popover-opt-dmg-chips .specup-chip-btn').forEach(btn => {
-    btn.classList.toggle('active', Number(btn.dataset.val) === popoverRandomOpts.dmg);
-  });
-  document.querySelectorAll('#popover-opt-acc-chips .specup-chip-btn').forEach(btn => {
-    btn.classList.toggle('active', Number(btn.dataset.val) === popoverRandomOpts.acc);
-  });
-  document.querySelectorAll('#popover-opt-elem-chips .specup-chip-btn').forEach(btn => {
-    btn.classList.toggle('active', Number(btn.dataset.val) === popoverRandomOpts.elem);
   });
 }
 
@@ -5831,12 +5865,78 @@ function setPopoverEnhance(level, btn) {
 
 function setPopoverQuality(quality, btn) {
   popoverQuality = quality;
+  const qData = (typeof ENCHANT_TIER_TABLE !== 'undefined' && ENCHANT_TIER_TABLE[quality]) || { mainBonus: 15, dexBonus: 10 };
+  popoverCustomStat = qData.mainBonus || 15;
+  popoverCustomDex = qData.dexBonus || 10;
+  const statIn = document.getElementById('popover-stat-custom-val');
+  const dexIn = document.getElementById('popover-dex-custom-val');
+  if (statIn) statIn.value = popoverCustomStat;
+  if (dexIn) dexIn.value = popoverCustomDex;
+  syncPopoverModalUI();
+}
+
+function onPopoverCustomStatChange() {
+  const el = document.getElementById('popover-stat-custom-val');
+  if (el) popoverCustomStat = Math.max(0, Number(el.value) || 0);
+}
+
+function onPopoverCustomDexChange() {
+  const el = document.getElementById('popover-dex-custom-val');
+  if (el) popoverCustomDex = Math.max(0, Number(el.value) || 0);
+}
+
+function onPopoverPrefixChange(newPrefix) {
+  popoverPrefix = newPrefix;
+}
+
+function onPopoverAbilityTypeChange(newType) {
+  popoverAbilityType = newType;
+  if (newType === 'none') {
+    popoverAbility = 'none';
+  } else if (popoverAbility === 'none') {
+    popoverAbility = 'superior';
+  }
   syncPopoverModalUI();
 }
 
 function setPopoverAbility(val, btn) {
   popoverAbility = val;
   syncPopoverModalUI();
+}
+
+function renderPopoverOptChips(slotNum, optType, selectedVal) {
+  const container = document.getElementById(`popover-opt${slotNum}-chips`);
+  if (!container) return;
+  const optList = (typeof EQUIP_OPTIONS_DB !== 'undefined' && EQUIP_OPTIONS_DB.randomOptions && EQUIP_OPTIONS_DB.randomOptions[optType])
+    || [{ id: 'none', name: '0', val: 0 }];
+
+  let html = '';
+  optList.forEach(opt => {
+    const isAct = Number(opt.val) === Number(selectedVal);
+    html += `<button type="button" class="tw-chip-btn ${isAct ? 'active' : ''}" data-val="${opt.val}" onclick="setPopoverOptVal(${slotNum}, ${opt.val}, this)">${opt.name}</button>`;
+  });
+  container.innerHTML = html;
+}
+
+function onPopoverOptTypeChange(slotNum, newType) {
+  const optList = (typeof EQUIP_OPTIONS_DB !== 'undefined' && EQUIP_OPTIONS_DB.randomOptions && EQUIP_OPTIONS_DB.randomOptions[newType]) || [];
+  const defaultVal = optList.length > 1 ? optList[1].val : 0;
+  if (slotNum === 1) popoverOpt1 = { type: newType, val: defaultVal };
+  else if (slotNum === 2) popoverOpt2 = { type: newType, val: defaultVal };
+  else if (slotNum === 3) popoverOpt3 = { type: newType, val: defaultVal };
+  renderPopoverOptChips(slotNum, newType, defaultVal);
+}
+
+function setPopoverOptVal(slotNum, val, btn) {
+  const numVal = Number(val);
+  if (slotNum === 1) popoverOpt1.val = numVal;
+  else if (slotNum === 2) popoverOpt2.val = numVal;
+  else if (slotNum === 3) popoverOpt3.val = numVal;
+
+  const chips = document.querySelectorAll(`#popover-opt${slotNum}-chips .tw-chip-btn`);
+  chips.forEach(c => {
+    c.classList.toggle('active', Number(c.dataset.val) === numVal);
+  });
 }
 
 function setPopoverRandomOpt(type, val, btn) {
@@ -5848,17 +5948,50 @@ function onPopoverTierChange(tierVal) {
   popoverTier = tierVal;
 }
 
+function applyQuickOptPreset(presetType) {
+  if (presetType === 'std') {
+    popoverOpt1 = { type: 'dmg', val: 3 };
+    popoverOpt2 = { type: 'dex_acc', val: 15 };
+    popoverOpt3 = { type: 'element', val: 10 };
+  } else if (presetType === 'boss') {
+    popoverOpt1 = { type: 'dmg', val: 5 };
+    popoverOpt2 = { type: 'boss_dmg', val: 5 };
+    popoverOpt3 = { type: 'crit_dmg', val: 5 };
+  } else if (presetType === 'delay') {
+    popoverOpt1 = { type: 'delay_fix', val: 1 };
+    popoverOpt2 = { type: 'dmg', val: 3 };
+    popoverOpt3 = { type: 'dex_acc', val: 15 };
+  }
+  const s1 = document.getElementById('popover-opt1-type');
+  const s2 = document.getElementById('popover-opt2-type');
+  const s3 = document.getElementById('popover-opt3-type');
+  if (s1) s1.value = popoverOpt1.type;
+  if (s2) s2.value = popoverOpt2.type;
+  if (s3) s3.value = popoverOpt3.type;
+  renderPopoverOptChips(1, popoverOpt1.type, popoverOpt1.val);
+  renderPopoverOptChips(2, popoverOpt2.type, popoverOpt2.val);
+  renderPopoverOptChips(3, popoverOpt3.type, popoverOpt3.val);
+}
+
 function applyQuickPresetToPopover(presetKey) {
-  document.querySelectorAll('.tw-quick-pill').forEach(b => b.classList.remove('active'));
-  const activeBtn = document.querySelector(`.tw-quick-pill[onclick*="${presetKey}"]`);
+  document.querySelectorAll('.tw-quick-grid-4 .tw-quick-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.tw-quick-grid-4 .tw-quick-btn[onclick*="${presetKey}"]`);
   if (activeBtn) activeBtn.classList.add('active');
+
+  const isAccessory = ['showSubArms', 'effect', 'artifact', 'relicRight', 'relicLeft'].includes(popoverSlotKey);
 
   if (presetKey === 'budget') {
     popoverEnhance = 5;
     popoverQuality = 'budget';
+    popoverPrefix = 'none';
+    popoverCustomStat = 3;
+    popoverCustomDex = 3;
+    popoverAbilityType = 'none';
     popoverAbility = 'none';
-    popoverRandomOpts = { dmg: 0, acc: 0, elem: 0 };
-    if (popoverSlotKey !== 'showSubArms' && popoverSlotKey !== 'effect' && popoverSlotKey !== 'artifact' && !popoverSlotKey.startsWith('relic')) {
+    popoverOpt1 = { type: 'dmg', val: 0 };
+    popoverOpt2 = { type: 'dex_acc', val: 0 };
+    popoverOpt3 = { type: 'element', val: 0 };
+    if (!isAccessory) {
       popoverTier = 'aquilus';
       const tierSel = document.getElementById('popover-tier-select');
       if (tierSel) tierSel.value = 'aquilus';
@@ -5866,9 +5999,15 @@ function applyQuickPresetToPopover(presetKey) {
   } else if (presetKey === 'standard') {
     popoverEnhance = 10;
     popoverQuality = 'standard';
+    popoverPrefix = 'sharp';
+    popoverCustomStat = 15;
+    popoverCustomDex = 10;
+    popoverAbilityType = 'destruct';
     popoverAbility = 'superior';
-    popoverRandomOpts = { dmg: 3, acc: 15, elem: 10 };
-    if (popoverSlotKey !== 'showSubArms' && popoverSlotKey !== 'effect' && popoverSlotKey !== 'artifact' && !popoverSlotKey.startsWith('relic')) {
+    popoverOpt1 = { type: 'dmg', val: 3 };
+    popoverOpt2 = { type: 'dex_acc', val: 15 };
+    popoverOpt3 = { type: 'element', val: 10 };
+    if (!isAccessory) {
       popoverTier = 'abyss';
       const tierSel = document.getElementById('popover-tier-select');
       if (tierSel) tierSel.value = 'abyss';
@@ -5876,26 +6015,89 @@ function applyQuickPresetToPopover(presetKey) {
   } else if (presetKey === 'limit') {
     popoverEnhance = 11;
     popoverQuality = 'limit';
+    popoverPrefix = 'sharp';
+    popoverCustomStat = 30;
+    popoverCustomDex = 20;
+    popoverAbilityType = 'destruct';
     popoverAbility = 'superior';
-    popoverRandomOpts = { dmg: 5, acc: 25, elem: 15 };
-    if (popoverSlotKey !== 'showSubArms' && popoverSlotKey !== 'effect' && popoverSlotKey !== 'artifact' && !popoverSlotKey.startsWith('relic')) {
+    popoverOpt1 = { type: 'dmg', val: 5 };
+    popoverOpt2 = { type: 'dex_acc', val: 25 };
+    popoverOpt3 = { type: 'element', val: 15 };
+    if (!isAccessory) {
+      popoverTier = 'eclipse';
+      const tierSel = document.getElementById('popover-tier-select');
+      if (tierSel) tierSel.value = 'eclipse';
+    }
+  } else if (presetKey === 'hyper') {
+    popoverEnhance = 12;
+    popoverQuality = 'hyper_limit';
+    popoverPrefix = 'sharp';
+    popoverCustomStat = 35;
+    popoverCustomDex = 25;
+    popoverAbilityType = 'destruct';
+    popoverAbility = 'superior';
+    popoverOpt1 = { type: 'dmg', val: 6 };
+    popoverOpt2 = { type: 'dex_acc', val: 35 };
+    popoverOpt3 = { type: 'element', val: 20 };
+    if (!isAccessory) {
       popoverTier = 'eclipse';
       const tierSel = document.getElementById('popover-tier-select');
       if (tierSel) tierSel.value = 'eclipse';
     }
   }
+
+  const pfxSel = document.getElementById('popover-prefix-select');
+  if (pfxSel) pfxSel.value = popoverPrefix;
+  const abTypeSel = document.getElementById('popover-ability-type');
+  if (abTypeSel) abTypeSel.value = popoverAbilityType;
+  const statIn = document.getElementById('popover-stat-custom-val');
+  if (statIn) statIn.value = popoverCustomStat;
+  const dexIn = document.getElementById('popover-dex-custom-val');
+  if (dexIn) dexIn.value = popoverCustomDex;
+
+  const s1 = document.getElementById('popover-opt1-type');
+  const s2 = document.getElementById('popover-opt2-type');
+  const s3 = document.getElementById('popover-opt3-type');
+  if (s1) s1.value = popoverOpt1.type;
+  if (s2) s2.value = popoverOpt2.type;
+  if (s3) s3.value = popoverOpt3.type;
+  renderPopoverOptChips(1, popoverOpt1.type, popoverOpt1.val);
+  renderPopoverOptChips(2, popoverOpt2.type, popoverOpt2.val);
+  renderPopoverOptChips(3, popoverOpt3.type, popoverOpt3.val);
+
   syncPopoverModalUI();
 }
 
 function saveSlotTunerModal() {
-  const cur = toBeEquipState[popoverSlotKey] || {};
+  const targetState = popoverTarget === 'modal' 
+    ? (modalGearState = modalGearState || JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE))) 
+    : toBeEquipState;
+  const cur = targetState[popoverSlotKey] || {};
+
   cur.tier = popoverTier;
+  cur.prefix = popoverPrefix;
   cur.enhance = popoverEnhance;
   cur.quality = popoverQuality;
+  cur.customStat = popoverCustomStat;
+  cur.customDex = popoverCustomDex;
+  cur.abilityType = popoverAbilityType;
   cur.ability = popoverAbility;
-  cur.optDmg = popoverRandomOpts.dmg;
-  cur.optAcc = popoverRandomOpts.acc;
-  cur.optElem = popoverRandomOpts.elem;
+  cur.opt1 = JSON.parse(JSON.stringify(popoverOpt1));
+  cur.opt2 = JSON.parse(JSON.stringify(popoverOpt2));
+  cur.opt3 = JSON.parse(JSON.stringify(popoverOpt3));
+
+  let optDmg = 0;
+  let optAcc = 0;
+  let optElem = 0;
+  [popoverOpt1, popoverOpt2, popoverOpt3].forEach(opt => {
+    if (!opt) return;
+    if (opt.type === 'dmg' || opt.type === 'boss_dmg' || opt.type === 'crit_dmg') optDmg += Number(opt.val) || 0;
+    else if (opt.type === 'dex_acc' || opt.type === 'acc') optAcc += Number(opt.val) || 0;
+    else if (opt.type === 'element' || opt.type === 'elem') optElem += Number(opt.val) || 0;
+  });
+  cur.optDmg = optDmg;
+  cur.optAcc = optAcc;
+  cur.optElem = optElem;
 
   if (popoverSlotKey === 'showSubArms') {
     if (popoverTier === 'cuff80') { cur.name = "라이도 심볼릭 커프 (80)"; cur.stat = 80; cur.dex = 20; cur.tier = "gold"; }
@@ -5930,13 +6132,14 @@ function saveSlotTunerModal() {
       foot: "부츠"
     };
     const sName = slotNames[popoverSlotKey] || "장비";
-    cur.name = `+${popoverEnhance} ${tierName} ${sName}`;
+    const prefixInfo = (typeof EQUIP_OPTIONS_DB !== 'undefined' && EQUIP_OPTIONS_DB.prefixes && EQUIP_OPTIONS_DB.prefixes[popoverPrefix]) || null;
+    const prefixLabel = (prefixInfo && prefixInfo.label) ? `${prefixInfo.label} ` : '';
+    cur.name = `+${popoverEnhance} ${prefixLabel}${tierName} ${sName}`;
     const baseDurs = { aquilus: "(48/52)", abyss: "(52/52)", eclipse: "(65/65)" };
     cur.dur = baseDurs[popoverTier] || "(52/52)";
   }
 
   if (popoverTarget === 'modal') {
-    if (!modalGearState) modalGearState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
     modalGearState[popoverSlotKey] = cur;
     const presetSel = document.getElementById('modal-gear-preset');
     if (presetSel) presetSel.value = 'custom';
@@ -5990,6 +6193,7 @@ function calculateEquipStateMetrics(state) {
     const enh = it.enhance !== undefined ? it.enhance : 10;
     const qKey = it.quality || 'standard';
     const abKey = it.ability || 'superior';
+    const pfxKey = it.prefix || 'none';
 
     let tierMain = 80;
     let tierDex = 20;
@@ -6002,16 +6206,32 @@ function calculateEquipStateMetrics(state) {
     }
 
     const qData = (typeof ENCHANT_TIER_TABLE !== 'undefined' && ENCHANT_TIER_TABLE[qKey]) || { mainBonus: 15, dexBonus: 10 };
-    const qMain = qData.mainBonus || 15;
-    const qDex = qData.dexBonus || 10;
+    let qMain = it.customStat !== undefined ? Number(it.customStat) : (qData.mainBonus || 15);
+    let qDex = it.customDex !== undefined ? Number(it.customDex) : (qData.dexBonus || 10);
 
-    const abData = (typeof EQUIP_OPTIONS_DB !== 'undefined' && EQUIP_OPTIONS_DB.abilities[abKey]) || { stat: 25, dex: 12, dmg: 3 };
+    const pfxData = (typeof EQUIP_OPTIONS_DB !== 'undefined' && EQUIP_OPTIONS_DB.prefixes && EQUIP_OPTIONS_DB.prefixes[pfxKey]) || { statBonus: 0, dexBonus: 0, dmgBonus: 0 };
+    const pfxMain = pfxData.statBonus || 0;
+    const pfxDex = pfxData.dexBonus || 0;
+    extraDmgPct += (pfxData.dmgBonus || 0);
+
+    const abData = (typeof EQUIP_OPTIONS_DB !== 'undefined' && EQUIP_OPTIONS_DB.abilities && EQUIP_OPTIONS_DB.abilities[abKey]) || { stat: 25, dex: 12, dmg: 3 };
     const abMain = abData.stat || 0;
     const abDex = abData.dex || 0;
     extraDmgPct += (abData.dmg || 0);
 
-    const optDmg = Number(it.optDmg) || 0;
-    const optAcc = Number(it.optAcc) || 0;
+    let optDmg = 0;
+    let optAcc = 0;
+    if (it.opt1 || it.opt2 || it.opt3) {
+      [it.opt1, it.opt2, it.opt3].forEach(opt => {
+        if (!opt) return;
+        if (opt.type === 'dmg' || opt.type === 'boss_dmg' || opt.type === 'crit_dmg') optDmg += Number(opt.val) || 0;
+        else if (opt.type === 'dex_acc' || opt.type === 'acc') optAcc += Number(opt.val) || 0;
+        else if (opt.type === 'main_stat') qMain += Number(opt.val) || 0;
+      });
+    } else {
+      optDmg = Number(it.optDmg) || 0;
+      optAcc = Number(it.optAcc) || 0;
+    }
     extraDmgPct += optDmg;
 
     const enhTable = isWpn 
@@ -6019,8 +6239,8 @@ function calculateEquipStateMetrics(state) {
       : (typeof ENHANCE_STAT_TABLE !== 'undefined' ? ENHANCE_STAT_TABLE.armor : null);
     const enhData = (enhTable && enhTable[enh]) || { stat: isWpn ? 64 : 45, dex: isWpn ? 18 : 10 };
 
-    regularMainSum += (tierMain + qMain + abMain);
-    regularDexSum += (tierDex + qDex + abDex + optAcc);
+    regularMainSum += (tierMain + qMain + pfxMain + abMain);
+    regularDexSum += (tierDex + qDex + pfxDex + abDex + optAcc);
     enhanceMainSum += enhData.stat;
     enhanceDexSum += enhData.dex;
   });
@@ -6051,7 +6271,7 @@ function calculateEquipStateMetrics(state) {
     }
   });
 
-  // TalesWeaver Official Formula: Regular stats x20.5 + 0~11 Enhancement stats x32.5
+  // TalesWeaver Official Formula: Regular stats x20.5 + 0~12 Enhancement stats x32.5
   const regularCoeff = Math.round(regularMainSum * 20.5);
   const enhanceCoeff = Math.round(enhanceMainSum * 32.5);
   const totalCoeff = baseCharCoeff + regularCoeff + enhanceCoeff;

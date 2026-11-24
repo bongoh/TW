@@ -2,7 +2,7 @@
 
 > **프로젝트명**: TalesWeaver All-in-One Companion & Strategy Guide  
 > **초기 시작 버전**: `v0.001`  
-> **현재 안정 버전**: `v0.039`  
+> **현재 안정 버전**: `v0.040`  
 > **작성 일자**: 2026-11-25  
 > **기술 스택**: Vanilla HTML5, Modern CSS3 (Grid/Flexbox/CSS Variables), ES6+ JavaScript, Responsive Design, GitHub Pages Ready  
 
@@ -51,10 +51,41 @@
 | **v0.037** | 2026-11-25 | 🎮 테일즈위버 인게임 12부위 장비창(Equip Window) 원형 복각 & As-Is ➔ To-Be 듀얼 비교 엔진 탑재 (실시간 전투력/계수/명중/1방컷 Diff 판정, 슬롯 원클릭 팝오버 튜너, 국템 표준 일괄 적용, 프로필 영구 저장) | 인게임 템창 As-Is ➔ To-Be 듀얼 비교기 |
 | **v0.038** | 2026-11-25 | 🛡️ 캐릭터 프로필 ↔ 인게임 장비창(Equip Window) 양방향 실시간 동기화 완비 (프로필 모달 3번 탭 12부위 상세 장비 현황 그리드, 순수+장비+펫 실시간 종합 전투 스탯 배너, 상단 바 실시간 착용 장비 뱃지) | 프로필 ↔ 인게임 템창 동기화 완성 |
 | **v0.039** | 2026-11-25 | 🎮 프로필 설정 모달 3번 탭 내 테일즈위버 인게임 장비창(Equip Window) 원형 직통 탑재 & 2열 대시보드 구축 (인게임 템창 슬롯 클릭 시 정밀 튜너 오버레이 연동, 실시간 KPI, 국템/이클 종결 원클릭 프리셋, 6번 탭 전투 시험장 As-Is 직결) | 프로필 템창 기획 원형 100% 일치 완성 |
+| **v0.040** | 2026-11-25 | 🛠️ 장비 슬롯 튜닝 모달 UI/UX 전면 개편 & 옵션 대폭 확장 (0~12강 완전 대칭 7열 그리드, 10대 실전 전이석 옵션 풀, 인챈트 접두어 6종, 직접 미세조정 인풋, 솔리드 다크 백드롭 번짐 차단, 문맥별 저장 버튼) | 튜너 모달 UIUX 개편 & 10대 옵션 확장 |
 
 ---
 
 ## 📜 상세 버전별 변경 로그 (Detailed Changelog)
+
+---
+
+### [v0.040] - 2026-11-25
+#### 🛠️ Slot Tuning Modal UI/UX Redesign & Options Expansion
+- **목적**:
+  - 모달 레이아웃 왜곡(11강 줄바꿈 늘어짐, 좁은 2열 카드로 인한 옵션 텍스트 줄바꿈 깨짐, 반투명 백드롭으로 인한 뒷배경 텍스트 번짐)을 완벽히 해결하고, 0~12강 완전 지원, 10대 실전 전이석 옵션, 인챈트 접두어 및 스탯 직접 입력 체계를 완비.
+- **주요 작업 내역**:
+  - `css/style.css`:
+    - `.tw-enhance-grid`: 0강부터 12강까지 13개 버튼을 균등한 크기로 배치하는 7열 대칭 그리드 구축 (11강/12강 늘어짐 왜곡 원천 차단).
+    - `.tw-quality-grid-4`: 떡작, 국민작, 한계작, 초한계 4열 균등 그리드.
+    - `.tw-quick-grid-4`: 떡작(5강), 국민작(10강), 한계작(11강), 초월 극한(12강) 4대 퀵 세팅 프리셋 그리드.
+    - `.tw-options-table-grid`, `.tw-opt-row`: 1행 1옵션 구조의 깔끔한 가로 테이블형 그리드 도입 (어빌리티 1행, 전이석 1~3번 각 1행 분리).
+    - `#tw-slot-popover-modal`: 솔리드 다크 백드롭(`rgba(4, 6, 18, 0.95); backdrop-filter: blur(12px); z-index: 1050;`)으로 프로필 모달 위에서 중첩 실행되어도 뒷배경 요소가 투과되어 깨지는 현상 차단.
+  - `js/data.js`:
+    - `ENHANCE_STAT_TABLE`: 무기/방어구 12강 공식 스탯 추가 (무기: 합마/합뎀 +140, DEX +38 / 방어구: +95, DEX +22).
+    - `ENCHANT_TIER_TABLE`: `hyper_limit` (+35 주스탯 / +25 DEX) 추가.
+    - `EQUIP_OPTIONS_DB.prefixes`: `none`, `sharp` (예리한), `swift` (신속한), `strong` (강력한), `critical` (치명적인), `solid` (단단한) 6대 접두어 스탯 DB 구축.
+    - `EQUIP_OPTIONS_DB.randomOptions`: 테일즈위버 10대 실전 전이석 옵션 풀 전수 등록 (대미지%, 후딜고정, 크리뎀%, 보스뎀%, 방어무시%, 주스탯, DEX, 속성, 뎀감%, HP).
+  - `index.html`:
+    - `#tw-slot-popover-modal` 내부 마크업을 V2 완전 대칭 그리드로 전면 교체.
+    - 주 공격스탯(+0~60) 및 DEX(+0~40) 직접 입력 인풋 필드 배치.
+    - 전이석 1, 2, 3번 옵션별 드롭다운 셀렉트 및 동적 칩 버튼 컨테이너 탑재.
+    - 3대 전이옵 퀵 프리셋 (`국템3옵`, `극딜3옵`, `후딜고정`) 버튼 탑재.
+  - `js/app.js`:
+    - `openSlotTunerModal()`: 호출 문맥(프로필 모달 vs 6번 탭 전투 시험장)에 따라 버튼 텍스트를 `💾 프로필 장비에 적용` / `⭐ To-Be 템창에 적용`으로 자동 분기.
+    - `renderPopoverOptChips()`, `onPopoverOptTypeChange()`, `setPopoverOptVal()`: 10대 옵션별 동적 칩 생성 및 선택 상태 동기화.
+    - `onPopoverCustomStatChange()`, `onPopoverCustomDexChange()`: 사용자 직접 타이핑 스탯 수치 실시간 바인딩.
+    - `saveSlotTunerModal()`: 장비명에 접두어 자동 조합 (예: `+12 예리한 어비스 아밍소드`), 3개 전이옵 및 인챈트 스탯 종합 합산 후 모달 기어 상태 또는 To-Be 템창에 영구 반영.
+    - `calculateEquipStateMetrics()`: 0~12강 계수 공식, 접두어 보너스, 10대 옵션 합산 공식 완비.
 
 ---
 

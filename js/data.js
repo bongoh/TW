@@ -3146,7 +3146,8 @@ const ENHANCE_STAT_TABLE = {
     8:  { stat: 28,  dex: 8,  desc: "8강화 (실전 입문 구간)" },
     9:  { stat: 42,  dex: 12, desc: "9강화 (상위 징검다리)" },
     10: { stat: 64,  dex: 18, desc: "10강화 (⚖️ 국민작 표준 / 국템)" },
-    11: { stat: 102, dex: 28, desc: "11강화 (👑 초월 종결 엔드 스펙)" }
+    11: { stat: 102, dex: 28, desc: "11강화 (👑 초월 종결 엔드 스펙)" },
+    12: { stat: 140, dex: 38, desc: "12강화 (🔥 극한 초월 엔드 스펙)" }
   },
   // 방어구 (갑옷, 날개, 손목, 투구, 아티팩트 등) 강화 단계별 누적 증가 스탯
   armor: {
@@ -3161,11 +3162,12 @@ const ENHANCE_STAT_TABLE = {
     8:  { stat: 22, dex: 4,  desc: "8강화" },
     9:  { stat: 30, dex: 6,  desc: "9강화" },
     10: { stat: 45, dex: 10, desc: "10강화 (⚖️ 국민작 표준 / 국템)" },
-    11: { stat: 70, dex: 16, desc: "11강화 (👑 초월 종결 엔드 스펙)" }
+    11: { stat: 70, dex: 16, desc: "11강화 (👑 초월 종결 엔드 스펙)" },
+    12: { stat: 95, dex: 22, desc: "12강화 (🔥 극한 초월 엔드 스펙)" }
   }
 };
 
-// 2. 인챈트 품질별 공식 수치 (떡작 vs 국민작 vs 한계작)
+// 2. 인챈트 품질별 공식 수치 (떡작 vs 국민작 vs 한계작 vs 초한계작)
 const ENCHANT_TIER_TABLE = {
   budget: {
     id: "budget",
@@ -3187,31 +3189,97 @@ const ENCHANT_TIER_TABLE = {
     mainBonus: 30,
     dexBonus: 20,
     desc: "인크립트 한계 돌파 후 최상급 주문서로 +25~35+ 채운 종결작"
+  },
+  hyper_limit: {
+    id: "hyper_limit",
+    name: "🔥 초한계작 (극한 돌파)",
+    mainBonus: 35,
+    dexBonus: 25,
+    desc: "한계치를 초과 달성한 최상위 랭커 전용 극옵션 매물"
   }
 };
 
-// 3. 부가 옵션 (어빌리티 & 3대 전이석 랜덤 옵션) 데이터
+// 3. 부가 옵션 (어빌리티 & 10대 전이석 랜덤 옵션 풀 & 접두어)
 const EQUIP_OPTIONS_DB = {
+  prefixes: {
+    none:     { id: "none",     name: "일반 (접두어 없음)", label: "",        statBonus: 0,  dexBonus: 0,  dmgBonus: 0 },
+    sharp:    { id: "sharp",    name: "예리한 (마공/마방/대미지)", label: "예리한", statBonus: 15, dexBonus: 0,  dmgBonus: 1 },
+    swift:    { id: "swift",    name: "신속한 (명중/DEX/딜레이)", label: "신속한", statBonus: 0,  dexBonus: 15, dmgBonus: 0 },
+    strong:   { id: "strong",   name: "강력한 (물리 베기/찌르기)", label: "강력한", statBonus: 15, dexBonus: 0,  dmgBonus: 0 },
+    critical: { id: "critical", name: "치명적인 (크리티컬 특화)", label: "치명적인", statBonus: 0,  dexBonus: 5,  dmgBonus: 2 },
+    solid:    { id: "solid",    name: "단단한 (DEF/HP 특화)", label: "단단한",   statBonus: 0,  dexBonus: 0,  dmgBonus: 0 }
+  },
   abilities: {
-    none:     { id: "none",     name: "없음 (노어빌)",          stat: 0,  dex: 0,  dmg: 0 },
-    normal:   { id: "normal",   name: "상급 어빌리티 (딜+2%)",   stat: 18, dex: 8,  dmg: 2 },
-    superior: { id: "superior", name: "최상급 어빌리티 (딜+3%)", stat: 25, dex: 12, dmg: 3 }
+    none:      { id: "none",      name: "없음 (노어빌)",          stat: 0,  dex: 0,  dmg: 0 },
+    normal:    { id: "normal",    name: "상급 어빌리티 (딜+2%)",   stat: 18, dex: 8,  dmg: 2 },
+    superior:  { id: "superior",  name: "최상급 어빌리티 (딜+3%)", stat: 25, dex: 12, dmg: 3 }
   },
   randomOptions: {
     dmg: [
-      { id: "none", name: "0% (없음)", val: 0 },
+      { id: "none", name: "0%", val: 0 },
       { id: "dmg_3", name: "+3% (국민)", val: 3 },
-      { id: "dmg_5", name: "+5% (종결)", val: 5 }
+      { id: "dmg_5", name: "+5% (종결)", val: 5 },
+      { id: "dmg_6", name: "+6% (극옵)", val: 6 }
+    ],
+    delay_fix: [
+      { id: "none", name: "미적용", val: 0 },
+      { id: "delay_fixed", name: "⚡ 후딜 고정 (0초)", val: 1 }
+    ],
+    crit_dmg: [
+      { id: "none", name: "0%", val: 0 },
+      { id: "crit_3", name: "+3%", val: 3 },
+      { id: "crit_5", name: "+5%", val: 5 },
+      { id: "crit_6", name: "+6%", val: 6 }
+    ],
+    boss_dmg: [
+      { id: "none", name: "0%", val: 0 },
+      { id: "boss_3", name: "+3%", val: 3 },
+      { id: "boss_5", name: "+5%", val: 5 }
+    ],
+    def_ignore: [
+      { id: "none", name: "0%", val: 0 },
+      { id: "def_3", name: "+3%", val: 3 },
+      { id: "def_5", name: "+5%", val: 5 }
+    ],
+    main_stat: [
+      { id: "none", name: "+0", val: 0 },
+      { id: "stat_15", name: "+15", val: 15 },
+      { id: "stat_25", name: "+25", val: 25 },
+      { id: "stat_35", name: "+35", val: 35 }
+    ],
+    dex_acc: [
+      { id: "none", name: "+0", val: 0 },
+      { id: "acc_15", name: "+15 (국민)", val: 15 },
+      { id: "acc_25", name: "+25 (종결)", val: 25 },
+      { id: "acc_35", name: "+35 (극옵)", val: 35 }
+    ],
+    element: [
+      { id: "none", name: "+0", val: 0 },
+      { id: "elem_10", name: "+10 (국민)", val: 10 },
+      { id: "elem_15", name: "+15 (종결)", val: 15 },
+      { id: "elem_20", name: "+20 (극옵)", val: 20 }
+    ],
+    dmg_reduce: [
+      { id: "none", name: "0%", val: 0 },
+      { id: "red_3", name: "-3%", val: 3 },
+      { id: "red_5", name: "-5%", val: 5 }
+    ],
+    max_hp: [
+      { id: "none", name: "+0", val: 0 },
+      { id: "hp_5000", name: "+5,000", val: 5000 },
+      { id: "hp_10000", name: "+10,000", val: 10000 }
     ],
     acc: [
       { id: "none", name: "+0", val: 0 },
       { id: "acc_15", name: "+15 (국민)", val: 15 },
-      { id: "acc_25", name: "+25 (종결)", val: 25 }
+      { id: "acc_25", name: "+25 (종결)", val: 25 },
+      { id: "acc_35", name: "+35 (극옵)", val: 35 }
     ],
     elem: [
       { id: "none", name: "+0", val: 0 },
       { id: "elem_10", name: "+10 (국민)", val: 10 },
-      { id: "elem_15", name: "+15 (종결)", val: 15 }
+      { id: "elem_15", name: "+15 (종결)", val: 15 },
+      { id: "elem_20", name: "+20 (극옵)", val: 20 }
     ]
   }
 };
