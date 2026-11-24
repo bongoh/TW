@@ -1686,6 +1686,7 @@ function bootCompanion() {
   renderGlossaryCards();
   initWeeklyTaskLootTracker();
   initRuneCollectionTracker();
+  initEncryptCalculator();
 }
 
 // ==================== 8. COEFFICIENT & ACCURACY CALCULATOR LOGIC ====================
@@ -3981,6 +3982,155 @@ function jumpToRuneCollection() {
   if (targetEl) {
     targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+}
+
+// ==================== 17. ENCRYPT PROBABILITY CALCULATOR LOGIC (인벤 1120) ====================
+function initEncryptCalculator() {
+  const scrollSelect = document.getElementById('encrypt-scroll-select');
+  const protectRange = document.getElementById('encrypt-protect-range');
+  const protectNum = document.getElementById('encrypt-protect-num');
+  const vianuStepSelect = document.getElementById('encrypt-vianu-step');
+
+  if (!scrollSelect) return;
+
+  scrollSelect.addEventListener('change', onEncryptScrollChange);
+
+  if (protectRange && protectNum) {
+    protectRange.addEventListener('input', function() {
+      protectNum.value = this.value;
+      updateEncryptCalculator();
+    });
+    protectNum.addEventListener('input', function() {
+      let val = parseInt(this.value) || 0;
+      const max = parseInt(protectRange.max) || 60;
+      if (val < 0) val = 0;
+      if (val > max) val = max;
+      this.value = val;
+      protectRange.value = val;
+      updateEncryptCalculator();
+    });
+  }
+
+  if (vianuStepSelect) {
+    vianuStepSelect.addEventListener('change', updateEncryptCalculator);
+  }
+
+  onEncryptScrollChange();
+}
+
+function onEncryptScrollChange() {
+  const scrollSelect = document.getElementById('encrypt-scroll-select');
+  if (!scrollSelect) return;
+  const scrollType = scrollSelect.value;
+  const protectControls = document.getElementById('encrypt-protect-controls');
+  const vianuControls = document.getElementById('encrypt-vianu-controls');
+  const protectRange = document.getElementById('encrypt-protect-range');
+  const protectNum = document.getElementById('encrypt-protect-num');
+  const maxLabel = document.getElementById('encrypt-protect-max-label');
+  const descEl = document.getElementById('encrypt-scroll-desc');
+
+  let maxProtects = 30;
+  let descText = '';
+
+  if (scrollType === 'vianu') {
+    if (protectControls) protectControls.style.display = 'none';
+    if (vianuControls) vianuControls.style.display = 'block';
+    descText = '🛡️ 비아누의 인크립트는 실패해도 장비가 절대 파괴되지 않는 노파괴 스크롤입니다! (파괴 확률 0%)';
+  } else {
+    if (protectControls) protectControls.style.display = 'block';
+    if (vianuControls) vianuControls.style.display = 'none';
+
+    if (scrollType === 'royal') {
+      maxProtects = 30;
+      descText = '왕실 인크립트: 기본 성공률 36% (실패율 64%). 파괴 보호 주문서를 최대 30장까지 적용 가능합니다.';
+    } else if (scrollType === 'blessed') {
+      maxProtects = 40;
+      descText = '축복받은 인크립트: 기본 성공률 31% (실패율 69%). 파괴 보호 주문서를 최대 40장까지 적용 가능합니다.';
+    } else if (scrollType === 'divine') {
+      maxProtects = 50;
+      descText = '가호의 인크립트: 기본 성공률 26% (실패율 74%). 파괴 보호 주문서를 최대 50장까지 적용 가능합니다.';
+    } else if (scrollType === 'lord') {
+      maxProtects = 60;
+      descText = '로드 인크립트: 기본 성공률 21% (실패율 79%). 파괴 보호 주문서를 최대 60장까지 적용 가능합니다.';
+    }
+
+    if (protectRange) {
+      protectRange.max = maxProtects;
+      if (parseInt(protectRange.value) > maxProtects) {
+        protectRange.value = maxProtects;
+      }
+    }
+    if (protectNum) {
+      protectNum.max = maxProtects;
+      if (parseInt(protectNum.value) > maxProtects) {
+        protectNum.value = maxProtects;
+      }
+    }
+    if (maxLabel) maxLabel.textContent = `(최대 ${maxProtects}장)`;
+  }
+
+  if (descEl) descEl.textContent = descText;
+  updateEncryptCalculator();
+}
+
+function updateEncryptCalculator() {
+  const scrollSelect = document.getElementById('encrypt-scroll-select');
+  if (!scrollSelect) return;
+  const scrollType = scrollSelect.value;
+
+  const successEl = document.getElementById('encrypt-success-pct');
+  const safefailEl = document.getElementById('encrypt-safefail-pct');
+  const destroyEl = document.getElementById('encrypt-destroy-pct');
+  const barSuccess = document.getElementById('encrypt-bar-success');
+  const barSafefail = document.getElementById('encrypt-bar-safefail');
+  const barDestroy = document.getElementById('encrypt-bar-destroy');
+  const tipEl = document.getElementById('encrypt-calc-tip');
+
+  let successRate = 0;
+  let safeFailRate = 0;
+  let destroyRate = 0;
+  let tipText = '';
+
+  if (scrollType === 'vianu') {
+    const vianuRates = [80, 65, 50, 40, 30, 20, 15, 10, 5, 3];
+    const stepSelect = document.getElementById('encrypt-vianu-step');
+    const stepIdx = stepSelect ? parseInt(stepSelect.value) || 0 : 0;
+    successRate = vianuRates[stepIdx] || 50;
+    safeFailRate = 100 - successRate;
+    destroyRate = 0;
+    tipText = `비아누 주문서는 실패하더라도 장비가 파괴되지 않고 그대로 보존됩니다! (안전 실패: ${safeFailRate}%)`;
+  } else {
+    let baseRate = 36;
+    let maxProtects = 30;
+    if (scrollType === 'royal') { baseRate = 36; maxProtects = 30; }
+    else if (scrollType === 'blessed') { baseRate = 31; maxProtects = 40; }
+    else if (scrollType === 'divine') { baseRate = 26; maxProtects = 50; }
+    else if (scrollType === 'lord') { baseRate = 21; maxProtects = 60; }
+
+    const protectNum = document.getElementById('encrypt-protect-num');
+    const protectCount = Math.min(maxProtects, Math.max(0, parseInt(protectNum ? protectNum.value : 0) || 0));
+
+    successRate = baseRate;
+    safeFailRate = protectCount;
+    const baseFail = 100 - baseRate;
+    destroyRate = Math.max(0, baseFail - protectCount);
+
+    if (destroyRate === 0) {
+      tipText = `파괴 보호 주문서가 완벽히 적용되어 실패 시 장비 파괴 위험이 0%입니다!`;
+    } else {
+      tipText = `주의: 실패 시 ${destroyRate}%의 확률로 장비가 영구 파괴됩니다. 보호 주문서를 최대(${maxProtects}장)로 채우는 것을 권장합니다.`;
+    }
+  }
+
+  if (successEl) successEl.textContent = `${successRate}%`;
+  if (safefailEl) safefailEl.textContent = `${safeFailRate}%`;
+  if (destroyEl) destroyEl.textContent = `${destroyRate}%`;
+
+  if (barSuccess) barSuccess.style.width = `${successRate}%`;
+  if (barSafefail) barSafefail.style.width = `${safeFailRate}%`;
+  if (barDestroy) barDestroy.style.width = `${destroyRate}%`;
+
+  if (tipEl) tipEl.textContent = tipText;
 }
 
 

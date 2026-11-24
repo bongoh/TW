@@ -4072,3 +4072,240 @@
     border-radius: 4px;
     margin-bottom: 0.35rem;
   }
+
+  /* ==================== PROBABILITY & ENCRYPT CALCULATOR STYLES ==================== */
+  .prob-hero-banner {
+    background: linear-gradient(135deg, rgba(30, 27, 75, 0.85), rgba(15, 23, 42, 0.95));
+    border: 1px solid rgba(139, 92, 246, 0.45);
+    border-radius: 10px;
+    padding: 1.15rem 1.3rem;
+    margin-bottom: 1.25rem;
+  }
+  .prob-hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #c4b5fd;
+    background: rgba(139, 92, 246, 0.18);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.4rem;
+  }
+  .prob-calc-card {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.3rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+  .prob-input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .prob-input-field label {
+    display: block;
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 0.4rem;
+  }
+  .prob-input-field select,
+  .prob-input-field input[type="number"],
+  .prob-input-field input[type="range"] {
+    width: 100%;
+    background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(100, 116, 139, 0.6);
+    color: #f8fafc;
+    border-radius: 6px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+  }
+  .prob-input-field select:focus,
+  .prob-input-field input:focus {
+    outline: none;
+    border-color: #a855f7;
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.35);
+  }
+  .prob-range-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .prob-range-num {
+    min-width: 3.5rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #fbbf24;
+    text-align: right;
+  }
+  .prob-stat-banner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .prob-stat-box {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(71, 85, 105, 0.6);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    text-align: center;
+  }
+  .prob-stat-box.success {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: rgba(6, 78, 59, 0.25);
+  }
+  .prob-stat-box.safefail {
+    border-color: rgba(56, 189, 248, 0.5);
+    background: rgba(12, 74, 110, 0.25);
+  }
+  .prob-stat-box.destroy {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(127, 29, 29, 0.25);
+  }
+  .prob-stat-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+  }
+  .prob-stat-value {
+    font-size: 1.65rem;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+  .prob-stat-box.success .prob-stat-value { color: #34d399; }
+  .prob-stat-box.safefail .prob-stat-value { color: #38bdf8; }
+  .prob-stat-box.destroy .prob-stat-value { color: #f87171; }
+
+  /* Multi-color Progress Gauge */
+  .prob-gauge-track {
+    height: 16px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(71, 85, 105, 0.7);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    margin-bottom: 0.85rem;
+  }
+  .prob-gauge-bar {
+    height: 100%;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .prob-gauge-bar.bar-success {
+    background: linear-gradient(90deg, #059669, #10b981);
+  }
+  .prob-gauge-bar.bar-safefail {
+    background: linear-gradient(90deg, #0284c7, #38bdf8);
+  }
+  .prob-gauge-bar.bar-destroy {
+    background: linear-gradient(90deg, #dc2626, #ef4444);
+  }
+
+  /* Monster Card Styles */
+  .mcard-hero-banner {
+    background: linear-gradient(135deg, rgba(88, 28, 135, 0.5), rgba(15, 23, 42, 0.9));
+    border: 1px solid rgba(192, 132, 252, 0.4);
+    border-radius: 10px;
+    padding: 1.15rem 1.3rem;
+    margin-bottom: 1.25rem;
+  }
+  .mcard-hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #f3e8ff;
+    background: rgba(168, 85, 247, 0.25);
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.4rem;
+  }
+  .mcard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1.2rem;
+  }
+  .mcard-skill-card {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(71, 85, 105, 0.6);
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .mcard-skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .mcard-skill-name {
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: #fbbf24;
+  }
+  .mcard-skill-badge {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+  .mcard-skill-badge.속성 { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56,189,248,0.4); }
+  .mcard-skill-badge.파밍 { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); }
+  .mcard-skill-badge.전투 { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+  .mcard-skill-badge.공격 { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+  .mcard-skill-badge.유틸 { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4); }
+  .mcard-skill-badge.생존 { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.4); }
+  .mcard-skill-badge.성장 { background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14,165,233,0.4); }
+  .mcard-skill-desc {
+    font-size: 0.81rem;
+    color: #cbd5e1;
+    line-height: 1.5;
+  }
+
+  /* Polishing Styles */
+  .polish-hero-banner {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    border-radius: 10px;
+    padding: 1.15rem 1.3rem;
+    margin-bottom: 1.25rem;
+  }
+  .polish-hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.18);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.4rem;
+  }
+
+  /* Relic Styles */
+  .relic-hero-banner {
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.35), rgba(15, 23, 42, 0.9));
+    border: 1px solid rgba(251, 146, 60, 0.45);
+    border-radius: 10px;
+    padding: 1.15rem 1.3rem;
+    margin-bottom: 1.25rem;
+  }
+  .relic-hero-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fdba74;
+    background: rgba(251, 146, 60, 0.18);
+    border: 1px solid rgba(251, 146, 60, 0.4);
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.4rem;
+  }

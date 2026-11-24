@@ -4203,13 +4203,17 @@
       <!-- Craft Sub Navigation -->
       <div class="craft-nav">
         <button type="button" class="craft-sub-btn active" onclick="switchCraftSubTab('craft-enchant', this)">🛡️ 제련 & 인챈트</button>
-        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-awakening', this)">⚠️ 5차 각성 개별 조합</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-probs', this)">🎲 4대 공식 확률표</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-mcard', this)">🃏 몬스터 카드 8스킬</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-polish', this)">📚 필수 연마 (서드시엔)</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-relic', this)">☀️ 렐릭 & 🦅 신조 성물</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-cuff', this)">💍 커프 & ⛏️ 발굴지</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-core', this)">👑 테시스 코어 & 코어마스터</button>
-        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-cuff', this)">💍 라이도 심볼릭 커프</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-eta', this)">🔮 에타의 의지 & 랭킹</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-aquil-abyss-opt', this)">💎 아퀼·어비스 옵션</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-pitta', this)">🧚 페어리 피타 & 틴트작</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-transfer', this)">📜 옵션 전이 & 부여석</button>
+        <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-awakening', this)">⚠️ 5차 각성 개별 조합</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-recipe', this)">📜 최상위 제작식</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-rune-book', this)">🌱 룬 도감 16종</button>
         <button type="button" class="craft-sub-btn" onclick="switchCraftSubTab('craft-gathering', this)">🌿 룬정원 채집 & 조제</button>
@@ -4259,6 +4263,586 @@
             <li><b>안전 강화 구간:</b> 1~6강은 안전하게 성공하나, 7강 이상 시 실패 페널티(수치 하락/내구도 손상)가 있으니 보호제를 지참하세요.</li>
             <li><b>기간제 장비 절약:</b> 버닝 지원 기간제 장비에는 값비싼 축복 인챈트 대신 가성비 일회용 마방 주문서로 알뜰하게 도배하세요.</li>
           </ul>
+        </div>
+      </div>
+
+      <!-- Sub-panel: 4 Core Probability Tables & Encrypt Calculator (인벤 1120, 1122, 1123, 1121) -->
+      <div id="craft-probs" class="craft-panel">
+        <div class="prob-hero-banner">
+          <div class="prob-hero-badge">🎲 테일즈위버 4대 핵심 공식 확률 도감 (인벤 1120 · 1122 · 1123 · 1121)</div>
+          <h3 style="color:#c084fc; font-size:1.25rem; margin:0.4rem 0 0.35rem; font-weight:800;">
+            🎲 4대 공식 확률표 & 실시간 인크립트 시뮬레이터
+          </h3>
+          <p style="font-size:0.87rem; color:#cbd5e1; line-height:1.65; margin:0;">
+            장비 합성을 뚫는 <b>인크립트 성공·파괴율 계산기</b>부터 <b>0~11강 장비 강화 단계별 하락치</b>, <b>테시스 코어 진화·강화 확률</b>, <b>소울링크 유물(소울이터 1.0%) 확률</b>을 완벽 분석하여 안전한 스펙업 로드맵을 제공합니다.
+          </p>
+        </div>
+
+        <!-- Interactive Encrypt Calculator -->
+        <div class="prob-calc-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+            <div style="display:flex; align-items:center; gap:0.45rem;">
+              <span style="font-size:1.15rem;">🧮</span>
+              <h4 style="color:#fbbf24; font-size:1.05rem; margin:0; font-weight:800;">실시간 인크립트 성공 · 파괴 확률 시뮬레이터</h4>
+            </div>
+            <span class="tag tag-ready" style="font-size:0.75rem;">공식 보호 주문서 알고리즘</span>
+          </div>
+
+          <div class="prob-input-grid">
+            <div class="prob-input-field">
+              <label for="encrypt-scroll-select">📜 인크립트 주문서 종류</label>
+              <select id="encrypt-scroll-select">
+                <option value="royal" selected>왕실 인크립트 (기본 36% / 최대 보호 30장)</option>
+                <option value="blessed">축복받은 인크립트 (기본 31% / 최대 보호 40장)</option>
+                <option value="divine">가호의 인크립트 (기본 26% / 최대 보호 50장)</option>
+                <option value="lord">로드 인크립트 (기본 21% / 최대 보호 60장)</option>
+                <option value="vianu">비아누의 인크립트 (노파괴 80%~3% / 안전 보존)</option>
+              </select>
+            </div>
+
+            <!-- Protect Scrolls Controls (For Normal Scrolls) -->
+            <div id="encrypt-protect-controls" class="prob-input-field">
+              <label for="encrypt-protect-range">
+                🛡️ 파괴 보호 주문서 투입 수량 <span id="encrypt-protect-max-label" style="color:#fbbf24; font-size:0.75rem;">(최대 30장)</span>
+              </label>
+              <div class="prob-range-row">
+                <input type="range" id="encrypt-protect-range" min="0" max="30" value="30">
+                <input type="number" id="encrypt-protect-num" class="prob-range-num" min="0" max="30" value="30" style="width:70px; text-align:center;">
+                <span style="font-size:0.85rem; color:#94a3b8;">장</span>
+              </div>
+            </div>
+
+            <!-- Vianu Synthesis Step (For Vianu Only) -->
+            <div id="encrypt-vianu-controls" class="prob-input-field" style="display:none;">
+              <label for="encrypt-vianu-step">🔮 비아누 대상 장비 합성 차수</label>
+              <select id="encrypt-vianu-step">
+                <option value="0">0 ➔ 1차 합성 (성공률 80%)</option>
+                <option value="1">1 ➔ 2차 합성 (성공률 65%)</option>
+                <option value="2">2 ➔ 3차 합성 (성공률 50%)</option>
+                <option value="3">3 ➔ 4차 합성 (성공률 40%)</option>
+                <option value="4">4 ➔ 5차 합성 (성공률 30%)</option>
+                <option value="5">5 ➔ 6차 합성 (성공률 20%)</option>
+                <option value="6">6 ➔ 7차 합성 (성공률 15%)</option>
+                <option value="7">7 ➔ 8차 합성 (성공률 10%)</option>
+                <option value="8">8 ➔ 9차 합성 (성공률 5%)</option>
+                <option value="9">9 ➔ 10차 합성 (성공률 3%)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Live Probability Stat Display -->
+          <div class="prob-stat-banner">
+            <div class="prob-stat-box success">
+              <div class="prob-stat-label">🎯 성공 확률</div>
+              <div id="encrypt-success-pct" class="prob-stat-value">36%</div>
+            </div>
+            <div class="prob-stat-box safefail">
+              <div class="prob-stat-label">🛡️ 장비 보존 (안전 실패)</div>
+              <div id="encrypt-safefail-pct" class="prob-stat-value">30%</div>
+            </div>
+            <div class="prob-stat-box destroy">
+              <div class="prob-stat-label">💥 장비 영구 파괴 위험</div>
+              <div id="encrypt-destroy-pct" class="prob-stat-value">34%</div>
+            </div>
+          </div>
+
+          <!-- Stacked Progress Gauge -->
+          <div class="prob-gauge-track" title="녹색: 성공 / 청색: 보존(안전실패) / 적색: 파괴">
+            <div id="encrypt-bar-success" class="prob-gauge-bar bar-success" style="width: 36%;"></div>
+            <div id="encrypt-bar-safefail" class="prob-gauge-bar bar-safefail" style="width: 30%;"></div>
+            <div id="encrypt-bar-destroy" class="prob-gauge-bar bar-destroy" style="width: 34%;"></div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#94a3b8; margin-bottom:0.75rem;">
+            <span>🟩 성공</span>
+            <span>🟦 실패하지만 장비 보존 (보호 주문서 차감)</span>
+            <span>🟥 실패 시 장비 영구 파괴</span>
+          </div>
+
+          <div id="encrypt-calc-tip" class="info-box" style="border-color:rgba(239,68,68,0.4); margin:0 0 0.6rem; font-size:0.84rem; color:#fca5a5;">
+            주의: 실패 시 34%의 확률로 장비가 영구 파괴됩니다. 보호 주문서를 최대(30장)로 채우는 것을 권장합니다.
+          </div>
+          <div id="encrypt-scroll-desc" style="font-size:0.81rem; color:#94a3b8; line-height:1.5;">
+            왕실 인크립트: 기본 성공률 36% (실패율 64%). 파괴 보호 주문서를 최대 30장까지 적용 가능합니다.
+          </div>
+        </div>
+
+        <!-- 2. Equipment Reinforcement Table (0 -> 11) -->
+        <div style="margin-top:1.8rem;">
+          <h4 style="color:#fbbf24; font-size:1.05rem; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem;">
+            <span>⚔️ 장비 강화(0 ➔ 11강) 성공률 & 실패 패널티 공식표 (인벤 1122)</span>
+          </h4>
+          <div class="table-container">
+            <table class="waste-table">
+              <thead>
+                <tr>
+                  <th>강화 단계</th>
+                  <th>성공 확률</th>
+                  <th>실패 시 페널티</th>
+                  <th>보호 아이템 & 공략 가이드</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>0 ➔ 1강</b></td>
+                  <td style="color:#34d399; font-weight:700;">100%</td>
+                  <td style="color:#94a3b8;">없음 (100% 안전 확정)</td>
+                  <td>기초 강화 구간</td>
+                </tr>
+                <tr>
+                  <td><b>1 ➔ 2강</b></td>
+                  <td style="color:#34d399; font-weight:700;">70%</td>
+                  <td style="color:#38bdf8;">실패 시 단계 유지 (하락 없음)</td>
+                  <td>노보호 안전 강화</td>
+                </tr>
+                <tr>
+                  <td><b>2 ➔ 3강</b></td>
+                  <td style="color:#34d399; font-weight:700;">50%</td>
+                  <td style="color:#38bdf8;">실패 시 단계 유지 (하락 없음)</td>
+                  <td>노보호 안전 강화</td>
+                </tr>
+                <tr>
+                  <td><b>3 ➔ 4강</b></td>
+                  <td style="color:#fbbf24; font-weight:700;">30%</td>
+                  <td style="color:#38bdf8;">실패 시 단계 유지 (하락 없음)</td>
+                  <td>노보호 안전 강화</td>
+                </tr>
+                <tr>
+                  <td><b>4 ➔ 5강</b></td>
+                  <td style="color:#fbbf24; font-weight:700;">20%</td>
+                  <td style="color:#38bdf8;">실패 시 단계 유지 (하락 없음)</td>
+                  <td>노보호 안전 강화</td>
+                </tr>
+                <tr>
+                  <td><b>5 ➔ 6강</b></td>
+                  <td style="color:#fbbf24; font-weight:700;">10%</td>
+                  <td style="color:#38bdf8;">실패 시 단계 유지 (하락 없음)</td>
+                  <td>일반 유저 가성비 안착선 (보통 6강까지 노보호 시도)</td>
+                </tr>
+                <tr>
+                  <td><b>6 ➔ 7강</b></td>
+                  <td style="color:#f87171; font-weight:700;">7%</td>
+                  <td style="color:#38bdf8;">실패 시 단계 유지 (하락 없음)</td>
+                  <td>안전 구간 마지막 선 (7강 달성 성공)</td>
+                </tr>
+                <tr style="background:rgba(239,68,68,0.12); border-left:3px solid #ef4444;">
+                  <td><b>7 ➔ 8강</b></td>
+                  <td style="color:#f87171; font-weight:800;">7%</td>
+                  <td style="color:#f87171; font-weight:800;">⚠️ 실패 시 1단계 하락 (6강 복귀!)</td>
+                  <td style="color:#fde68a;"><b>🚨 장비 강화 부적 필수!</b> (부적 미착용 시 6강 미끄러짐)</td>
+                </tr>
+                <tr style="background:rgba(239,68,68,0.12); border-left:3px solid #ef4444;">
+                  <td><b>8 ➔ 9강</b></td>
+                  <td style="color:#f87171; font-weight:800;">5%</td>
+                  <td style="color:#f87171; font-weight:800;">⚠️ 실패 시 2단계 하락 (6강 복귀!)</td>
+                  <td style="color:#fde68a;"><b>🚨 장비 강화 부적 + 행운석</b> 동시 투입 권장</td>
+                </tr>
+                <tr style="background:rgba(239,68,68,0.12); border-left:3px solid #ef4444;">
+                  <td><b>9 ➔ 10강</b></td>
+                  <td style="color:#f87171; font-weight:800;">5%</td>
+                  <td style="color:#f87171; font-weight:800;">⚠️ 실패 시 3단계 하락 (6강 복귀!)</td>
+                  <td style="color:#fde68a;"><b>🚨 장비 강화 부적 필수!</b> (종결 +10강 도전선)</td>
+                </tr>
+                <tr style="background:rgba(239,68,68,0.2); border-left:3px solid #dc2626;">
+                  <td><b>10 ➔ 11강</b></td>
+                  <td style="color:#f87171; font-weight:800;">5%</td>
+                  <td style="color:#f87171; font-weight:900;">💥 실패 시 0강 완전 초기화!!</td>
+                  <td style="color:#fca5a5;"><b>🚨 초월 엔드 스펙</b> (강화 부적 없으면 전재산 증발)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. Tesis Core Enhancement & Soul Link Artifact Tables -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:1.2rem; margin-top:1.8rem;">
+          <!-- Tesis Core Evolution Table -->
+          <div class="craft-card" style="border-top:3px solid #38bdf8;">
+            <div class="craft-card-title">
+              <span>👑 테시스 코어 진화·강화 확률표 (인벤 1123)</span>
+            </div>
+            <div style="font-size:0.83rem; color:#cbd5e1; line-height:1.6; margin-top:0.4rem;">
+              • <b>0 ➔ 1진화:</b> 코어 가루 50개 + 1천만 Seed (<b>성공 100%</b>)<br>
+              • <b>1 ➔ 2진화:</b> 코어 가루 100개 + 결정 5개 + 2천만 Seed (<b>성공 80%</b>)<br>
+              • <b>2 ➔ 3진화:</b> 코어 가루 200개 + 결정 15개 + 4천만 Seed (<b>성공 60%</b>)<br>
+              • <b>3 ➔ 4진화:</b> 코어 가루 400개 + 결정 30개 + 8천만 Seed (<b>성공 40%</b> ➔ 코어마스터 조건)<br>
+              • <b>1~10강화:</b> 가루 및 결정 소모 (성공률 70% ➔ 15%로 감소)
+            </div>
+            <div style="background:rgba(15,23,42,0.7); border-left:3px solid #34d399; padding:0.5rem 0.75rem; border-radius:4px; margin-top:0.6rem; font-size:0.82rem; color:#a7f3d0; line-height:1.5;">
+              💡 <b>절약 공식:</b> 테시스 코어 던전 입장 시 <b>TP 부스팅</b>을 켜면 재료 드롭이 대폭 상승하며, <b>부스탯 코어(명중/민첩/회피/물방)는 강화 비용이 정확히 50%(반값)</b>입니다!
+            </div>
+          </div>
+
+          <!-- Soul Link Artifact Rates -->
+          <div class="craft-card" style="border-top:3px solid #a855f7;">
+            <div class="craft-card-title">
+              <span>🔮 소울링크 유물 뽑기 확률표 (인벤 1121)</span>
+            </div>
+            <div style="font-size:0.83rem; color:#cbd5e1; line-height:1.6; margin-top:0.4rem;">
+              • <b>소울이터 (1.0% - SSS 1티어):</b> 보스 스탯 흡수 및 폭발적 능력치 뻥튀기<br>
+              • <b>감각의 해방 (5.0% - SS 1티어):</b> 크리티컬 대미지 배율 대폭 증폭<br>
+              • <b>소울시커 (12.0% - S 유틸):</b> 몬스터 탐지 및 사냥 파밍 편의성<br>
+              • <b>신성한 스크롤 / 크라운스톤 (각 15.0%):</b> 스탯 및 장비 보조<br>
+              • <b>일반 / 상급 유물 (67.0%):</b> 기초 능력치 보정
+            </div>
+            <div style="background:rgba(15,23,42,0.7); border-left:3px solid #fbbf24; padding:0.5rem 0.75rem; border-radius:4px; margin-top:0.6rem; font-size:0.82rem; color:#fde68a; line-height:1.5;">
+              💡 <b>파밍 팁:</b> 아브리 엔키라 일일 훈장을 모아 소울링크 관리인에게서 <b>'소울 포인트'</b>로 교환한 뒤 소울이터(1.0%)를 저격하세요!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-panel: Monster Card 8 Skills (인벤 38) -->
+      <div id="craft-mcard" class="craft-panel">
+        <div class="mcard-hero-banner">
+          <div class="mcard-hero-badge">🃏 개편된 몬스터 카드 조합 & 8스킬 종결 가이드 (인벤 38)</div>
+          <h3 style="color:#c084fc; font-size:1.25rem; margin:0.4rem 0 0.35rem; font-weight:800;">
+            🃏 몬스터 카드 8스킬 조합 & 비호·딜러 추천 세팅
+          </h3>
+          <p style="font-size:0.87rem; color:#cbd5e1; line-height:1.65; margin:0;">
+            개편 후 복잡한 8단 조합 공식은 사라졌습니다! <b>1랭크 4스킬 동카드 2장 조합 후 결과창에서 '다시 뽑기'</b>를 돌려 금카드(8스킬)를 바로 뽑는 최신 정석 조합법과 직업별 필수 8스킬을 안내합니다.
+          </p>
+        </div>
+
+        <!-- 4 Steps Routine -->
+        <div class="growth-roadmap-grid" style="margin-bottom:1.4rem;">
+          <div class="roadmap-step-card" style="border-top:3px solid #38bdf8;">
+            <div class="roadmap-step-num">STEP 01</div>
+            <div class="roadmap-step-title">동카드 2장 준비</div>
+            <div class="roadmap-step-desc">
+              카드 스캐너로 수집한 1랭크 카드 중 원하는 스킬이 4개씩 붙은 동카드 2장을 준비합니다.
+            </div>
+          </div>
+          <div class="roadmap-step-card" style="border-top:3px solid #a855f7;">
+            <div class="roadmap-step-num">STEP 02</div>
+            <div class="roadmap-step-title">카드 조합 실행</div>
+            <div class="roadmap-step-desc">
+              인게임 몬스터 카드 창에서 두 동카드를 합성 창에 올려놓고 조합 버튼을 누릅니다.
+            </div>
+          </div>
+          <div class="roadmap-step-card" style="border-top:3px solid #fbbf24;">
+            <div class="roadmap-step-num">STEP 03 (핵심)</div>
+            <div class="roadmap-step-title">다시 뽑기 반복</div>
+            <div class="roadmap-step-desc">
+              결과 화면에서 약간의 시드를 지불하고 <b>[다시 뽑기]</b>를 반복하여 금카드(8스킬)를 띄웁니다.
+            </div>
+          </div>
+          <div class="roadmap-step-card" style="border-top:3px solid #34d399;">
+            <div class="roadmap-step-num">STEP 04</div>
+            <div class="roadmap-step-title">8스킬 확정 등록</div>
+            <div class="roadmap-step-desc">
+              원하는 유효 8개 스킬이 모두 붙은 금카드가 나오면 확정하여 슬롯에 장착합니다!
+            </div>
+          </div>
+        </div>
+
+        <!-- Biho 8 Skills Section -->
+        <div style="margin-bottom:1.5rem;">
+          <h4 style="color:#38bdf8; font-size:1.05rem; margin-bottom:0.65rem; display:flex; align-items:center; gap:0.4rem;">
+            <span>🛡️ 비호정령 추천 종결 8스킬 세팅</span>
+          </h4>
+          <div class="mcard-grid">
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">백속성 (+3)</span>
+                <span class="mcard-skill-badge 속성">속성</span>
+              </div>
+              <div class="mcard-skill-desc">비호정령의 주속성(백속성)을 대폭 높여 힐량 계수와 딜링 파워를 동시 강화</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">레어 (+4)</span>
+                <span class="mcard-skill-badge 파밍">파밍</span>
+              </div>
+              <div class="mcard-skill-desc">보스 레이드 및 일반 필드 몬스터의 아이템 드롭률을 대폭 상승시키는 필수 유틸</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">전투준비 (+4)</span>
+                <span class="mcard-skill-badge 전투">전투</span>
+              </div>
+              <div class="mcard-skill-desc">전투 진입 시 공격력/마법방어력 및 방어 관통력을 순간적으로 대폭 증폭</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">약점포착 (+3)</span>
+                <span class="mcard-skill-badge 공격">공격</span>
+              </div>
+              <div class="mcard-skill-desc">적의 마법방어력을 관통하고 추가 피해를 입히는 핵심 공격 패시브</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">이동속도 (+4)</span>
+                <span class="mcard-skill-badge 유틸">유틸</span>
+              </div>
+              <div class="mcard-skill-desc">비호의 생명과도 같은 장판 회피 기동력과 이동속도를 극대화 (이속 +4)</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">호기심 (+3)</span>
+                <span class="mcard-skill-badge 성장">성장</span>
+              </div>
+              <div class="mcard-skill-desc">사냥 시 경험치 획득량 증가 및 레벨업 서포트</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">속공 (+3)</span>
+                <span class="mcard-skill-badge 전투">전투</span>
+              </div>
+              <div class="mcard-skill-desc">스킬 후딜레이를 단축시키고 연타 공격 반응 속도를 비약적으로 상승</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">최후의의지 (+3)</span>
+                <span class="mcard-skill-badge 생존">생존</span>
+              </div>
+              <div class="mcard-skill-desc">위기 상황 시 대미지 흡수 보호막을 생성하여 레이드 돌연사 방지</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dealer 8 Skills Section -->
+        <div style="margin-bottom:1.3rem;">
+          <h4 style="color:#f87171; font-size:1.05rem; margin-bottom:0.65rem; display:flex; align-items:center; gap:0.4rem;">
+            <span>⚔️ 물리 / 마법 딜러 추천 종결 8스킬 세팅</span>
+          </h4>
+          <div class="mcard-grid">
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">주속성 (+3)</span>
+                <span class="mcard-skill-badge 속성">속성</span>
+              </div>
+              <div class="mcard-skill-desc">자신의 캐릭터 공격 속성(화/수/풍/토/뇌/암/백) 강화</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">주속성 공격 (+3)</span>
+                <span class="mcard-skill-badge 공격">공격</span>
+              </div>
+              <div class="mcard-skill-desc">해당 속성 타격 시 추가 속성 피해 증폭 적용</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">레어 (+4)</span>
+                <span class="mcard-skill-badge 파밍">파밍</span>
+              </div>
+              <div class="mcard-skill-desc">보스 레이드 전리품 드롭률 대폭 상승 필수 유틸</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">전투준비 (+4)</span>
+                <span class="mcard-skill-badge 전투">전투</span>
+              </div>
+              <div class="mcard-skill-desc">전투 개시 시 공격력 및 관통력 폭발적 증폭</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">약점포착 (+3)</span>
+                <span class="mcard-skill-badge 공격">공격</span>
+              </div>
+              <div class="mcard-skill-desc">방어력 무시 및 고정 추가 대미지 부여</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">이동속도 (+4)</span>
+                <span class="mcard-skill-badge 유틸">유틸</span>
+              </div>
+              <div class="mcard-skill-desc">보스 장판 회피 및 신속한 포지셔닝 보장</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">추가 대미지 (+3)</span>
+                <span class="mcard-skill-badge 공격">공격</span>
+              </div>
+              <div class="mcard-skill-desc">모든 타격 시 일정 수치의 추가 고정 피해 합산</div>
+            </div>
+            <div class="mcard-skill-card">
+              <div class="mcard-skill-header">
+                <span class="mcard-skill-name">치명타 (+3)</span>
+                <span class="mcard-skill-badge 공격">공격</span>
+              </div>
+              <div class="mcard-skill-desc">크리티컬 확률 보정 및 크리티컬 피해량 증폭</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box" style="border-color:rgba(192,132,252,0.45);">
+          <strong style="color:#c084fc;">💡 카드 스캐너 & 카드 보관함 200% 활용 꿀팁</strong>
+          <p style="font-size:0.85rem; color:#cbd5e1; margin-top:0.4rem; line-height:1.6;">
+            인게임 <b>[몬스터 카드 보관함]</b>과 <b>[카드 스캐너]</b> 기능을 켜두면 사냥 중에 잡는 모든 몬스터의 카드가 인벤토리를 차지하지 않고 보관함으로 자동 흡수됩니다. 동카드를 모을 때 매우 편리하므로 꼭 활성화해두세요!
+          </p>
+        </div>
+      </div>
+
+      <!-- Sub-panel: Polishing & Third Sien (인벤 39) -->
+      <div id="craft-polish" class="craft-panel">
+        <div class="polish-hero-banner">
+          <div class="polish-hero-badge">📚 스킬 한계돌파 & 대미지 극대화: 연마 총정리 (인벤 39)</div>
+          <h3 style="color:#fbbf24; font-size:1.25rem; margin:0.4rem 0 0.35rem; font-weight:800;">
+            📚 7대 기본 연마 · 체력 연마 & 서드 시엔(Third Sien) 도감
+          </h3>
+          <p style="font-size:0.87rem; color:#cbd5e1; line-height:1.65; margin:0;">
+            무기/방어구 공격력 증폭부터 HP 뻥튀기(체력 연마), 그리고 스킬 최대 레벨을 뚫어주는 <b>서드 시엔</b>까지 테일즈위버의 모든 연마 계통을 정리했습니다.
+          </p>
+        </div>
+
+        <!-- Vital Warning Banner for Third Sien -->
+        <div class="warning-alert-card" style="margin-bottom:1.4rem;">
+          <div class="warning-alert-title">
+            <span>🚨 [초특급 필수 확인] 서드 시엔 섭취 후 반드시 스킬창(V)에서 레벨을 직접 올리세요!</span>
+          </div>
+          <p style="font-size:0.87rem; color:#fca5a5; line-height:1.65; margin:0;">
+            서드 시엔 또는 컴플리트 서드시엔을 더블 클릭해 먹었다고 해서 스킬이 저절로 강해지지 않습니다!<br>
+            반드시 <b>키보드 <code>V</code>(스킬창)을 열고 해당 주력 스킬의 레벨 업 버튼(<code>+</code>)을 직접 눌러 수동으로 레벨을 올려주어야</b> 비로소 대미지 계수가 적용됩니다! (먹기만 하고 V키를 누르지 않아 미적용 상태로 다니는 초보자가 매우 많습니다)
+          </p>
+        </div>
+
+        <!-- 7 Base Masteries Table -->
+        <div style="margin-bottom:1.5rem;">
+          <h4 style="color:#fbbf24; font-size:1.05rem; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem;">
+            <span>⚔️ 7대 정규 기본 연마 도감표</span>
+          </h4>
+          <div class="table-container">
+            <table class="waste-table">
+              <thead>
+                <tr>
+                  <th>연마 명칭</th>
+                  <th>핵심 효과</th>
+                  <th>주요 획득처</th>
+                  <th>비호정령 권장도</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>무기 연마</b></td>
+                  <td>무기 공격력 & 마법 공격력 대폭 상승</td>
+                  <td>주간 보스, 어비스, 사과의 섬</td>
+                  <td style="color:#34d399;">필수 (딜량 상승)</td>
+                </tr>
+                <tr style="background:rgba(56,189,248,0.1);">
+                  <td><b>방어구 연마</b></td>
+                  <td>물리 방어력 & <b>마법 방어력 대폭 상승</b></td>
+                  <td>신조의 둥지, 어비스 지옥</td>
+                  <td style="color:#38bdf8; font-weight:800;">🥇 1순위 극강 필수 (마방/힐량 직결)</td>
+                </tr>
+                <tr>
+                  <td><b>콤보 연마</b></td>
+                  <td>콤보 공격 배율 및 연계 피해 증가</td>
+                  <td>어비스 심층, 머큐리얼</td>
+                  <td style="color:#fbbf24;">권장 (콤보 딜러/비호)</td>
+                </tr>
+                <tr>
+                  <td><b>속성 무시</b></td>
+                  <td>적의 속성 저항을 관통하여 상시 최대 대미지 적용</td>
+                  <td>레이드 보스 상자, 거래소</td>
+                  <td style="color:#34d399;">필수 (상위 레이드 역속성 관통)</td>
+                </tr>
+                <tr>
+                  <td><b>극천의 연마</b></td>
+                  <td>대미지 한계돌파 수치 확장</td>
+                  <td>이클립스, 상위 레이드 완제</td>
+                  <td style="color:#c084fc;">상위 종결선</td>
+                </tr>
+                <tr>
+                  <td><b>심연의 연마</b></td>
+                  <td>어비스 추가 피해 및 올스탯 증폭</td>
+                  <td>심연의 틈, 어비스 지옥</td>
+                  <td style="color:#c084fc;">심연 전용 특화</td>
+                </tr>
+                <tr>
+                  <td><b>신조의 연마</b></td>
+                  <td>신조 보스 피해량 및 방어 관통 보너스</td>
+                  <td>신조의 둥지 어려움</td>
+                  <td style="color:#c084fc;">신조 레이드 특화</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Extended Masteries -->
+        <div style="margin-bottom:1.3rem;">
+          <h4 style="color:#34d399; font-size:1.05rem; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem;">
+            <span>✨ 특수 및 확장 연마 (체력 연마 · 서드시엔 · 연강마)</span>
+          </h4>
+          <div class="craft-card-grid">
+            <div class="craft-card" style="border-top:3px solid #34d399;">
+              <div class="craft-card-title">
+                <span>체력 연마 (HP 마스터리 Lv.1~10)</span>
+                <span class="craft-badge-type" style="color:#34d399; border-color:rgba(52,211,153,0.4);">생존 1순위</span>
+              </div>
+              <div style="font-size:0.84rem; color:#cbd5e1; line-height:1.6; margin-top:0.35rem;">
+                최대 체력(HP)을 단계별로 대폭 뻥튀기합니다. 신어헬오방 등 상위 레이드 보스의 광역 폭딜에 즉사하지 않기 위한 필수 방어 연마입니다.
+              </div>
+            </div>
+
+            <div class="craft-card" style="border-top:3px solid #f59e0b;">
+              <div class="craft-card-title">
+                <span>서드 시엔 & 컴플리트 서드시엔</span>
+                <span class="craft-badge-type" style="color:#fbbf24; border-color:rgba(245,158,11,0.4);">스킬 한계돌파</span>
+              </div>
+              <div style="font-size:0.84rem; color:#cbd5e1; line-height:1.6; margin-top:0.35rem;">
+                주력 스킬의 최대 레벨 한계를 +1~+2 돌파하여 스킬 계수 자체를 비약적으로 상승시킵니다. (반드시 <code>V</code>키 눌러 레벨업!)
+              </div>
+            </div>
+
+            <div class="craft-card" style="border-top:3px solid #ef4444;">
+              <div class="craft-card-title">
+                <span>연마 강화 (연강마)</span>
+                <span class="craft-badge-type" style="color:#f87171; border-color:rgba(239,68,68,0.4);">끝판왕 배율</span>
+              </div>
+              <div style="font-size:0.84rem; color:#cbd5e1; line-height:1.6; margin-top:0.35rem;">
+                이미 습득한 기본 연마(무기/방어구/콤보)의 상승 배율을 1.5~2배 이상 재증폭시키는 최상위 스펙업의 최종 종착지입니다.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-panel: Relic & Shinjo Sacred Relic (인벤 40, 42) -->
+      <div id="craft-relic" class="craft-panel">
+        <div class="relic-hero-banner">
+          <div class="relic-hero-badge">☀️ 영구 올스탯 내실: 태양의 렐릭 & 신조의 성물 (인벤 40 · 42)</div>
+          <h3 style="color:#fdba74; font-size:1.25rem; margin:0.4rem 0 0.35rem; font-weight:800;">
+            ☀️ 네냐플 디르웬 태양의 렐릭 & 🦅 신조의 성물 슬롯 가이드
+          </h3>
+          <p style="font-size:0.87rem; color:#cbd5e1; line-height:1.65; margin:0;">
+            매일 꾸준히 조각을 모아 캐릭터의 기초 체력을 단련하는 <b>태양의 렐릭</b>과, 신조의 둥지 보상으로 계정 전체 캐릭터에 올스탯을 상시 제공하는 <b>신조의 성물</b> 내실을 소개합니다.
+          </p>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:1.25rem;">
+          <!-- Dirwen Sun Relic -->
+          <div class="craft-card" style="border-top:3px solid #f97316;">
+            <div class="craft-card-title">
+              <span>☀️ 네냐플 NPC 디르웬 태양의 렐릭 (인벤 40)</span>
+            </div>
+            <div style="font-size:0.85rem; color:#cbd5e1; line-height:1.65; margin-top:0.4rem;">
+              • <b>습득처:</b> 네냐플 학원 NPC 디르웬 일일 퀘스트<br>
+              • <b>일일 루틴:</b> 매일 디르웬 퀘스트를 완료하여 '렐릭의 조각' 파밍<br>
+              • <b>성장 효과:</b> Lv.1부터 Lv.30+까지 성장하며 <b>올스탯 + Max HP + 마법방어력(MR)</b>을 영구 제공<br>
+              • <b>가속 팁:</b> '응축된 렐릭의 결정'을 투입하면 성장 경험치가 비약적으로 상승하여 빠른 졸업이 가능합니다.
+            </div>
+            <div style="background:rgba(15,23,42,0.7); border-left:3px solid #fbbf24; padding:0.5rem 0.75rem; border-radius:4px; margin-top:0.6rem; font-size:0.82rem; color:#fde68a; line-height:1.5;">
+              💡 초보 비호정령은 매일 디르웬 일퀘만 챙겨도 마을 마방과 체력이 눈에 띄게 쑥쑥 오릅니다!
+            </div>
+          </div>
+
+          <!-- Shinjo Sacred Relic -->
+          <div class="craft-card" style="border-top:3px solid #eab308;">
+            <div class="craft-card-title">
+              <span>🦅 신조의 성물 슬롯 강화 시스템 (인벤 42)</span>
+            </div>
+            <div style="font-size:0.85rem; color:#cbd5e1; line-height:1.65; margin-top:0.4rem;">
+              • <b>습득처:</b> 신조의 둥지(일반/어려움) 주간 클리어 전리품<br>
+              • <b>필요 재료:</b> <b>신조의 눈물</b> & <b>신조의 깃털</b><br>
+              • <b>성물 효과:</b> 성물 슬롯 레벨업 시 <b>계정 내 모든 캐릭터에 올스탯 및 공격/방어 능력치가 상시 적용</b>되는 초특급 공유 내실!<br>
+              • <b>우선순위:</b> 신조의 둥지 주간 숙제를 꾸준히 돌아 눈물과 깃털을 모아 슬롯 레벨을 최우선으로 올려주세요.
+            </div>
+            <div style="background:rgba(15,23,42,0.7); border-left:3px solid #34d399; padding:0.5rem 0.75rem; border-radius:4px; margin-top:0.6rem; font-size:0.82rem; color:#a7f3d0; line-height:1.5;">
+              💡 부캐 육성 시에도 신조의 성물 능력치가 그대로 적용되어 초반 육성 속도가 매우 빨라집니다.
+            </div>
+          </div>
         </div>
       </div>
 
@@ -4417,6 +5001,20 @@
               🥇 <b>마법방어력(MR) 140 우선 달성</b> ➔ 🥈 <b>명중률(DEX)</b> ➔ 🥉 <b>크리티컬</b> 순으로 투자하는 것이 가장 효율적입니다.
             </div>
           </div>
+        </div>
+
+        <!-- Excavation Site Fast-Track Routine (Inven 43) -->
+        <div class="info-box" style="border-color:rgba(245,158,11,0.45); margin-top:1.4rem;">
+          <strong style="color:#fbbf24;">⛏️ 고대 유적 발굴지 & 라이도 커프 140 초고속 루트 (인벤 43)</strong>
+          <p style="font-size:0.86rem; color:#cbd5e1; margin-top:0.4rem; line-height:1.65;">
+            라이도 심볼릭 커프의 주스탯을 140까지 초고속으로 끌어올리는 일일 던전 파밍 공략입니다.
+          </p>
+          <ol style="margin-top:0.45rem; font-size:0.85rem; color:#e2e8f0; line-height:1.65; padding-left:1.2rem;">
+            <li><b>발굴지 일일 1회 필수 입장:</b> 발굴지 전역을 순회하며 네임드 몬스터 처치 및 보물상자 개봉으로 조각을 수급합니다.</li>
+            <li><b>1~100 구간:</b> 하급/중급 조합 조각을 아낌없이 투입하여 기초 스탯을 빠르게 올립니다.</li>
+            <li><b>100~140 구간:</b> 상승폭이 큰 상급 조각(+2~+4)을 집중 투입하여 효율을 극대화합니다.</li>
+            <li><b>졸업 후 연계:</b> 마법방어력(MR) 140 조기 달성 후 '설계자의 채굴장'으로 넘어가 200까지 확장합니다!</li>
+          </ol>
         </div>
       </div>
 
