@@ -7586,28 +7586,40 @@ var tdbSimState = {
 };
 
 function initShowroom() {
-  initTalesDbSimulator();
+  switchSimulatorMode('tdb-avatar');
 }
 
 function switchSimulatorMode(mode) {
   const btnTdb = document.getElementById('btn-mode-tdb-avatar');
   const btnUniform = document.getElementById('btn-mode-uniform-dye');
+  const btnAvatarDb = document.getElementById('btn-mode-avatar-db');
   const viewTdb = document.getElementById('view-tdb-avatar');
   const viewUniform = document.getElementById('view-uniform-dye');
-  const quickActions = document.getElementById('uniform-dye-quick-actions');
 
   if (mode === 'tdb-avatar') {
-    if (btnTdb) { btnTdb.classList.add('btn-primary', 'active'); btnTdb.classList.remove('btn-outline'); }
-    if (btnUniform) { btnUniform.classList.remove('btn-primary', 'active'); btnUniform.classList.add('btn-outline'); }
+    if (btnTdb) { btnTdb.className = 'btn-sm btn-primary active'; }
+    if (btnUniform) { btnUniform.className = 'btn-sm btn-outline'; }
+    if (btnAvatarDb) { btnAvatarDb.className = 'btn-sm btn-outline'; }
     if (viewTdb) viewTdb.style.display = 'block';
     if (viewUniform) viewUniform.style.display = 'none';
-    if (quickActions) quickActions.style.display = 'none';
-  } else {
-    if (btnTdb) { btnTdb.classList.remove('btn-primary', 'active'); btnTdb.classList.add('btn-outline'); }
-    if (btnUniform) { btnUniform.classList.add('btn-primary', 'active'); btnUniform.classList.remove('btn-outline'); }
+  } else if (mode === 'uniform-dye') {
+    if (btnTdb) { btnTdb.className = 'btn-sm btn-outline'; }
+    if (btnUniform) { btnUniform.className = 'btn-sm btn-primary active'; }
+    if (btnAvatarDb) { btnAvatarDb.className = 'btn-sm btn-outline'; }
     if (viewTdb) viewTdb.style.display = 'none';
     if (viewUniform) viewUniform.style.display = 'block';
-    if (quickActions) quickActions.style.display = 'flex';
+    initTalesDbSimulator();
+    switchSimulatorCategory('uniform', document.querySelector('.tdb-cat-btn[data-cat="uniform"]'));
+    renderSimulatorStage();
+    renderSimulatorGrid();
+  } else if (mode === 'avatar-db') {
+    if (btnTdb) { btnTdb.className = 'btn-sm btn-outline'; }
+    if (btnUniform) { btnUniform.className = 'btn-sm btn-outline'; }
+    if (btnAvatarDb) { btnAvatarDb.className = 'btn-sm btn-primary active'; }
+    if (viewTdb) viewTdb.style.display = 'none';
+    if (viewUniform) viewUniform.style.display = 'block';
+    initTalesDbSimulator();
+    switchSimulatorCategory('showHead', document.querySelector('.tdb-cat-btn[data-cat="showHead"]'));
     renderSimulatorStage();
     renderSimulatorGrid();
   }
@@ -7616,8 +7628,8 @@ function switchSimulatorMode(mode) {
 function reloadTalesDbIframe() {
   const frame = document.getElementById('tdb-avatar-sim-frame');
   if (frame) {
-    frame.src = 'https://talesdb.xyz/avatar-sim/?t=' + Date.now();
-    showSimulatorToast('🔄 테일즈DB 공식 시뮬레이터가 새로고침되었습니다.');
+    frame.src = 'https://talesdb.xyz/simulator/avatar/?t=' + Date.now();
+    showSimulatorToast('🔄 테일즈DB 공식 캔버스 시뮬레이터가 새로고침되었습니다.');
   }
 }
 
