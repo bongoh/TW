@@ -7958,3 +7958,381 @@
 }
 
 
+
+
+/* ==========================================================================
+   AUTHENTIC IN-GAME EQUIP VIEW & EQUIP DUAL-WINDOW SYSTEM
+   ========================================================================== */
+
+.tw-ingame-showcase-grid {
+  display: grid;
+  grid-template-columns: 1.18fr 0.82fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  align-items: stretch;
+}
+
+@media (max-width: 1024px) {
+  .tw-ingame-showcase-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 1. Equip View Window */
+.tw-ev-window {
+  background: #252836;
+  border: 2px solid #556285;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tw-ev-header {
+  background: linear-gradient(180deg, #3f4e75 0%, #26304d 100%);
+  padding: 8px 14px;
+  border-bottom: 1px solid #556285;
+  color: #e2e8f0;
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  letter-spacing: 0.5px;
+}
+
+.tw-ev-header .tw-ev-wtitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #e0f2fe;
+}
+
+.tw-ev-body {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  background: #363539;
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .tw-ev-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tw-ev-viewport {
+  background: #474441;
+  border-right: 2px solid #232530;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tw-ev-arrow-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  outline: none;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  z-index: 5;
+}
+
+.tw-ev-arrow-btn:hover {
+  transform: scale(1.15);
+  filter: brightness(1.2);
+}
+
+.tw-ev-arrow-btn:active {
+  transform: scale(0.95);
+}
+
+.tw-ev-arrow-btn img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+}
+
+.tw-ev-char-viewport {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 125px;
+  min-height: 190px;
+  position: relative;
+}
+
+.tw-ev-char-dot {
+  max-width: 110px;
+  max-height: 155px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.65));
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tw-ev-char-dot.rotated-right {
+  transform: scaleX(-1);
+}
+
+.tw-ev-char-dot.rotated-back {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.65)) brightness(0.85);
+}
+
+.tw-ev-angle-tag {
+  margin-top: 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid #334155;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Tooltip Panel inside Equip View */
+.tw-ev-tooltip {
+  background: rgba(26, 28, 36, 0.96);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #ffffff;
+  justify-content: space-between;
+}
+
+.tw-ev-title {
+  color: #d980fa;
+  font-size: 0.94rem;
+  font-weight: 800;
+  border-bottom: 1px solid #3d465e;
+  padding-bottom: 6px;
+  line-height: 1.35;
+}
+
+.tw-ev-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+}
+
+.tw-ev-cyan {
+  color: #55d0ff;
+  font-weight: 700;
+}
+
+.tw-ev-yellow {
+  color: #ffea55;
+  font-weight: 800;
+}
+
+.tw-ev-red {
+  color: #ff5555;
+  font-weight: 800;
+}
+
+.tw-ev-desc {
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 6px 8px;
+  border-left: 2px solid #55d0ff;
+  border-radius: 0 4px 4px 0;
+  margin: 2px 0;
+}
+
+.tw-ev-attr-strip {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.tw-ev-attr-strip img {
+  height: 24px;
+  max-width: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.tw-ev-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid #334155;
+}
+
+.tw-ev-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.tw-ev-action-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.2);
+}
+
+.tw-ev-action-btn:active {
+  transform: translateY(1px);
+}
+
+.tw-ev-action-btn img {
+  height: 28px;
+  object-fit: contain;
+  display: block;
+}
+
+/* 2. Equip In-Game Dual Window */
+.tw-eq-window {
+  background: #20243d;
+  border: 2px solid #4a5482;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tw-eq-header {
+  background: linear-gradient(180deg, #44517e 0%, #293356 100%);
+  padding: 8px 14px;
+  border-bottom: 1px solid #4a5482;
+  color: #f1f5f9;
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tw-eq-ctrls {
+  display: flex;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  cursor: default;
+}
+
+.tw-eq-slots-body {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: #1c2035;
+  flex: 1;
+}
+
+.tw-eq-slot-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 32px 1fr;
+  gap: 6px;
+  align-items: center;
+  background: #262b48;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #363d63;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.tw-eq-slot-row:hover {
+  background: #2d3356;
+  border-color: #556299;
+}
+
+.tw-eq-icon-slot {
+  width: 32px;
+  height: 32px;
+  background: #141727;
+  border: 1px solid #3e4875;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.tw-eq-icon-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.tw-eq-slot-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.tw-eq-slot-lbl {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 800;
+  line-height: 1.1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tw-eq-slot-item {
+  font-size: 0.74rem;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.tw-eq-slot-item.show-equipped {
+  color: #e9d5ff;
+  font-weight: 700;
+}
+
+.tw-eq-on-badge {
+  font-size: 0.58rem;
+  font-weight: 900;
+  background: #e0f2fe;
+  color: #0284c7;
+  padding: 1px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+
+.tw-eq-on-badge.off {
+  background: #334155;
+  color: #94a3b8;
+}
+
+.tw-eq-footer-box {
+  background: #171a2c;
+  padding: 10px 12px;
+  border-top: 1px solid #2f3659;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

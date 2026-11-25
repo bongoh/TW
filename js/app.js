@@ -7559,24 +7559,61 @@ function jumpToSpecupComparator(prefillGearKey, prefillRecKey) {
 }
 
 // ==================== TAB 8: DEDICATED AVATAR SHOWROOM & DRESSROOM ====================
-let showroomSelectedChar = 'roamini';
-let showroomCurrentSlotTab = 'showHead';
+let showroomSelectedChar = 'nayatrei';
+let showroomCurrentSlotTab = 'showArmor';
 let showroomSearchQuery = '';
 let showroomRoundFilter = '';
 let showroomQuickFilter = '';
 let showroomOutfit = null;
 
+let equipViewState = {
+  currentCharKey: 'nayatrei',
+  currentAngleIndex: 0,
+  angles: ["정면 (Isometric Front)", "우측면 (Right 45°)", "배면 (Back View)", "좌측면 (Left 45°)"],
+  selectedItem: null
+};
+
 function initShowroom() {
   if (!showroomOutfit) {
     const cur = (typeof profiles !== 'undefined' && profiles.find(x => x.id === currentProfileId)) || (typeof profiles !== 'undefined' ? profiles[0] : null);
     showroomOutfit = JSON.parse(JSON.stringify(cur?.twEquipState || toBeEquipState || TW_DEFAULT_EQUIP_STATE));
+    
+    // Ensure default demo items from screenshot are pre-equipped if slots are empty
+    if (!showroomOutfit.showArmor || showroomOutfit.showArmor.name.includes('미착용')) {
+      showroomOutfit.showArmor = {
+        key: 'showArmor',
+        name: '벚꽃비 의복 - 환 (나야)',
+        dur: '(100/100)',
+        tier: 'avatar',
+        isOn: true,
+        round: '갑옷 확장'
+      };
+    }
+    if (!showroomOutfit.showSubArms || showroomOutfit.showSubArms.name.includes('미착용')) {
+      showroomOutfit.showSubArms = {
+        key: 'showSubArms',
+        name: '라이도 심볼릭 커프',
+        dur: '(100/100)',
+        tier: 'avatar',
+        isOn: true,
+        round: '월템'
+      };
+    }
   }
   
+  // Set default inspected item in Equip View
+  if (!equipViewState.selectedItem) {
+    equipViewState.selectedItem = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.itemDetails['av_sakura_naya'] : null;
+  }
+
   // Match showroomSelectedChar to current profile
   const curProf = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
-  if (curProf) {
+  if (curProf && curProf.name) {
     const match = TW_CHARACTER_ROSTER.find(c => curProf.name.includes(c.name) || (curProf.charType && curProf.charType.includes(c.name)));
-    if (match) showroomSelectedChar = match.key;
+    if (match) {
+      showroomSelectedChar = match.key;
+      equipViewState.currentCharKey = match.key;
+    }
   }
 
   renderShowroomCharPills();
@@ -7592,7 +7629,8 @@ function initShowroom() {
     roundSel.innerHTML = opts;
   }
 
-  renderShowroomStage();
+  renderEquipView();
+  renderInGameEquipSlots();
   renderShowroomWardrobeItems();
 }
 
@@ -7600,43 +7638,292 @@ function renderShowroomCharPills() {
   const container = document.getElementById('showroom-char-pills');
   if (!container) return;
 
-  container.innerHTML = TW_CHARACTER_ROSTER.map(c => `
-    <button type="button" class="tw-char-pill ${showroomSelectedChar === c.key ? 'active' : ''}" onclick="selectShowroomChar('${c.key}')" title="${c.fullName} (${c.type})">
-      <span>${c.icon}</span>
-      <span>${c.name}</span>
-    </button>
-  `).join('');
+  container.innerHTML = TW_CHARACTER_ROSTER.map(c => {
+    const hasDot = typeof TW_AVATAR_RESOURCES !== 'undefined' && TW_AVATAR_RESOURCES.characterDots[c.key] && TW_AVATAR_RESOURCES.characterDots[c.key].dotImg.startsWith('assets/');
+    const dotBadge = hasDot ? '<span style="font-size:0.58rem; background:#0284c7; color:#fff; padding:1px 3px; border-radius:3px; margin-left:3px;">도트</span>' : '';
+    return `
+      <button type="button" class="tw-char-pill ${showroomSelectedChar === c.key ? 'active' : ''}" onclick="selectShowroomChar('${c.key}')" title="${c.fullName} (${c.type})">
+        <span>${c.icon}</span>
+        <span>${c.name}</span>
+        ${dotBadge}
+      </button>
+    `;
+  }).join('');
 }
 
 function selectShowroomChar(charKey) {
   showroomSelectedChar = charKey;
+  equipViewState.currentCharKey = charKey;
+
+  // Check character default item
+  if (typeof TW_AVATAR_RESOURCES !== 'undefined' && TW_AVATAR_RESOURCES.characterDots[charKey]) {
+    const charDot = TW_AVATAR_RESOURCES.characterDots[charKey];
+    if (charDot.defaultItem) {
+      inspectEquipViewItem(charDot.defaultItem);
+    }
+  }
+
   renderShowroomCharPills();
-  renderShowroomStage();
+  renderEquipView();
+  renderInGameEquipSlots();
 }
 
-function renderShowroomStage() {
-  const charDef = TW_CHARACTER_ROSTER.find(c => c.key === showroomSelectedChar) || TW_CHARACTER_ROSTER[2];
-  const charNameEl = document.getElementById('showroom-char-name');
-  const charSubEl = document.getElementById('showroom-char-subtitle');
-  const heroImg = document.getElementById('showroom-hero-img');
+function renderEquipView() {
+  const charDef = TW_CHARACTER_ROSTER.find(c => c.key === showroomSelectedChar) || TW_CHARACTER_ROSTER[9]; // default Naya
+  const headerNameEl = document.getElementById('ev-header-char-name');
+  const dotImg = document.getElementById('ev-char-dot-img');
+  const angleTag = document.getElementById('ev-angle-tag');
+
+  if (headerNameEl) headerNameEl.textContent = `${charDef.fullName} (${charDef.name})`;
+
+  // Character dot visual mapping
+  if (dotImg) {
+    const resDot = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.characterDots[showroomSelectedChar] : null;
+    if (resDot && resDot.dotImg) {
+      dotImg.src = resDot.dotImg;
+    } else {
+      dotImg.src = charDef.img;
+    }
+    dotImg.alt = charDef.fullName;
+
+    // Apply rotation class
+    dotImg.classList.remove('rotated-right', 'rotated-back');
+    if (equipViewState.currentAngleIndex === 1) dotImg.classList.add('rotated-right');
+    else if (equipViewState.currentAngleIndex === 2) dotImg.classList.add('rotated-back');
+    else if (equipViewState.currentAngleIndex === 3) dotImg.classList.add('rotated-right');
+  }
+
+  if (angleTag) {
+    angleTag.textContent = equipViewState.angles[equipViewState.currentAngleIndex];
+  }
+
+  // Render Tooltip details
+  const item = equipViewState.selectedItem || {
+    name: "벚꽃비 의복 - 환 (나야)",
+    fullName: "벚꽃비 의복 - 환 (나야) - 갑옷(갑옷 확장)",
+    slot: "showArmor",
+    durability: "100/100",
+    hardness: 100,
+    inscript: "합성 횟수 MAX",
+    reqChar: "나야트레이",
+    desc: "벚꽃비 마을 사람들이 즐겨 입는 의복, 환의 술법이 서려 있다.",
+    isUntradable: true
+  };
+
+  const titleEl = document.getElementById('ev-item-title');
+  const durEl = document.getElementById('ev-item-durability');
+  const hardEl = document.getElementById('ev-item-hardness');
+  const inscriptEl = document.getElementById('ev-item-inscript');
+  const reqCharEl = document.getElementById('ev-item-reqchar');
+  const descEl = document.getElementById('ev-item-desc');
+  const tradeEl = document.getElementById('ev-item-trade');
+  const statusEl = document.getElementById('ev-action-status');
+
+  if (titleEl) titleEl.textContent = item.fullName || `${item.name} - ${TW_AVATAR_DB?.slots[item.slot]?.label || "아바타"}`;
+  if (durEl) durEl.textContent = `내구도 ${item.durability || "100/100"}`;
+  if (hardEl) hardEl.textContent = `경도 ${item.hardness || 100}`;
+  if (inscriptEl) inscriptEl.textContent = item.inscript || "합성 횟수 MAX";
+  if (reqCharEl) reqCharEl.textContent = item.reqChar || "전체 캐릭터";
+  if (descEl) descEl.textContent = item.desc || "신비로운 힘이 깃든 화려한 아바타 의상.";
+  if (tradeEl) tradeEl.textContent = item.isUntradable !== false ? "교환불가[전속됨]" : "교환 가능";
+
+  const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
+  const isEquipped = outfit[item.slot] && outfit[item.slot].name === item.name;
+  if (statusEl) {
+    statusEl.textContent = isEquipped ? "착용 중 (Equipped)" : "미착용";
+    statusEl.style.color = isEquipped ? "#6ee7b7" : "#94a3b8";
+  }
+}
+
+function rotateEquipView(dir) {
+  equipViewState.currentAngleIndex = (equipViewState.currentAngleIndex + dir + 4) % 4;
+  const dotImg = document.getElementById('ev-char-dot-img');
+  const angleTag = document.getElementById('ev-angle-tag');
+
+  if (angleTag) angleTag.textContent = equipViewState.angles[equipViewState.currentAngleIndex];
+  if (dotImg) {
+    dotImg.classList.remove('rotated-right', 'rotated-back');
+    if (equipViewState.currentAngleIndex === 1) dotImg.classList.add('rotated-right');
+    else if (equipViewState.currentAngleIndex === 2) dotImg.classList.add('rotated-back');
+    else if (equipViewState.currentAngleIndex === 3) dotImg.classList.add('rotated-right');
+  }
+}
+
+function inspectEquipViewItem(nameOrId) {
+  let res = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.getItemResource(nameOrId) : null;
+  if (!res && typeof TW_AVATAR_DB !== 'undefined') {
+    const raw = TW_AVATAR_DB.getById(nameOrId) || TW_AVATAR_DB.items.find(x => x.name === nameOrId);
+    if (raw) {
+      res = {
+        id: raw.id,
+        name: raw.name,
+        fullName: `${raw.name} - ${raw.category || "아바타"}`,
+        slot: raw.slot,
+        category: raw.category,
+        round: raw.round,
+        durability: "100/100",
+        hardness: 100,
+        inscript: "합성 횟수 MAX",
+        reqChar: raw.name.includes("나야") ? "나야트레이" : raw.name.includes("보리스") ? "보리스" : raw.name.includes("루시안") ? "루시안" : "전체 캐릭터",
+        desc: `${raw.round || "화려한 아바타"} 구성 아이템으로, 캐릭터의 멋진 코디 외형을 완성합니다.`,
+        isUntradable: true,
+        iconUrl: null
+      };
+    }
+  }
+
+  if (res) {
+    equipViewState.selectedItem = res;
+    renderEquipView();
+  }
+}
+
+function previewCurrentEvItem() {
+  const dotImg = document.getElementById('ev-char-dot-img');
+  if (dotImg) {
+    dotImg.style.transform = 'scale(1.1)';
+    setTimeout(() => {
+      dotImg.style.transform = '';
+    }, 200);
+  }
+}
+
+function equipCurrentEvItem() {
+  if (!equipViewState.selectedItem) return;
+  tryOnAvatarItem(equipViewState.selectedItem.id || equipViewState.selectedItem.name, equipViewState.selectedItem.slot);
+}
+
+function renderInGameEquipSlots() {
+  const container = document.getElementById('tw-eq-slots-body');
+  if (!container) return;
+
+  const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
+
+  const slotPairs = [
+    {
+      realLabel: "REAL HEAD",
+      realName: "10강 어비스 헬름 (국민작 +15)",
+      showKey: "showHead",
+      showLabel: "SHOW HEAD",
+      icon: "👑"
+    },
+    {
+      realLabel: "REAL ARMOR",
+      realName: "+12 예리한 아노마... (78/84)",
+      showKey: "showArmor",
+      showLabel: "SHOW ARMOR",
+      icon: "👗",
+      customIcon: "assets/avatar/icon_sakura_robe.png"
+    },
+    {
+      realLabel: "REAL ARMS",
+      realName: "10강 어비스 무기 (국민작 +15)",
+      showKey: "showSubArms",
+      showLabel: "SHOW SUB ARMS",
+      icon: "🗡️",
+      customIcon: "assets/avatar/icon_curff.png"
+    },
+    {
+      realLabel: "REAL FACE",
+      realName: "어비스 아뮬렛 (+10마방)",
+      showKey: "showFace",
+      showLabel: "SHOW FACE",
+      icon: "👓"
+    },
+    {
+      realLabel: "REAL BACK",
+      realName: "10강 어비스 윙 (국민작 +15)",
+      showKey: "showBack",
+      showLabel: "SHOW BACK",
+      icon: "🪽"
+    },
+    {
+      realLabel: "REAL FOOT",
+      realName: "10강 어비스 부츠 (국민작 +15)",
+      showKey: "showFoot",
+      showLabel: "SHOW FOOT",
+      icon: "👣"
+    },
+    {
+      realLabel: "REAL EFFECT",
+      realName: "60마방 룬 마법진 효과",
+      showKey: "showEffect",
+      showLabel: "SHOW EFFECT",
+      icon: "✨"
+    },
+    {
+      realLabel: "RELIC (RIGHT)",
+      realName: "태양의 펜던트(+10) (100/100)",
+      showKey: "showRelic",
+      showLabel: "RELIC (LEFT)",
+      icon: "💎",
+      realName2: "태양의 브레이슬릿... (100/100)"
+    }
+  ];
+
+  let html = '';
+  slotPairs.forEach(p => {
+    const showItem = outfit[p.showKey];
+    const isShowEquipped = showItem && showItem.name && showItem.isOn !== false && !showItem.name.includes('미착용') && !showItem.name.includes('없음');
+    const showName = isShowEquipped ? `${showItem.name} ${showItem.dur || "(100/100)"}` : (p.realName2 || "외형 미착용");
+    
+    // Icon resolution
+    let iconSrc = null;
+    if (isShowEquipped) {
+      if (showItem.name.includes("벚꽃비 의복") || showItem.name.includes("사쿠라")) {
+        iconSrc = "assets/avatar/icon_sakura_robe.png";
+      } else if (showItem.name.includes("커프") || showItem.name.includes("라이도")) {
+        iconSrc = "assets/avatar/icon_curff.png";
+      } else if (p.customIcon) {
+        iconSrc = p.customIcon;
+      }
+    }
+
+    const iconHtml = iconSrc 
+      ? `<img src="${iconSrc}" class="tw-eq-icon-img" alt="아이콘">` 
+      : `<span style="font-size:0.9rem;">${p.icon}</span>`;
+
+    html += `
+      <div class="tw-eq-slot-row">
+        <!-- Real Slot Icon -->
+        <div class="tw-eq-icon-slot">
+          <span style="font-size:0.75rem; color:#94a3b8;">🛡️</span>
+        </div>
+        <!-- Real Slot Text -->
+        <div class="tw-eq-slot-info">
+          <div class="tw-eq-slot-lbl">${p.realLabel} <span class="tw-eq-on-badge">ON</span></div>
+          <div class="tw-eq-slot-item" title="${p.realName}">${p.realName}</div>
+        </div>
+
+        <!-- Show Slot Icon -->
+        <div class="tw-eq-icon-slot" onclick="inspectEquipViewItem('${isShowEquipped ? showItem.name : ""}')" style="cursor:pointer;" title="${p.showLabel} 클릭하여 Equip View 확인">
+          ${iconHtml}
+        </div>
+        <!-- Show Slot Text -->
+        <div class="tw-eq-slot-info">
+          <div class="tw-eq-slot-lbl">
+            <span>${p.showLabel}</span>
+            <span class="tw-eq-on-badge ${isShowEquipped ? '' : 'off'}" onclick="toggleShowSlotOn('${p.showKey}')">${isShowEquipped ? 'ON' : 'OFF'}</span>
+          </div>
+          <div class="tw-eq-slot-item ${isShowEquipped ? 'show-equipped' : ''}" title="${showName}" onclick="inspectEquipViewItem('${isShowEquipped ? showItem.name : ""}')" style="cursor:pointer;">
+            ${showName}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  // Update 5-Set Effect & Combat Contribution Box
+  const activeCount = countActiveAvatarPieces(outfit);
+  const is5Set = activeCount >= 5;
+
   const badge5Set = document.getElementById('showroom-5set-badge');
-  const tagsContainer = document.getElementById('showroom-floating-tags');
   const pieceCountText = document.getElementById('showroom-piece-count-text');
   const coeffEl = document.getElementById('showroom-stat-coeff');
   const dexEl = document.getElementById('showroom-stat-dex');
   const speedEl = document.getElementById('showroom-stat-speed');
-  const slotsContainer = document.getElementById('showroom-equipped-slots');
-
-  if (charNameEl) charNameEl.textContent = `${charDef.fullName} (${charDef.name})`;
-  if (charSubEl) charSubEl.textContent = `Lv.310 · ${charDef.sub} · ${charDef.type}`;
-  if (heroImg) {
-    heroImg.src = charDef.img;
-    heroImg.alt = charDef.fullName;
-  }
-
-  const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
-  const activeCount = countActiveAvatarPieces(outfit);
-  const is5Set = activeCount >= 5;
 
   if (badge5Set) {
     badge5Set.className = `tw-5set-indicator ${is5Set ? 'active' : 'inactive'}`;
@@ -7651,52 +7938,14 @@ function renderShowroomStage() {
   if (coeffEl) coeffEl.textContent = is5Set ? '+205 계수 (공식 x20.5)' : '+0 계수';
   if (dexEl) dexEl.textContent = is5Set ? '+10 DEX' : '+0 DEX';
   if (speedEl) speedEl.textContent = is5Set ? '이속 +3 / HP +2,000' : '효과 미적용';
+}
 
-  // Render floating tags
-  const slotLayers = [
-    { key: 'showHead', label: '투구', icon: '👑' },
-    { key: 'showArmor', label: '의상', icon: '👗' },
-    { key: 'showBack', label: '날개', icon: '🪽' },
-    { key: 'showFace', label: '얼굴', icon: '👓' },
-    { key: 'showEffect', label: '효과', icon: '✨' },
-    { key: 'showFoot', label: '발자국', icon: '👣' },
-    { key: 'showArms', label: '무기', icon: '🗡️' }
-  ];
-
-  if (tagsContainer) {
-    let ftagsHtml = '';
-    slotLayers.forEach(l => {
-      const it = outfit[l.key];
-      if (it && it.name && it.isOn !== false && !it.name.includes('미착용') && !it.name.includes('없음') && !it.name.includes('빈 슬롯')) {
-        ftagsHtml += `
-          <div class="tw-showroom-ftag" title="${l.label}: ${it.name}">
-            <span>${l.icon}</span> <span>${it.name}</span>
-          </div>
-        `;
-      }
-    });
-    tagsContainer.innerHTML = ftagsHtml;
-  }
-
-  // Render 7-Slot Equipped Quick Rows
-  if (slotsContainer) {
-    slotsContainer.innerHTML = slotLayers.map(l => {
-      const it = outfit[l.key];
-      const hasItem = it && it.name && it.isOn !== false && !it.name.includes('미착용') && !it.name.includes('없음') && !it.name.includes('빈 슬롯');
-      const name = hasItem ? it.name : '외형 미착용';
-      return `
-        <div class="tw-showroom-slot-row ${hasItem ? 'active' : ''}">
-          <div class="tw-showroom-slot-left" onclick="setShowroomSlotTab('${l.key}')" style="cursor:pointer;" title="클릭하여 ${l.label} 아바타 목록 보기">
-            <span class="tw-showroom-slot-tag">${l.icon} ${l.label}</span>
-            <span class="tw-showroom-slot-name">${name}</span>
-          </div>
-          <div style="display:flex; gap:4px; align-items:center;">
-            ${hasItem ? `<button type="button" class="btn-sm btn-outline" style="font-size:0.62rem; padding:1px 5px;" onclick="unequipShowroomSlot('${l.key}')">벗기</button>` : ''}
-            <button type="button" class="btn-sm btn-outline" style="font-size:0.62rem; padding:1px 5px; color:#38bdf8;" onclick="setShowroomSlotTab('${l.key}')">변경</button>
-          </div>
-        </div>
-      `;
-    }).join('');
+function toggleShowSlotOn(slotKey) {
+  if (!showroomOutfit) return;
+  if (showroomOutfit[slotKey]) {
+    showroomOutfit[slotKey].isOn = !showroomOutfit[slotKey].isOn;
+    renderInGameEquipSlots();
+    renderEquipView();
   }
 }
 
@@ -7793,9 +8042,14 @@ function renderShowroomWardrobeItems() {
             ${origSlotTag}
           </div>
         </div>
-        <button type="button" class="btn-sm ${isEquipped ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:2px 8px;">
-          ${isEquipped ? '착용중' : '입어보기'}
-        </button>
+        <div style="display:flex; gap:4px; align-items:center;">
+          <button type="button" class="btn-sm btn-outline" style="font-size:0.68rem; padding:2px 6px; color:#38bdf8;" onclick="event.stopPropagation(); inspectEquipViewItem('${item.id.replace(/'/g, "\\'")}')" title="Equip View에서 상세 확인">
+            보기
+          </button>
+          <button type="button" class="btn-sm ${isEquipped ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:2px 8px;">
+            ${isEquipped ? '착용중' : '입어보기'}
+          </button>
+        </div>
       </div>
     `;
   });
@@ -7815,7 +8069,7 @@ function tryOnAvatarItem(avatarId, slotKey) {
   if (!showroomOutfit) {
     showroomOutfit = JSON.parse(JSON.stringify(toBeEquipState || TW_DEFAULT_EQUIP_STATE));
   }
-  const avatar = typeof TW_AVATAR_DB !== 'undefined' ? TW_AVATAR_DB.getById(avatarId) : null;
+  const avatar = typeof TW_AVATAR_DB !== 'undefined' ? (TW_AVATAR_DB.getById(avatarId) || TW_AVATAR_DB.items.find(x => x.name === avatarId)) : null;
   if (!avatar) return;
 
   showroomOutfit[slotKey] = {
@@ -7830,7 +8084,9 @@ function tryOnAvatarItem(avatarId, slotKey) {
 
   toBeEquipState[slotKey] = JSON.parse(JSON.stringify(showroomOutfit[slotKey]));
 
-  renderShowroomStage();
+  inspectEquipViewItem(avatar.name);
+  renderEquipView();
+  renderInGameEquipSlots();
   renderShowroomWardrobeItems();
 
   if (document.getElementById('tw-equip-window-tobe')) {
@@ -7853,7 +8109,8 @@ function unequipShowroomSlot(slotKey) {
 
   toBeEquipState[slotKey] = JSON.parse(JSON.stringify(showroomOutfit[slotKey]));
 
-  renderShowroomStage();
+  renderEquipView();
+  renderInGameEquipSlots();
   renderShowroomWardrobeItems();
 
   if (document.getElementById('tw-equip-window-tobe')) {
@@ -7864,7 +8121,7 @@ function unequipShowroomSlot(slotKey) {
 
 function saveShowroomToProfile() {
   if (!showroomOutfit) return;
-  const showSlots = ['showHead', 'showArmor', 'showFace', 'showBack', 'showFoot', 'showEffect', 'showArms'];
+  const showSlots = ['showHead', 'showArmor', 'showFace', 'showBack', 'showFoot', 'showEffect', 'showArms', 'showSubArms'];
   
   showSlots.forEach(s => {
     if (showroomOutfit[s]) {
@@ -7892,7 +8149,8 @@ function saveShowroomToProfile() {
   renderInGameEquipWindow('asis', asIsEquipState, false);
   renderInGameEquipWindow('tobe', toBeEquipState, true);
   if (typeof updateDualEquipWindowDiff === 'function') updateDualEquipWindowDiff();
-  renderShowroomStage();
+  renderEquipView();
+  renderInGameEquipSlots();
 
   alert(`🎉 '${p ? p.name : "캐릭터"}' 프로필에 아바타 세팅이 확정 저장되었습니다!\n6번 탭 [계수·전투 시험장]과 캐릭터 프로필에 공식 5세트 효과가 실시간 반영되었습니다.`);
 }
@@ -7902,7 +8160,8 @@ function resetShowroomOutfit() {
   showroomOutfit = JSON.parse(JSON.stringify(p?.twEquipState || asIsEquipState || TW_DEFAULT_EQUIP_STATE));
   toBeEquipState = JSON.parse(JSON.stringify(showroomOutfit));
 
-  renderShowroomStage();
+  renderEquipView();
+  renderInGameEquipSlots();
   renderShowroomWardrobeItems();
 
   if (document.getElementById('tw-equip-window-tobe')) {
