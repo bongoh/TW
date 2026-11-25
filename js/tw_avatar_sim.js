@@ -329,6 +329,7 @@
     $('pager').onclick = e => { const b = e.target.closest('button[data-p]'); if (!b || b.disabled) return; gridPage = +b.dataset.p; appendCards(); };
     // 창 폭이 바뀌어 한 줄 칸 수가 달라지면 보던 첫 아이템이 든 쪽으로 다시 그린다
     if (window.ResizeObserver) new ResizeObserver(() => {
+      if (st.cat === 'uniform') return;
       const n = pageSize(); if (!gridSize || n === gridSize || !st.list.length) return;
       gridPage = Math.floor(gridPage * gridSize / n); appendCards();
     }).observe($('grid'));
@@ -451,10 +452,46 @@
     if (String(row[6] || '').trim() === 'O') groups.add('month');
     return { rank, groups, subs };
   }
-  // GitHub Pages 배포 환경: 불필요한 외부 시트(/data/sheets/...) 요청 건너뜀 (404 방지)
-  sheetRank = new Map();
-  sheetById = new Map();
+  // 로컬 테일즈DB 공식 아바타 DB(window.TW_TALESDB_AVATAR_DB) 기반 획득처 정보 및 순위 초기화
+  function srcInfoFromDBItem(it, rank) {
+    const groups = new Set(), subs = new Set();
+    const srcList = String(it.round || '').split(/\s+\/\s+/).map(x => x.trim()).filter(Boolean);
+    if (!srcList.length) srcList.push('이벤트 · 콜라보');
+    for (const src of srcList) {
+      for (const [g, , sub] of SRC_GROUPS) {
+        const v = sub(src);
+        if (v == null) continue;
+        groups.add(g);
+        if (v) subs.add(g + '|' + v);
+        break;
+      }
+    }
+    if (it.isMonthly || it.round === '월템') groups.add('month');
+    return { rank, groups, subs };
+  }
+
+  function initSheetDataFromLocal() {
+    if (sheetById && sheetById.size > 0) return;
+    sheetRank = new Map();
+    sheetById = new Map();
+    const db = (typeof window !== 'undefined' && window.TW_TALESDB_AVATAR_DB) || null;
+    if (!db || !db.items || !db.items.length) return;
+    db.items.forEach((it, i) => {
+      const info = srcInfoFromDBItem(it, i);
+      const idStr = String(it.id || '').replace(/^tdb_/, '');
+      if (/^\d+$/.test(idStr)) {
+        sheetById.set(+idStr, info);
+      }
+      if (it.name) {
+        sheetRank.set(newKey(it.name), i);
+      }
+    });
+  }
+
+  initSheetDataFromLocal();
+
   const bySheet = list => {
+    if (!sheetRank || !sheetRank.size) initSheetDataFromLocal();
     if (!sheetRank) return list;
     const rank = it => sheetById.get(it.id)?.rank ?? sheetRank.get(newKey(it.name)) ?? Infinity;
     return list.map((it, i) => [rank(it), i, it]).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(x => x[2]);
@@ -501,6 +538,7 @@
     if (!filtOn()) { box.classList.add('hidden'); box.innerHTML = ''; return; }
     const base = st.base || [], rows = [];
     if (filtSrcOn()) {
+      if (!sheetById || sheetById.size === 0) initSheetDataFromLocal();
       const cnt = new Map(), subCnt = new Map();
       for (const it of base) {
         const s = sheetById.get(it.id); if (!s) continue;
@@ -508,13 +546,15 @@
         for (const k of s.subs) subCnt.set(k, (subCnt.get(k) || 0) + 1);
       }
       const opts = SRC_GROUPS.filter(([g]) => cnt.get(g) || filt.src.has(g)).map(([g, label]) => filtChk('src', g, label, cnt.get(g) || 0, filt.src.has(g))).join('');
-      rows.push(`<div class="filt-row"><span class="filt-lbl">획득처</span><div class="filt-opts">${opts || '<span class="muted">이 목록에는 획득처 정보가 없습니다</span>'}</div></div>`);
-      for (const [g, label] of SRC_GROUPS) {
-        if (!filt.src.has(g)) continue;
-        const keys = [...new Set([...subCnt.keys(), ...filt.sub])].filter(k => k.startsWith(g + '|')).sort(subOrder);
-        if (keys.length < 2 && !keys.some(k => filt.sub.has(k))) continue;
-        rows.push(`<div class="filt-row filt-sub"><span class="filt-lbl">${esc(label)}</span><div class="filt-opts">` +
-          keys.map(k => filtChk('sub', k, k.slice(g.length + 1), subCnt.get(k) || 0, filt.sub.has(k))).join('') + '</div></div>');
+      if (opts) {
+        rows.push(`<div class="filt-row"><span class="filt-lbl">획득처</span><div class="filt-opts">${opts}</div></div>`);
+        for (const [g, label] of SRC_GROUPS) {
+          if (!filt.src.has(g)) continue;
+          const keys = [...new Set([...subCnt.keys(), ...filt.sub])].filter(k => k.startsWith(g + '|')).sort(subOrder);
+          if (keys.length < 2 && !keys.some(k => filt.sub.has(k))) continue;
+          rows.push(`<div class="filt-row filt-sub"><span class="filt-lbl">${esc(label)}</span><div class="filt-opts">` +
+            keys.map(k => filtChk('sub', k, k.slice(g.length + 1), subCnt.get(k) || 0, filt.sub.has(k))).join('') + '</div></div>');
+        }
       }
     }
     if (PART_CATS.has(st.cat) && partTypes.length) {
@@ -1019,10 +1059,12 @@
   function fillGrid() {
     const g = $('grid'); if (!g) return;
     if (st.cat === 'uniform') {
+      st.list = []; gridPage = 0; gridSize = 0;
       g.classList.add('dye-mode');
       const fBox = $('filt'); if (fBox) { fBox.classList.add('hidden'); fBox.innerHTML = ''; }
       const pBox = $('parts'); if (pBox) { pBox.classList.add('hidden'); pBox.innerHTML = ''; }
       const sRow = $('search') && $('search').closest('.btn-row'); if (sRow) sRow.classList.add('hidden');
+      pagerRender(0);
       renderUniformDyeGrid();
       return;
     }
@@ -1059,6 +1101,7 @@
   }
   // 지금 쪽의 카드만 그린다
   function appendCards() {
+    if (st.cat === 'uniform') return;
     const g = $('grid'), size = pageSize(), pages = Math.max(1, Math.ceil(st.list.length / size));
     gridSize = size; gridPage = Math.min(Math.max(0, gridPage), pages - 1);
     const from = gridPage * size, rows = st.list.slice(from, from + size);
@@ -1936,7 +1979,17 @@
   }
   function drawNow() {
     if (st.ci < 0 || !TW.S.chars[st.ci]) return;
-    try { TW.render($('view'), pose(), st.tick, { anchor, scale: st.zoom, under: bgOn() ? bgImage(st.bg) : null, underOff: bgOff() }); } catch (e) { console.error(e); }
+    try {
+      TW.render($('view'), pose(), st.tick, {
+        anchor,
+        scale: st.zoom,
+        under: bgOn() ? bgImage(st.bg) : null,
+        underOff: bgOff(),
+        equip: st.equip,
+        tdbUrl: (slot, id) => tdbUrl(slot, id),
+        onNeedRedraw: drawNow
+      });
+    } catch (e) { console.error(e); }
     $('tickLabel').textContent = `${st.tick} / ${st.maxT}`;
   }
   // one data tick per TICK_MS. The client's tick length is not known (60 ms looked slow next to the game): 45 ms
@@ -1948,17 +2001,42 @@
   // ---------------------------------------------------------------- export
   function download(canvas, name) { canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }, 'image/png'); }
   function baseName() { return `${TW.S.index.chars[st.ci].name}_m${st.motion}_d${st.dir}`; }
-  function savePng() { const cv = document.createElement('canvas'); cv.width = VIEW[0]; cv.height = VIEW[1]; TW.render(cv, pose(), st.tick, { anchor, scale: st.zoom }); download(cv, baseName() + `_t${st.tick}_x${st.zoom}.png`); }
+  function savePng() {
+    const cv = document.createElement('canvas'); cv.width = VIEW[0]; cv.height = VIEW[1];
+    TW.render(cv, pose(), st.tick, {
+      anchor,
+      scale: st.zoom,
+      equip: st.equip,
+      tdbUrl: (slot, id) => tdbUrl(slot, id)
+    });
+    download(cv, baseName() + `_t${st.tick}_x${st.zoom}.png`);
+  }
   function saveSheet() {
     const w = 220, h = 240, cv = document.createElement('canvas'); cv.width = w * 8; cv.height = h; const g = cv.getContext('2d');
     const p = pose();
-    TW.S.index.dir_order.forEach((d, i) => { const c = document.createElement('canvas'); c.width = w; c.height = h; TW.render(c, Object.assign({}, p, { dir: d }), st.tick, {}); g.drawImage(c, w * i, 0); });
+    TW.S.index.dir_order.forEach((d, i) => {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      TW.render(c, Object.assign({}, p, { dir: d }), st.tick, {
+        equip: st.equip,
+        tdbUrl: (slot, id) => tdbUrl(slot, id)
+      });
+      g.drawImage(c, w * i, 0);
+    });
     download(cv, `${TW.S.index.chars[st.ci].name}_m${st.motion}_sheet.png`);
   }
   function saveFrames() {               // every key tick of the current pose as one strip (GIF encoding needs a library; see README)
     const p = pose(), times = TW.frameTimes(p), w = VIEW[0], h = VIEW[1];
     const cv = document.createElement('canvas'); cv.width = w * times.length; cv.height = h; const g = cv.getContext('2d');
-    times.forEach((t, i) => { const c = document.createElement('canvas'); c.width = w; c.height = h; TW.render(c, p, t, { anchor, scale: st.zoom }); g.drawImage(c, w * i, 0); });
+    times.forEach((t, i) => {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      TW.render(c, p, t, {
+        anchor,
+        scale: st.zoom,
+        equip: st.equip,
+        tdbUrl: (slot, id) => tdbUrl(slot, id)
+      });
+      g.drawImage(c, w * i, 0);
+    });
     download(cv, baseName() + `_frames_${times.join('-')}.png`);
   }
 
@@ -2024,7 +2102,14 @@
       cv.width = Math.round(VIEW[0] * f); cv.height = Math.round(VIEW[1] * f);
       at = TW.centeredAnchor(p, cv.width / zoom, cv.height / zoom);
     }
-    TW.render(cv, p, tick, { anchor: at, scale: zoom, under: b ? null : under, underOff: bgOff() });
+    TW.render(cv, p, tick, {
+      anchor: at,
+      scale: zoom,
+      under: b ? null : under,
+      underOff: bgOff(),
+      equip: st.equip,
+      tdbUrl: (slot, id) => tdbUrl(slot, id)
+    });
     // 조각들의 네모 칸은 실제 그림보다 클 수 있다(이펙트 칸은 대부분 투명): 실제로 그려진 픽셀만 남기고 여백을 다시 둔다.
     // 캐릭터 둘레 일정 범위(SHOT.reach × 캐릭터 키)까지만 담는다: 기둥처럼 크게 뻗는 이펙트는 잘리고 캐릭터가 작아지지 않는다
     let limit = null;

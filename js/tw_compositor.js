@@ -1002,7 +1002,29 @@ const TW = (() => {
       ctx.restore();
     }
   }
-  // opts: {anchor: [x, y] | null (centered), bg: css colour | null, scale}
+  // 장착 아바타 아이콘 캐시 (애니메이션이 없는 확장 아바타 아이템 캔버스 렌더링용)
+  const ICON_IMG_CACHE = new Map();
+  function getIconImage(url, onNeedRedraw) {
+    if (!url) return null;
+    let entry = ICON_IMG_CACHE.get(url);
+    if (!entry) {
+      const img = new Image();
+      entry = { img, loaded: false, failed: false };
+      ICON_IMG_CACHE.set(url, entry);
+      img.onload = () => {
+        entry.loaded = true;
+        if (typeof onNeedRedraw === 'function') onNeedRedraw();
+      };
+      img.onerror = () => {
+        entry.loaded = false;
+        entry.failed = true;
+      };
+      img.src = url;
+    }
+    return entry.loaded ? entry.img : null;
+  }
+
+  // opts: {anchor: [x, y] | null (centered), bg: css colour | null, scale, equip, tdbUrl, onNeedRedraw}
   function render(canvas, pose, t, opts = {}) {
     const ctx = canvas.getContext('2d'); const sc = opts.scale || 1;
     const w = canvas.width / sc, h = canvas.height / sc;
@@ -1022,7 +1044,80 @@ const TW = (() => {
       const [cx, cy] = coreCenter(pose), [ox, oy] = opts.underOff || [0, 0];
       ctx.drawImage(u, Math.round(ax + cx + ox - u.naturalWidth / 2), Math.round(ay + cy + oy - u.naturalHeight / 2));
     }
-    drawLayers(ctx, compose(pose, t), ax, ay);
+    const layers = compose(pose, t);
+
+    // 1. 프레임 기준 캐릭터 앵커 산출 (몸통/헤어 프레임 기준 실시간 바운딩 박스)
+    const curLayers = layers.filter(l => l.tag === 'body' || l.tag === 'hair');
+    const b = bounds(curLayers.length ? curLayers : layers) || coreBox(pose);
+    const midX = ax + (b ? (b.minx + b.maxx) / 2 : 0);
+    const topY = ay + (b ? b.miny : -68);
+    const botY = ay + (b ? b.maxy : 0);
+    const cenY = ay + (b ? (b.miny + b.maxy) / 2 : -34);
+
+    // 2. 고유 애니메이션 프레임이 없어 레이어가 그려지지 않은 장착 확장 아이템 검색
+    const drawnTags = new Set(layers.map(l => l.tag));
+    const c = S.chars[pose.char];
+    const equipMap = opts.equip || {};
+    const items = (pose.items || []).filter(i => !(pose.hidden && pose.hidden.has(i)));
+    const fallbacks = [];
+
+    for (const iid of items) {
+      // 이미 스프라이트 도트 레이어가 있는 경우 중복 렌더링 방지
+      const hasSprite = drawnTags.has('item' + iid) || drawnTags.has('foot' + iid) ||
+                        layers.some(l => l.tag === 'item' + iid || (l.tag && l.tag.startsWith('foot' + iid)));
+      if (hasSprite) continue;
+
+      const it = c && c.byId && c.byId[iid];
+      const slot = (it && it.slot) || Object.keys(equipMap).find(k => equipMap[k] === iid) || 'body';
+      let url = opts.tdbUrl ? opts.tdbUrl(slot, iid) : null;
+      if (!url && S.tdb && S.tdb.icons && S.tdb.icons[iid]) {
+        const fn = S.tdb.icons[iid];
+        url = (S.tdb.base || 'assets/avatar/icons/') + encodeURIComponent(fn.split('/').pop());
+      }
+      if (!url && typeof window !== 'undefined' && window.TW_TALESDB_AVATAR_DB && window.TW_TALESDB_AVATAR_DB.items) {
+        const dbItem = window.TW_TALESDB_AVATAR_DB.items.find(x => x.id === 'tdb_' + iid || x.id === iid || +String(x.id).replace('tdb_', '') === iid);
+        if (dbItem && dbItem.iconUrl) url = dbItem.iconUrl;
+      }
+      if (url) {
+        fallbacks.push({ iid, slot, url });
+      }
+    }
+
+    const drawFallbackItem = f => {
+      const img = getIconImage(f.url, opts.onNeedRedraw);
+      if (!img) return;
+      let w = 40, h = 40, x = midX - 20, y = cenY - 20;
+      if (f.slot === 'back') {
+        w = 48; h = 48; x = midX - w / 2; y = cenY - h / 2;
+      } else if (f.slot === 'foot') {
+        w = 38; h = 38; x = midX - w / 2; y = botY - h / 2 - 2;
+      } else if (f.slot === 'body') {
+        w = 44; h = 44; x = midX - w / 2; y = cenY - h / 2 - 2;
+      } else if (f.slot === 'face') {
+        w = 36; h = 36; x = midX - w / 2; y = topY + 4;
+      } else if (f.slot === 'head') {
+        w = 40; h = 40; x = midX - w / 2; y = topY - h * 0.35;
+      }
+      ctx.drawImage(img, Math.round(x), Math.round(y), w, h);
+    };
+
+    // 3. 캐릭터 몸통 뒤 Z-Depth 레이어 렌더링 (효과 마법진, 발자국, 날개/망토)
+    for (const f of fallbacks) {
+      if (f.slot === 'back' || f.slot === 'foot' || f.slot === 'body') {
+        drawFallbackItem(f);
+      }
+    }
+
+    // 4. 캐릭터 정식 도트 레이어 렌더링 (몸체, 헤어, 제복 염색, 무기)
+    drawLayers(ctx, layers, ax, ay);
+
+    // 5. 캐릭터 전면 Z-Depth 레이어 렌더링 (얼굴 확장 악세사리, 투구/모자 확장)
+    for (const f of fallbacks) {
+      if (f.slot === 'face' || f.slot === 'head') {
+        drawFallbackItem(f);
+      }
+    }
+
     return [ax, ay];
   }
 

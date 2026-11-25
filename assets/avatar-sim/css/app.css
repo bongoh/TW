@@ -544,6 +544,7 @@ input[type=search]:focus { outline: none; border-color: var(--primary); box-shad
    74-Color Official Uniform Dye Studio & Salon
    ============================================================================ */
 .left .grid.dye-mode,
+:host(.embed) .left .grid.dye-mode,
 .grid.dye-mode {
   display: block !important;
   overflow-y: auto !important;
@@ -558,6 +559,7 @@ input[type=search]:focus { outline: none; border-color: var(--primary); box-shad
 
 @media (max-width: 900px) {
   .left .grid.dye-mode,
+  :host(.embed) .left .grid.dye-mode,
   .grid.dye-mode {
     height: 60vh !important;
     max-height: 70vh !important;
