@@ -160,17 +160,13 @@ const TW = (() => {
     }
   }
   function loadImage(url) {
-    // crossOrigin: the atlases are read back with getImageData (dyes, additive layers), which a CDN-hosted image
-    // only allows when it was requested with CORS (jsDelivr / R2 answer with Access-Control-Allow-Origin: *)
-    // a failed load (e.g. a cached copy without CORS headers) is tried once more under an address the cache has not seen
-    const one = u => new Promise((res, rej) => {
+    return new Promise((res, rej) => {
       const im = new Image();
-      if (/^https?:\/\//i.test(u)) im.crossOrigin = 'anonymous';
+      if (/^https?:\/\//i.test(url)) im.crossOrigin = 'anonymous';
       im.onload = () => res(im);
       im.onerror = () => rej(new Error(url));
-      im.src = u;
+      im.src = bust(url);
     });
-    return one(bust(url)).catch(() => (ownData(url) ? pass(true) : Promise.resolve()).then(() => one(bust(url) + '&rt=' + Date.now())));
   }
   async function loadTex(tid) {
     if (S.texs[tid] !== undefined) return S.texs[tid];

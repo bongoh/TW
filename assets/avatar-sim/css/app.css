@@ -73,9 +73,11 @@ input[type=search]:focus { outline: none; border-color: var(--primary); box-shad
 .who-card:hover { border-color: var(--primary); }
 .who-card .nm { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font-size: 11px; color: var(--muted); }
 .who-right { display: flex; flex-direction: column; gap: 6px; }
-/* category buttons as square cards next to the illustration */
-#cats { display: grid; grid-template-columns: repeat(5, 62px); gap: 6px; }
+/* category buttons as square cards next to the illustration (6x2 grid) */
+#cats { display: grid; grid-template-columns: repeat(6, 62px); gap: 6px; }
 #cats .btn { width: 62px; height: 62px; padding: 0 2px; border-radius: 10px; white-space: normal; line-height: 1.2; font-size: 12px; box-shadow: var(--shadow); }
+#cats .btn[data-v="uniform"] { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; line-height: 1.1; }
+#cats .btn[data-v="uniform"]::before { content: '🎨'; font-size: 20px; line-height: 30px; height: 30px; display: block; }
 
 /* item list: scrolls, no paging */
 .grid { flex: 1 1 auto; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, 104px); gap: 6px; justify-content: space-between; align-content: start;
@@ -536,4 +538,174 @@ input[type=search]:focus { outline: none; border-color: var(--primary); box-shad
   .slot input { left: 3px; top: 3px; }
   .slot-act { gap: 3px; font-size: 10px; }
   .slot-act .sym { width: 14px; height: 14px; font-size: 9px; }
+}
+
+/* ============================================================================
+   74-Color Official Uniform Dye Studio & Salon
+   ============================================================================ */
+.dye-studio {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+}
+.dye-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+.dye-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dye-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dye-act-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface-2, #f4f7f6);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.dye-act-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.dye-parts-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dye-part-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.dye-part-btn:hover {
+  border-color: var(--primary);
+}
+.dye-part-btn.on {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+.dye-part-chip {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.25);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+.dye-colors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 6px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 6px;
+  background: color-mix(in srgb, var(--surface, #fff) 55%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.dye-color-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  gap: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.dye-color-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(15, 107, 98, .18);
+}
+.dye-color-card.selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+.dye-color-chip {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.2);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.dye-color-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 86px;
+}
+.dye-color-hex {
+  font-size: 9.5px;
+  color: var(--muted);
+  font-family: monospace;
+}
+.dye-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+.dye-custom-row input[type="color"] {
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+}
+.dye-custom-row input[type="text"] {
+  width: 80px;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
 }

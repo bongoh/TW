@@ -152,45 +152,27 @@
   </div>
 </div>`;
   const VIEW = [516, 600];
-  // category cards and slot boxes, 5 per row. Transform cloaks have their own screen (the '변신 망토' card in the picker).
-  const CAT_ORDER = ['head', 'face', 'body', 'back', 'foot', 'hair', 'costume', 'weapon_av', 'weapon_eq', 'sub'];   // the list buttons
+  // category cards and slot boxes (6 in top row, 5 in bottom row).
+  const CAT_ORDER = ['uniform', 'head', 'face', 'body', 'back', 'foot', 'hair', 'costume', 'weapon_av', 'weapon_eq', 'sub'];   // the list buttons
   const SLOT_ORDER = ['head', 'face', 'body', 'back', 'foot', 'hair', 'costume', 'weapon', 'sub'];                  // the worn-item slots
   // list buttons that show part of a slot: 확장 무기 = avatar weapons, 일반 무기 = equipment weapons (the ones tagged [장비])
   const CAT_FILTER = { weapon_av: ['weapon', 'avatar'], weapon_eq: ['weapon', 'equip'] };
   const catSlot = c => (CAT_FILTER[c] || [c])[0], catKind = c => (CAT_FILTER[c] || [])[1];
-  const NO_KIND_FILTER = new Set(['weapon_av', 'weapon_eq', 'sub', 'bg']);   // lists that are all one kind: no 전체/아바타/장비 chips, no [장비] tag (bg = 배경)
+  const NO_KIND_FILTER = new Set(['uniform', 'weapon_av', 'weapon_eq', 'sub', 'bg']);   // lists that are all one kind: no 전체/아바타/장비 chips, no [장비] tag (bg = 배경)
   const SUB_LABEL = { '이솔렛': '보조 무기', '조슈아': '보조 무기' };                          // 이솔렛's off-hand is a second sword
   const hasSub = () => st.char.items.some(it => it.slot === 'sub');
-  // 목록 정보와 로그인(출입표) 확인은 사이트 서버가 처리한다 (api/avatar-list.mjs · board-server.mjs /api/login)
-  const LIST_URL = '/api/avatar-list';
   const LIST_LS = 'tw_avatar_list';                 // the last answer, used until the fresh one arrives (or if it does not)
   const listKept = loadLS(LIST_LS, { ids: [] });
   let skipIds = new Set(listKept.ids);
-  // the list is asked for in the background: the stage does not wait for it (Apps Script takes 1 s or more, 6 s when it
-  // has been idle). The item lists (grid, list-button pictures, weapon types, search suggestions) stay empty, with a
-  // loading ring, until the list is known: this visit's answer, or the copy kept in the browser when it was saved under
-  // the same data version (listFromKept) - items to hide come with a new export, so a copy from an older export might
-  // miss one. No answer at all: the kept copy is used (as before)
-  let listKnown = false;
+  let listKnown = true;
   function listFromKept() {
-    if (listKnown || !TW.S.ver || listKept.ver !== TW.S.ver) return;
-    listKnown = true; listArrived();
+    listKnown = true;
+    if (st.char) listArrived();
   }
-  let listReady = Promise.resolve();                // main() replaces it with the first fetch
+  let listReady = Promise.resolve();
   async function loadList() {
-    try {
-      const j = await (await fetch(LIST_URL, { cache: 'no-store' })).json();
-      // 서버의 숨김 번호를 먼저 넣고 묶음을 연다: 묶음이 더한 번호(skipIds.add, moreItems)를 서버 목록이 덮어써 로그인해도
-      // 숨긴 아이템이 Hidden 으로 세지지 않았다 (Hidden 0, 2026-11-03)
-      if (Array.isArray(j.hidden)) {
-        skipIds = new Set([...j.hidden, ...(st.full ? skipIds : [])]);
-        await (TW.S.verP || 0);                     // the data version this answer is kept under (listFromKept)
-        try { localStorage.setItem(LIST_LS, JSON.stringify({ ids: j.hidden, ver: TW.S.ver || 0 })); } catch (e) { }
-      }
-      // 이번 주 코드로 로그인한 브라우저(출입표 쿠키): 숨긴 아이템까지 연다
-      if (j.unlocked === true && !st.full) await openFull(j.bundle);
-    } catch (e) { }
-    listKnown = true; listArrived();
+    listKnown = true;
+    if (st.char) { listArrived(); fillGrid(); }
   }
   function listArrived() {
     if (!st.char || st.mode === 'tf') return;
@@ -222,8 +204,7 @@
   });
   // the items of that folder for the open character are added to the list (and count as skipped: not for the gallery)
   async function moreItems() {
-    if (!st.full || !st.more || st.ci < 0) return;
-    try { for (const id of await TW.mergeBundle(st.ci, st.more)) skipIds.add(id); } catch (e) { }
+    return;
   }
   const skipped = it => skipIds.has(it.id);
   const shown = it => st.full || (listKnown && !skipped(it));
@@ -278,8 +259,15 @@
   let TDB = { base: '', icons: {} };
   const tdbUrl = (slot, id) => TDB_SLOTS.has(slot) && TDB.icons[id] ? TDB.base + encodeURIComponent(TDB.icons[id].split('/').pop()) : null;
   const tdbImg = url => `<img class="tdb" src="${url}" alt="" loading="lazy" decoding="async" draggable="false">`;
-  // the icon from the shared sheets (icons/d: 64 per file, one request for a screenful) or else its own file
-  const tdbIcon = (slot, id) => { if (!TDB_SLOTS.has(slot)) return null; const cell = TW.tdbCell(id); if (cell) return { cell }; const url = tdbUrl(slot, id); return url ? { url } : null; };
+  // the icon from the local webp files (assets/avatar/icons/) or shared sheets
+  const tdbIcon = (slot, id) => {
+    if (!TDB_SLOTS.has(slot)) return null;
+    const url = tdbUrl(slot, id);
+    if (url) return { url };
+    const cell = TW.tdbCell(id);
+    if (cell) return { cell };
+    return null;
+  };
   const tdbHtml = t => t.cell ? `<span class="tdb" style="background-image:url('${t.cell.url}');background-position:${-t.cell.x}px ${-t.cell.y}px"></span>` : tdbImg(t.url);
 
   // where the exported data lives (opts.data): 'data/' next to this page, or the CDN; images from another origin are
@@ -497,7 +485,7 @@
   const SORTS = [['base', '기본', '테일즈DB 아바타 DB 순서 (획득처 순)'], ['new', '최신순', '최근에 추가된 아이템부터'], ['name', '이름순', '가나다 순']];
   const filt = { src: new Set(), sub: new Set(), newOnly: false, hiddenOnly: false, sort: SORTS.some(x => x[0] === settings.sort) ? settings.sort : 'base' };
   // 헤어도 정렬 · New · Hidden 은 쓴다 (획득처 · 종류 줄은 아바타 목록에만). 숨긴 헤어는 묶음이 붙인 alt, New 는 헤어의 new
-  const filtOn = () => st.mode !== 'tf' && !!st.char && st.cat !== 'bg';
+  const filtOn = () => st.mode !== 'tf' && !!st.char && st.cat !== 'bg' && st.cat !== 'uniform';
   const hiddenOf = it => st.cat === 'hair' ? !!it.alt : st.full && skipped(it);
   const filtSrcOn = () => !!sheetById && (SHEET_CATS.has(st.cat) || isListCat(st.cat));
   const filtActive = () => filt.src.size > 0 || filt.newOnly || filt.hiddenOnly;
@@ -614,8 +602,9 @@
     st.hair = idx.chars[ci].default_hair; st.motion = 0; st.dir = 10; st.tick = 0; st.q = ''; $('search').value = '';
     settings.lastChar = ci; saveLS();
     $('whoArt').src = artUrl(idx.chars[ci].art); $('whoName').textContent = idx.chars[ci].name; $('whoCard').title = idx.chars[ci].full;
-    // 5 per row: 머리 얼굴 의상 등 발자국 / 헤어 확장의상 무기 보조 변신
+    // 6 per row: 제복염색 머리 얼굴 의상 등 발자국 / 헤어 확장의상 무기 보조 변신
     const byKey = Object.fromEntries(idx.slots.map(s => [s.key, [s.key, s.label.replace(' (방패/펜듈럼)', ''), s.label]]));
+    byKey.uniform = ['uniform', '제복 염색', '🎨 제복/염색 (74색)'];
     byKey.weapon_av = ['weapon_av', '확장 무기', '아바타 무기']; byKey.weapon_eq = ['weapon_eq', '일반 무기', '장비 무기'];
     if (byKey.sub && SUB_LABEL[idx.chars[ci].name]) byKey.sub = ['sub', SUB_LABEL[idx.chars[ci].name], byKey.sub[2]];
     if (!hasSub()) { delete byKey.sub; if (st.cat === 'sub') st.cat = 'head'; }          // nothing to hold in the off hand
@@ -818,6 +807,7 @@
   const hairLabel = id => { const h = st.char.hairById[id]; return h ? h.name : String(id); };
   function listFor() {
     if (st.mode === 'tf') return TW.S.tlist.items.filter(it => nameMatch(it.name, st.q) || String(it.id) === st.q);
+    if (st.cat === 'uniform') return [];
     if (st.cat === 'bg') return [{ id: '', name: '배경 없음' }, ...bgList.map(e => ({ id: e.key, name: e.name }))].filter(e => !e.id || nameMatch(e.name, st.q));
     const c = st.char;
     if (st.cat === 'hair') {                                   // the character's own style (default) first
@@ -842,7 +832,214 @@
     const ordered = st.cat === 'weapon_av' ? avOrder(list) : list;
     return filtApply(ordered.some(it => it.new) ? [...ordered.filter(it => it.new), ...ordered.filter(it => !it.new)] : ordered);
   }
+  const TW_DYE_COLORS_74 = [
+    { code: "d", name: "기본제복", hex: "#4B5563" },
+    { code: "72", name: "구름솜", hex: "#E0E7FF" },
+    { code: "71", name: "신포도", hex: "#8B5CF6" },
+    { code: "70", name: "크림소다", hex: "#38BDF8" },
+    { code: "69", name: "골든골드", hex: "#FBBF24" },
+    { code: "68", name: "블루베리", hex: "#4338CA" },
+    { code: "67", name: "청포도", hex: "#84CC16" },
+    { code: "64", name: "체리블라썸핑크", hex: "#F43F5E" },
+    { code: "65", name: "레몬옐로우", hex: "#FACC15" },
+    { code: "66", name: "라임그린", hex: "#A3E635" },
+    { code: "61", name: "베이비핑크", hex: "#FBCFE8" },
+    { code: "62", name: "민트셔벗", hex: "#6EE7B7" },
+    { code: "63", name: "바이올렛실버", hex: "#CBD5E1" },
+    { code: "55", name: "딥마린블루", hex: "#1E3A8A" },
+    { code: "56", name: "일루전바이올렛", hex: "#7C3AED" },
+    { code: "57", name: "리프브라운", hex: "#78350F" },
+    { code: "58", name: "피그린", hex: "#15803D" },
+    { code: "59", name: "얼티밋핫핑크", hex: "#EC4899" },
+    { code: "60", name: "와인레드", hex: "#881337" },
+    { code: "1", name: "리얼화이트", hex: "#FFFFFF" },
+    { code: "2", name: "리얼블랙", hex: "#111827" },
+    { code: "3", name: "블러디레드", hex: "#DC2626" },
+    { code: "4", name: "포레스트그린", hex: "#166534" },
+    { code: "5", name: "스위트오렌지", hex: "#EA580C" },
+    { code: "6", name: "하이퍼리얼화이트", hex: "#F8FAFC" },
+    { code: "no", name: "하이퍼리얼블랙", hex: "#030712" },
+    { code: "7", name: "하이퍼리얼레드", hex: "#B91C1C" },
+    { code: "8", name: "하이퍼리얼그린", hex: "#15803D" },
+    { code: "9", name: "하이퍼리얼블루", hex: "#1D4ED8" },
+    { code: "10", name: "모닝골드1", hex: "#FEF08A" },
+    { code: "11", name: "모닝골드2", hex: "#FDE047" },
+    { code: "12", name: "모닝골드3", hex: "#FACC15" },
+    { code: "13", name: "모닝골드4", hex: "#EAB308" },
+    { code: "14", name: "모닝골드5", hex: "#CA8A04" },
+    { code: "15", name: "모닝골드6", hex: "#A16207" },
+    { code: "16", name: "모닝골드7", hex: "#854D0E" },
+    { code: "17", name: "모닝골드8", hex: "#713F12" },
+    { code: "18", name: "모닝골드9", hex: "#542F0B" },
+    { code: "19", name: "프레시민트1", hex: "#CCFBF1" },
+    { code: "20", name: "프레시민트2", hex: "#99F6E4" },
+    { code: "21", name: "프레시민트3", hex: "#5EEAD4" },
+    { code: "22", name: "프레시민트4", hex: "#2DD4BF" },
+    { code: "23", name: "프레시민트5", hex: "#14B8A6" },
+    { code: "24", name: "프레시민트6", hex: "#0D9488" },
+    { code: "25", name: "프레시민트7", hex: "#0F766E" },
+    { code: "26", name: "프레시민트8", hex: "#115E59" },
+    { code: "27", name: "프레시민트9", hex: "#134E4A" },
+    { code: "28", name: "스프라이트그린1", hex: "#DCFCE7" },
+    { code: "29", name: "스프라이트그린2", hex: "#BBF7D0" },
+    { code: "30", name: "스프라이트그린3", hex: "#86EFAC" },
+    { code: "31", name: "스프라이트그린4", hex: "#4ADE80" },
+    { code: "32", name: "스프라이트그린5", hex: "#22C55E" },
+    { code: "33", name: "스프라이트그린6", hex: "#16A34A" },
+    { code: "34", name: "스프라이트그린7", hex: "#15803D" },
+    { code: "35", name: "스프라이트그린8", hex: "#166534" },
+    { code: "36", name: "스프라이트그린9", hex: "#14532D" },
+    { code: "37", name: "블루밍핑크1", hex: "#FCE7F3" },
+    { code: "38", name: "블루밍핑크2", hex: "#FBCFE8" },
+    { code: "39", name: "블루밍핑크3", hex: "#F9A8D4" },
+    { code: "40", name: "블루밍핑크4", hex: "#F472B6" },
+    { code: "41", name: "블루밍핑크5", hex: "#EC4899" },
+    { code: "42", name: "블루밍핑크6", hex: "#DB2777" },
+    { code: "43", name: "블루밍핑크7", hex: "#BE185D" },
+    { code: "44", name: "블루밍핑크8", hex: "#9D174D" },
+    { code: "45", name: "블루밍핑크9", hex: "#831843" },
+    { code: "46", name: "프로즌블루1", hex: "#E0F2FE" },
+    { code: "47", name: "프로즌블루2", hex: "#BAE6FD" },
+    { code: "48", name: "프로즌블루3", hex: "#7DD3FC" },
+    { code: "49", name: "프로즌블루4", hex: "#38BDF8" },
+    { code: "50", name: "프로즌블루5", hex: "#0EA5E9" },
+    { code: "51", name: "프로즌블루6", hex: "#0284C7" },
+    { code: "52", name: "프로즌블루7", hex: "#0369A1" },
+    { code: "53", name: "프로즌블루8", hex: "#075985" },
+    { code: "54", name: "프로즌블루9", hex: "#0C4A6E" },
+    { code: "6", name: "하이퍼화이트", hex: "#F8FAFC" }
+  ];
+
+  function renderUniformDyeGrid() {
+    const g = $('grid'); if (!g) return;
+    g.innerHTML = ''; g.scrollTop = 0;
+    pagerRender(0);
+    const ci = st.ci;
+    if (ci < 0 || !TW.S.chars[ci]) {
+      g.innerHTML = '<div class="grid-empty">캐릭터를 먼저 선택해 주세요.</div>';
+      return;
+    }
+    const cname = TW.S.index.chars[ci].name;
+    const parts = TW.baseDyes(ci);
+    if (!parts || !parts.length) {
+      g.innerHTML = `<div class="grid-empty">${cname}의 기본 제복 염색 부위 정보가 없습니다.</div>`;
+      return;
+    }
+    if (st.uniformPart === undefined || st.uniformPart >= parts.length) {
+      st.uniformPart = 0;
+    }
+    const curK = st.uniformPart;
+    const curVal = st.bdye[curK];
+    $('countLabel').textContent = '공식 74색 제복 염색';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'dye-studio';
+
+    // 1. Header with title and reset actions
+    const hdr = document.createElement('div');
+    hdr.className = 'dye-header';
+    hdr.innerHTML = `<div class="dye-title">
+      <span>🎨</span>
+      <span><b>${cname}</b> 공식 제복 염색 Studio (${parts.length}개 부위)</span>
+    </div>
+    <div class="dye-actions">
+      <button type="button" class="dye-act-btn" id="dyeResetPart">선택 부위 기본색</button>
+      <button type="button" class="dye-act-btn" id="dyeResetAll">전체 부위 초기화</button>
+    </div>`;
+    wrap.appendChild(hdr);
+
+    // 2. Parts selector row
+    const pbar = document.createElement('div');
+    pbar.className = 'dye-parts-bar';
+    parts.forEach(([name], k) => {
+      const v = st.bdye[k];
+      const chipBg = v ? (v.startsWith('#') ? v : '#' + v) : '#ffffff';
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'dye-part-btn' + (k === curK ? ' on' : '');
+      b.innerHTML = `<span class="dye-part-chip" style="background:${chipBg};${!v ? 'border-style:dashed;' : ''}"></span>
+        <span>${k + 1}. ${name}</span>
+        ${v ? `<span class="dye-part-reset" data-reset="${k}" title="이 부위 초기화">×</span>` : ''}`;
+      b.onclick = ev => {
+        if (ev.target.classList.contains('dye-part-reset')) {
+          ev.stopPropagation();
+          delete st.bdye[k];
+          refresh();
+          renderUniformDyeGrid();
+          return;
+        }
+        st.uniformPart = k;
+        renderUniformDyeGrid();
+      };
+      pbar.appendChild(b);
+    });
+    wrap.appendChild(pbar);
+
+    // 3. 74 Official Colors Swatches Grid
+    const cgrid = document.createElement('div');
+    cgrid.className = 'dye-colors-grid';
+    TW_DYE_COLORS_74.forEach(c => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      const isCur = c.code === 'd' ? (!curVal) : (curVal && curVal.toLowerCase() === c.hex.replace('#', '').toLowerCase());
+      card.className = 'dye-color-card' + (isCur ? ' selected' : '');
+      card.title = `${c.name} (${c.hex})`;
+      card.innerHTML = `<span class="dye-color-chip" style="background:${c.hex}"></span>
+        <span class="dye-color-name">${c.name}</span>
+        <span class="dye-color-hex">${c.hex}</span>`;
+      card.onclick = () => {
+        if (c.code === 'd') {
+          delete st.bdye[curK];
+        } else {
+          st.bdye[curK] = c.hex.replace('#', '').toLowerCase();
+        }
+        refresh();
+        renderUniformDyeGrid();
+      };
+      cgrid.appendChild(card);
+    });
+    wrap.appendChild(cgrid);
+
+    // 4. Custom Hex input
+    const crow = document.createElement('div');
+    crow.className = 'dye-custom-row';
+    const curHex = curVal ? (curVal.startsWith('#') ? curVal : '#' + curVal) : '#ffffff';
+    crow.innerHTML = `<span style="font-size:12px;font-weight:700;">자유 색상:</span>
+      <input type="color" id="dyeCustomPicker" value="${curHex}">
+      <input type="text" id="dyeCustomHex" placeholder="#RRGGBB" value="${curVal ? '#' + curVal : ''}">
+      <button type="button" class="dye-act-btn" id="dyeCustomApply">적용</button>`;
+    wrap.appendChild(crow);
+
+    g.appendChild(wrap);
+
+    // Wire actions
+    const rPart = hdr.querySelector('#dyeResetPart');
+    if (rPart) rPart.onclick = () => { delete st.bdye[curK]; refresh(); renderUniformDyeGrid(); };
+    const rAll = hdr.querySelector('#dyeResetAll');
+    if (rAll) rAll.onclick = () => { st.bdye = {}; refresh(); renderUniformDyeGrid(); };
+
+    const cp = crow.querySelector('#dyeCustomPicker'), ch = crow.querySelector('#dyeCustomHex'), ca = crow.querySelector('#dyeCustomApply');
+    if (cp && ch && ca) {
+      cp.oninput = () => { ch.value = cp.value; };
+      cp.onchange = () => { st.bdye[curK] = cp.value.replace('#', '').toLowerCase(); refresh(); renderUniformDyeGrid(); };
+      const applyCustom = () => {
+        const val = ch.value.trim().replace('#', '');
+        if (/^[0-9a-fA-F]{6}$/.test(val)) {
+          st.bdye[curK] = val.toLowerCase();
+          refresh();
+          renderUniformDyeGrid();
+        }
+      };
+      ca.onclick = applyCustom;
+      ch.onkeydown = ev => { if (ev.key === 'Enter') applyCustom(); };
+    }
+  }
+
   function fillGrid() {
+    if (st.cat === 'uniform') {
+      renderUniformDyeGrid();
+      return;
+    }
     st.base = null; st.list = listFor(); st.shown = 0; gridPage = 0;
     filtRender();
     const g = $('grid'); g.innerHTML = ''; g.scrollTop = 0;
