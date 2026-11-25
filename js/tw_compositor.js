@@ -120,7 +120,7 @@ const TW = (() => {
   }
   // 로컬에 실제로 존재하는 에셋 번호 목록 (404 방지용 가드)
   const LOCAL_ANIMS = new Set([31, 136, 245, 516, 588, 915, 916, 917, 918, 919, 920, 921, 922, 923, 924, 925, 926, 927, 928, 929, 969, 3793, 3853, 4276, 4449, 4524, 4646, 4647, 4670, 4682, 4798, 4935, 4967, 4984, 4999, 5015, 5016, 5031, 5082, 5120, 5121, 5216, 5275, 5276, 5279, 5280, 5443, 5446, 5465, 5478, 5479, 5914, 5929, 5944, 5967, 6038, 6039, 6050, 6595, 6596, 6659, 7420, 7422, 7514, 8237, 8780, 8781, 9315, 9350, 9501, 10311, 10312, 10390, 10767, 10771, 11370, 11373, 12833, 13318, 13556, 13561, 13694, 13697, 13923, 13924, 13926, 13927, 13928, 13929, 13930, 13931, 13932, 13933, 16081, 20052, 20054, 20055, 22673, 22674, 22675, 22676, 22884, 22971, 23260, 23261, 23262, 23263, 23264, 23265, 23769, 30478, 30479, 30507, 30508, 32494, 32496, 32497, 33041, 38280, 44307, 45409, 45425, 45426, 45427, 45526, 45541, 45565, 47854, 56604, 56605, 56608, 56609, 56610, 56611, 56612, 56613, 70021, 74707, 75900, 75901, 76611, 76622, 76623, 76634, 76645, 76646, 76657, 76658, 76669, 76680, 79140, 79145, 79172, 79189, 79190, 79201, 79219, 79220, 79230, 79252, 79253, 79277, 79296, 79297, 79320, 79321, 80964, 80965, 80966, 80967, 81050, 81051, 83120, 85980, 86404, 86405, 86406, 86407, 86408, 86409, 87996, 88058, 88059, 88060, 88061, 93268, 93270, 95149, 95150, 107931, 112685, 112686, 123248]);
-  const LOCAL_TEXS = new Set([1, 25, 27, 63, 105, 115, 149, 208, 244, 330, 362, 486, 487, 488, 489, 490, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 512, 738, 742, 1273, 1305, 1427, 1493, 1494, 1496, 1507, 1550, 1551, 1552, 1569, 1571, 1586, 1591, 1606, 1607, 1657, 1660, 1662, 1663, 1664, 1665, 1677, 1680, 1770, 1771, 1772, 1774, 1775, 1782, 1792, 1805, 1813, 1814, 1853, 2039, 2041, 2087, 2110, 2119, 2263, 2284, 2299, 2300, 2395, 2403, 2472, 2492, 2494, 2607, 2653, 2658, 2744, 2916, 3043, 3053, 3094, 3112, 3115, 3126, 3127, 3129, 3130, 3131, 3132, 3133, 3134, 3135, 3136, 3312, 3581, 3641, 3642, 3643, 4219, 4220, 4221, 4222, 4260, 4261, 4262, 4263, 4274, 4277, 4306, 5284, 5285, 5305, 5306, 5607, 5608, 5609, 5694, 6375, 7220, 7421, 7462, 7463, 7464, 7465, 7468, 7510, 8293, 8294, 8301, 8302, 8303, 9953, 10129, 10202, 10412, 10494, 10495, 10496, 10497, 10498, 10499, 10854, 10913, 10914, 10915, 10916, 10917, 10918, 10921, 10922, 10923, 10924, 10925, 11158, 11159, 11182, 11801, 11897, 11899, 11902, 12352, 12361, 12362, 12927, 12929, 13134, 13135, 14402, 14575, 15525, 900010, 900024]);
+  const LOCAL_TEXS = new Set([1, 25, 27, 32, 63, 105, 112, 115, 149, 208, 244, 330, 362, 421, 486, 487, 488, 489, 490, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 512, 738, 742, 1136, 1273, 1305, 1427, 1493, 1494, 1496, 1507, 1550, 1551, 1552, 1569, 1571, 1586, 1591, 1606, 1607, 1657, 1660, 1662, 1663, 1664, 1665, 1677, 1680, 1770, 1771, 1772, 1774, 1775, 1782, 1792, 1805, 1813, 1814, 1853, 2039, 2041, 2087, 2110, 2119, 2263, 2284, 2299, 2300, 2395, 2403, 2472, 2492, 2494, 2607, 2653, 2658, 2744, 2916, 3043, 3053, 3094, 3112, 3115, 3126, 3127, 3128, 3129, 3130, 3131, 3132, 3133, 3134, 3135, 3136, 3187, 3312, 3581, 3641, 3642, 3643, 4219, 4220, 4221, 4222, 4260, 4261, 4262, 4263, 4274, 4277, 4306, 5284, 5285, 5305, 5306, 5607, 5608, 5609, 5694, 5699, 6375, 6376, 7220, 7421, 7462, 7463, 7464, 7465, 7468, 7510, 8293, 8294, 8301, 8302, 8303, 9953, 10129, 10202, 10412, 10494, 10495, 10496, 10497, 10498, 10499, 10854, 10913, 10914, 10915, 10916, 10917, 10918, 10921, 10922, 10923, 10924, 10925, 11158, 11159, 11182, 11801, 11897, 11899, 11902, 12352, 12361, 12362, 12927, 12929, 13134, 13135, 14402, 14575, 15525, 900010, 900024]);
   const LOCAL_IDX_TEXS = new Set([32, 112, 421, 1136, 3126, 3127, 3128, 3129, 3130, 3131, 3132, 3133, 3134, 3135, 3136, 3187, 3312, 4306, 5694, 5699, 6375, 6376, 7468, 7510, 9953, 10129, 10202, 10494, 10495, 10496, 10497, 10498, 10499, 10913, 10914, 10915, 10916, 10917, 10918, 10921, 10922, 10923, 10924, 10925, 14402, 14575]);
 
   async function loadAnim(id) {
@@ -516,20 +516,30 @@ const TW = (() => {
     const veh = items.map(i => [i, X.vehicles[i]]).find(([i, v]) => v);
     if (tf) {
       const [iid, tr] = tf;
-      body = tr.anim; bm = pose.raw ? pose.motion : tr.motions[pose.motion];
-      // an outfit with the hair painted in: a chosen hair style is drawn on the hairless body (DB 0293 alt 0, avatarlib.bald_body)
-      if (tr.costume && tr.hair_baked && drawHair && tr.bald) body = tr.bald;
-      else if (!tr.costume || tr.hair_baked) drawHair = false;
-      rest = !tr.costume ? [] : rest.filter(i => i !== iid && ['head', 'face', 'body', 'back', 'foot', 'weapon', 'sub'].includes((c.byId[i] || {}).slot));
-      if (tr.effect) extra.push([tr.effect, [bm], 3, 'transform' + iid + '_fx']);   // only in the motions the overlay was made for
+      const tfHasAnim = !!(S.anims[tr.anim] && S.anims[tr.anim].m && Object.keys(S.anims[tr.anim].m).length);
+      if (tfHasAnim) {
+        body = tr.anim; bm = pose.raw ? pose.motion : tr.motions[pose.motion];
+        // an outfit with the hair painted in: a chosen hair style is drawn on the hairless body (DB 0293 alt 0, avatarlib.bald_body)
+        if (tr.costume && tr.hair_baked && drawHair && tr.bald && S.anims[tr.bald]) body = tr.bald;
+        else if (!tr.costume || tr.hair_baked) drawHair = false;
+        rest = !tr.costume ? [] : rest.filter(i => i !== iid && ['head', 'face', 'body', 'back', 'foot', 'weapon', 'sub'].includes((c.byId[i] || {}).slot));
+        if (tr.effect && S.anims[tr.effect]) extra.push([tr.effect, [bm], 3, 'transform' + iid + '_fx']);   // only in the motions the overlay was made for
+      } else {
+        // 로컬에 의상 애니메이션이 없는 경우 캐릭터 기본 몸 및 헤어 유지 (화면 소멸 방지)
+        body = ix.body;
+        drawBody = true;
+        drawHair = !!hairRec;
+      }
     } else if (veh) {
       let [iid, v] = veh;
       const alt = v.alt && v.alt[pose.char]; if (alt) v = X.vehicles[alt];   // generic old vehicle -> this character's painted row
       const gi = Math.min(S.index.vehicle_group[pose.motion] || 0, v.groups.length - 1), g = v.groups[gi];
-      if (g.vehicle[0] === 65535) drawBody = drawHair = false;           // painted row: the rider anim already holds the seated character
+      if (g.vehicle[0] === 65535) {
+        if (g.rider[0] && S.anims[g.rider[0]]) drawBody = drawHair = false;
+      }
       else if (g.motion) bm = g.motion;
       else if (motionsOf(S.anims[body]).includes(14)) bm = 14;          // no rider motion given: sit (a guess)
-      for (const key of ['rider', 'vehicle', 'effect']) { const [a, m] = g[key]; if (a && a !== 65535) extra.push([a, [m, bm, 0, 'any'], 3, 'vehicle' + iid + '_' + key]); }
+      for (const key of ['rider', 'vehicle', 'effect']) { const [a, m] = g[key]; if (a && a !== 65535 && S.anims[a]) extra.push([a, [m, bm, 0, 'any'], 3, 'vehicle' + iid + '_' + key]); }
       rest = rest.filter(i => i !== iid);
     }
     const out = [[body, drawBody ? [bm] : null, 0, 'body']];
@@ -665,6 +675,13 @@ const TW = (() => {
   }
   function compose(pose, t) {
     const P = plan(pose), body = P[0], layers = [], attach = {}, WL = weaponLayers(pose, P);
+    const baseBody = S.index.chars[pose.char].body;
+    let bodyAnim = S.anims[body.a];
+    if (!bodyAnim || !bodyAnim.m) {
+      body.a = baseBody;
+      body.m = pose.motion;
+      bodyAnim = S.anims[baseBody];
+    }
     // attach points each piece of a worn weapon handed on, per item: a two-handed weapon is two pieces with an Effect2 each
     // (나야트레이 액스, 이솔렛 글라디우스·크리스) and its light (132576 의 반짝임) hangs on every piece, not only the last one
     const pieceAt = {}, pieceLayer = new Map();
@@ -688,7 +705,7 @@ const TW = (() => {
     // 염색은 텍스처의 팔레트를 바꾸는 것이라, 같은 텍스처를 그리는 다른 애니메이션에도 똑같이 든다: 확장 의상의 덧그림
     // (나야트레이 네냐플 교복 대기: 얼굴로 올린 손이 덧그림 123022 / 텍스처 15507), 몸 텍스처를 같이 쓰는 겹침(아나이스 모자 위 손)
     const dyeTex = cdi !== undefined ? new Set([...texSetOf(body.a), ...texSetOf(S.extras.transforms[cdi].effect)]) : bdye ? texSetOf(body.a) : null;
-    if (body.m !== null) for (const L of animLayers(S.anims[body.a], body.m, pose.dir, t, null, attach, true)) {
+    if (body.m !== null && bodyAnim) for (const L of animLayers(bodyAnim, body.m, pose.dir, t, null, attach, true)) {
       if (cdi !== undefined) L.img = costumeImage(L.tex, cdi, cdye);
       else if (bdye) L.img = baseImage(L.tex, pose.char, bdye);
       layers.push(Object.assign(L, { z: BODY_Z, pri: 0, tag: 'body' }));
@@ -697,7 +714,6 @@ const TW = (() => {
     // 프레임만 1~2px 밀려 있다 (이스핀 고양이 · 토끼 잠옷 달리기 8 · 12 방향 10프레임 중 3: 헤어가 앞으로 튀어나왔다, 2026-11-03).
     // 그 동작 · 방향의 프레임 70% 이상이 맨몸과 점이 똑같을 때만, 3px 안으로 다른 나머지를 실수로 보고 맨몸 점을 쓴다. 맨몸과 다르게
     // 그린 옷(나야트레이 고양이 잠옷 달리기 정면: 절반이 1px 다르고 그 점이 옷 머리에 맞다)은 의상의 점 그대로
-    const baseBody = S.index.chars[pose.char].body;
     if (body.m !== null && !pose.raw && body.a !== baseBody && dirData(S.anims[baseBody], body.m, pose.dir)
         && (pose.items || []).some(i => { const tr = S.extras.transforms[i]; return tr && tr.costume && !tr.hair_baked && tr.anim === body.a; })
         && headAgreement(body.a, baseBody, body.m, pose.dir) >= 0.7) {
@@ -828,6 +844,11 @@ const TW = (() => {
           const o = outLayer(behind, occ);
           if (o) layers.push(Object.assign(o, { z: rz, pri: 99, tag: behind[0].tag }));
         }
+      }
+    }
+    if (layers.length === 0 && bodyAnim) {
+      for (const L of animLayers(bodyAnim, 0, pose.dir, t, null, attach, true)) {
+        layers.push(Object.assign(L, { z: BODY_Z, pri: 0, tag: 'body' }));
       }
     }
     layers.sort((A, B) => (A.z - B.z) || (A.pri - B.pri) || (A.ei - B.ei));
