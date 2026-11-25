@@ -7648,11 +7648,16 @@ function renderShowroomCharPills() {
   if (!container) return;
 
   container.innerHTML = TW_CHARACTER_ROSTER.map(c => {
+    const res = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.characterDots[c.key] : null;
+    const hasDot = res && res.hasRealDot;
+    const badge = hasDot 
+      ? '<span style="font-size:0.58rem; background:#0284c7; color:#fff; padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">도트</span>'
+      : '<span style="font-size:0.58rem; background:#334155; color:#94a3b8; padding:1px 3px; border-radius:3px; margin-left:3px;">준비중</span>';
     return `
-      <button type="button" class="tw-char-pill ${showroomSelectedChar === c.key ? 'active' : ''}" onclick="selectShowroomChar('${c.key}')" title="${c.fullName} (${c.type})">
+      <button type="button" class="tw-char-pill ${showroomSelectedChar === c.key ? 'active' : ''}" onclick="selectShowroomChar('${c.key}')" title="${c.fullName} (${hasDot ? '인게임 도트 지원' : '도트 에셋 준비중'})">
         <span>${c.icon}</span>
         <span>${c.name}</span>
-        <span style="font-size:0.58rem; background:#0284c7; color:#fff; padding:1px 3px; border-radius:3px; margin-left:3px;">도트</span>
+        ${badge}
       </button>
     `;
   }).join('');
@@ -7936,127 +7941,91 @@ function renderEquipView() {
   if (headerNameEl) headerNameEl.textContent = `${charDef.fullName} (${charDef.name})`;
   if (angleTag) angleTag.textContent = equipViewState.angles[equipViewState.currentAngleIndex];
 
-  // Resolve base dot sprite
-  let dotSrc = `assets/avatar/${showroomSelectedChar}_transparent.png`;
-
-  // Check if character has an active Eltibo potion dye
-  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
-  const activeColor = charDyes[currentDyeState.selectedPartKey];
-  if (activeColor && typeof TW_DYE_DB !== 'undefined') {
-    const matchedPot = TW_DYE_DB.potions.find(p => p.hex.toLowerCase() === activeColor.toLowerCase());
-    if (matchedPot) {
-      dotSrc = `assets/avatar/${showroomSelectedChar}_dye_${matchedPot.id}.png`;
-    }
-  }
-
   // Check if Show Outfit (Costume / Accessories) is equipped
   const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
   const isFlipped = (equipViewState.currentAngleIndex === 1 || equipViewState.currentAngleIndex === 3);
 
-  // 1. Show Armor (아바타 의상 / 옷 체인지)
+  const charRes = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.characterDots[showroomSelectedChar] : null;
+  const hasRealDot = charRes && charRes.hasRealDot;
+  const stage = document.getElementById('tw-paperdoll-stage');
+  let placeholderEl = document.getElementById('pd-stage-placeholder');
+
+  // Permanently hide all synthetic layer overlays
+  ['pd-layer-armor', 'pd-layer-head', 'pd-layer-arms', 'pd-layer-back', 'pd-layer-face'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+
   const showArmor = outfit.showArmor;
   const isArmorOn = showArmor && showArmor.isOn !== false && !showArmor.name.includes('미착용') && !showArmor.name.includes('없음');
-  const armorLayer = document.getElementById('pd-layer-armor');
-
-  if (isArmorOn && (!activeColor || currentShowroomSubMode !== 'dye')) {
-    if (showroomSelectedChar === 'nayatrei' && showArmor.name.includes('벚꽃비')) {
-      dotSrc = 'assets/avatar/nayatrei_sakura_dot.png';
-      if (armorLayer) armorLayer.style.display = 'none';
-    } else {
-      const armorSprite = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.resolveLayerSprite('showArmor', showArmor.name) : null;
-      if (armorLayer && armorSprite) {
-        armorLayer.src = armorSprite;
-        armorLayer.style.display = 'block';
-      } else if (armorLayer) {
-        armorLayer.style.display = 'none';
-      }
-    }
-  } else {
-    if (armorLayer) armorLayer.style.display = 'none';
-  }
-
-  // 2. Show Head (모자 / 헤어 장식)
-  const showHead = outfit.showHead;
-  const isHeadOn = showHead && showHead.isOn !== false && !showHead.name.includes('미착용') && !showHead.name.includes('없음');
-  const headLayer = document.getElementById('pd-layer-head');
-  if (isHeadOn) {
-    const headSprite = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.resolveLayerSprite('showHead', showHead.name) : null;
-    if (headLayer && headSprite) {
-      headLayer.src = headSprite;
-      headLayer.style.display = 'block';
-    } else if (headLayer) {
-      headLayer.style.display = 'none';
-    }
-  } else {
-    if (headLayer) headLayer.style.display = 'none';
-  }
-
-  // 3. Show Sub Arms (무기 확장 / 커프)
   const showArms = outfit.showSubArms || outfit.showArms;
   const isArmsOn = showArms && showArms.isOn !== false && !showArms.name.includes('미착용') && !showArms.name.includes('없음');
-  const armsLayer = document.getElementById('pd-layer-arms');
-  if (isArmsOn) {
-    const armsSprite = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.resolveLayerSprite('showSubArms', showArms.name) : null;
-    if (armsLayer && armsSprite) {
-      armsLayer.src = armsSprite;
-      armsLayer.style.display = 'block';
-    } else if (armsLayer) {
-      armsLayer.style.display = 'none';
+  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
+  const activeColor = charDyes[currentDyeState.selectedPartKey];
+
+  if (hasRealDot) {
+    if (placeholderEl) placeholderEl.style.display = 'none';
+    if (charImg) charImg.style.display = 'block';
+
+    let dotSrc = charRes.dotImg;
+
+    // 1. If in Dye mode (눈사람족 염색소) and has active Elthevo dye applied
+    if (currentShowroomSubMode === 'dye' && activeColor && typeof TW_DYE_DB !== 'undefined') {
+      const matchedPot = TW_DYE_DB.potions.find(p => p.hex.toLowerCase() === activeColor.toLowerCase());
+      if (matchedPot) {
+        dotSrc = `assets/avatar/${showroomSelectedChar}_dye_${matchedPot.id}.png`;
+      }
+    } else if (isArmorOn || isArmsOn) {
+      // 2. If in Avatar mode and wearing costume/weapon -> swap to authentic in-game costume dot!
+      if (charRes.costumeDot) {
+        dotSrc = charRes.costumeDot;
+      }
+    }
+
+    if (charImg) {
+      charImg.src = dotSrc;
+      charImg.alt = charDef.name;
+      charImg.onerror = function() {
+        this.onerror = null;
+        this.src = charRes.dotImg;
+      };
     }
   } else {
-    if (armsLayer) armsLayer.style.display = 'none';
-  }
-
-  // 4. Show Back (날개 확장 / 등)
-  const showBack = outfit.showBack;
-  const isBackOn = showBack && showBack.isOn !== false && !showBack.name.includes('미착용') && !showBack.name.includes('없음');
-  const backLayer = document.getElementById('pd-layer-back');
-  if (isBackOn) {
-    const backSprite = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.resolveLayerSprite('showBack', showBack.name) : null;
-    if (backLayer && backSprite) {
-      backLayer.src = backSprite;
-      backLayer.style.display = 'block';
-    } else if (backLayer) {
-      backLayer.style.display = 'none';
+    // 9 characters awaiting in-game dot extraction
+    if (charImg) charImg.style.display = 'none';
+    if (!placeholderEl && stage) {
+      placeholderEl = document.createElement('div');
+      placeholderEl.id = 'pd-stage-placeholder';
+      stage.appendChild(placeholderEl);
     }
-  } else {
-    if (backLayer) backLayer.style.display = 'none';
-  }
-
-  // 5. Show Face (얼굴 장식 / 안경 / 홍조)
-  const showFace = outfit.showFace;
-  const isFaceOn = showFace && showFace.isOn !== false && !showFace.name.includes('미착용') && !showFace.name.includes('없음');
-  const faceLayer = document.getElementById('pd-layer-face');
-  if (isFaceOn) {
-    const faceSprite = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.resolveLayerSprite('showFace', showFace.name) : null;
-    if (faceLayer && faceSprite) {
-      faceLayer.src = faceSprite;
-      faceLayer.style.display = 'block';
-    } else if (faceLayer) {
-      faceLayer.style.display = 'none';
+    if (placeholderEl) {
+      placeholderEl.style.display = 'flex';
+      placeholderEl.style.flexDirection = 'column';
+      placeholderEl.style.alignItems = 'center';
+      placeholderEl.style.justifyContent = 'center';
+      placeholderEl.style.textAlign = 'center';
+      placeholderEl.style.padding = '12px 8px';
+      placeholderEl.style.zIndex = '20';
+      placeholderEl.innerHTML = `
+        <div style="font-size:2.2rem; margin-bottom:4px; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8));">${charDef.icon}</div>
+        <div style="font-weight:800; font-size:0.95rem; color:#fde68a; margin-bottom:4px;">${charDef.name}</div>
+        <div style="font-size:0.7rem; color:#94a3b8; line-height:1.45; margin-bottom:10px; max-width:140px;">
+          인게임 실물 도트 추출 준비 중입니다.<br>
+          <span style="color:#38bdf8; font-weight:700;">도트 지원 9인 캐릭터</span>를 선택해 보세요!
+        </div>
+        <button type="button" class="btn-sm btn-primary" onclick="selectShowroomChar('nayatrei')" style="font-size:0.68rem; padding:3px 10px; font-weight:800; border-radius:4px;">
+          🗡️ 나야트레이 바로가기
+        </button>
+      `;
     }
-  } else {
-    if (faceLayer) faceLayer.style.display = 'none';
   }
 
+  // Apply rotation classes to character image
   if (charImg) {
-    charImg.src = dotSrc;
-    charImg.alt = charDef.name;
-    // Guaranteed fallback so character is NEVER broken or transparent
-    charImg.onerror = function() {
-      this.onerror = null;
-      if (charDef.img) this.src = charDef.img;
-    };
+    charImg.classList.remove('rotated-right', 'rotated-back');
+    if (isFlipped) charImg.classList.add('rotated-right');
+    else if (equipViewState.currentAngleIndex === 2) charImg.classList.add('rotated-back');
   }
-
-  // Apply rotation classes to all visible layers
-  const allLayers = [charImg, armorLayer, headLayer, armsLayer, backLayer, faceLayer];
-  allLayers.forEach(l => {
-    if (!l) return;
-    l.classList.remove('rotated-right', 'rotated-back');
-    if (isFlipped) l.classList.add('rotated-right');
-    else if (equipViewState.currentAngleIndex === 2) l.classList.add('rotated-back');
-  });
 
   // Render Tooltip / Status details
   const item = equipViewState.selectedItem || {
