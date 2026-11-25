@@ -33,7 +33,7 @@
     </div>
   </div>
 
-  <!-- Category Navigation Tabs (8-Tabs Responsive 2x4 Grid) -->
+  <!-- Category Navigation Tabs (9-Tabs Responsive 3x3 Grid) -->
   <nav class="nav-tabs" role="tablist">
     <button class="tab-btn" data-tab="tab-growth" onclick="switchTab('tab-growth', this)">🌱 0. 버닝 육성 가이드</button>
     <button class="tab-btn" data-tab="tab-glossary" onclick="switchTab('tab-glossary', this)">📖 1. 필수 용어 사전</button>
@@ -43,6 +43,7 @@
     <button class="tab-btn" data-tab="tab-craft" onclick="switchTab('tab-craft', this)">🔨 5. 제련 · 조합 · 공방</button>
     <button class="tab-btn" data-tab="tab-coeff" onclick="switchTab('tab-coeff', this)">🧮 6. 계수 · 전투 시험장</button>
     <button class="tab-btn" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">💰 7. 시드 · 재료 계산기</button>
+    <button class="tab-btn" data-tab="tab-dressroom" onclick="switchTab('tab-dressroom', this)">👗 8. 아바타 드레스룸</button>
   </nav>
 
   <!-- ==================== TAB 0: BEGINNER BURNING GROWTH GUIDE ==================== -->
@@ -5961,6 +5962,138 @@
             🔍 부위별 세부 제작 소모 명세
           </div>
           <div id="equip-cards-grid" class="equip-card-grid"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== TAB 8: AVATAR DRESSROOM & FULL-BODY SHOWROOM ==================== -->
+  <div id="tab-dressroom" class="tab-panel">
+    <section>
+      <!-- Showroom Header -->
+      <div class="calc-header-card" style="margin-bottom: 1.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <h2 style="margin:0 0 0.35rem 0; font-size:1.4rem; color:#fde68a; display:flex; align-items:center; gap:0.5rem;">
+              <span>👗 8. 아바타 드레스룸 & 전신 쇼룸</span>
+              <span class="badge-pill gold" style="font-size:0.75rem;">2,098종 전수 DB</span>
+            </h2>
+            <p style="margin:0; font-size:0.83rem; color:#94a3b8; line-height:1.5;">
+              호랑구님의 1~83회차 및 월간 확장 아이템 2,098종 백과사전 · 18인 전 캐릭터 실시간 코디 쇼룸 및 화려한 아바타 5세트 스탯 버프 시뮬레이터
+            </p>
+          </div>
+          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="btn-sm btn-primary-soft" onclick="saveShowroomToProfile()" style="font-size:0.84rem; padding:0.5rem 1rem;">
+              💾 이 코디를 내 캐릭터 프로필에 확정 착용
+            </button>
+            <button type="button" class="btn-sm btn-outline" onclick="resetShowroomOutfit()" style="font-size:0.84rem; padding:0.5rem 0.8rem;">
+              🔄 외형 초기화
+            </button>
+          </div>
+        </div>
+
+        <!-- Character Selector Bar (18 Playable Characters) -->
+        <div class="tw-showroom-char-bar" style="margin-top:1rem; padding-top:0.85rem; border-top:1px solid #28334f; display:flex; align-items:center; gap:0.6rem; overflow-x:auto;">
+          <span style="font-size:0.8rem; font-weight:800; color:#cbd5e1; white-space:nowrap;">👤 캐릭터 선택:</span>
+          <div id="showroom-char-pills" style="display:flex; gap:0.35rem; align-items:center; flex-wrap:nowrap;">
+            <!-- Populated by renderShowroomCharPills() -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Showroom 2-Column Dashboard Grid -->
+      <div class="tw-showroom-container">
+        <!-- Left Column: Big Full-Body Showcase Stage -->
+        <div class="tw-showroom-stage-col">
+          <div class="tw-showroom-stage-card">
+            <div class="tw-showroom-stage-header">
+              <div class="tw-showroom-char-titles">
+                <span id="showroom-char-name" class="tw-showroom-char-name">로아미니 (Roamini)</span>
+                <span id="showroom-char-subtitle" class="tw-showroom-char-sub">Lv.310 · 마법방어형 암흑술사</span>
+              </div>
+              <div id="showroom-5set-badge" class="tw-5set-indicator active">
+                ⭐ 아바타 5세트 ON (+10스탯)
+              </div>
+            </div>
+
+            <!-- Full-Body Hero Frame with Aura Background -->
+            <div class="tw-showroom-hero-frame">
+              <div class="tw-showroom-aura-bg"></div>
+              <div class="tw-showroom-aura-ring"></div>
+              <img id="showroom-hero-img" src="https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_roamini.png" alt="캐릭터 전신" class="tw-showroom-hero-img">
+              
+              <!-- Equipped Avatar Floating Tags -->
+              <div class="tw-showroom-floating-tags" id="showroom-floating-tags">
+                <!-- Dynamic tags for equipped pieces -->
+              </div>
+            </div>
+
+            <!-- 5-Set Effect & Combat Contribution Box -->
+            <div class="tw-showroom-spec-box">
+              <div class="tw-showroom-spec-header">
+                <span>✨ 화려한 아바타 세트 효과 현황</span>
+                <span id="showroom-piece-count-text" style="color:#38bdf8; font-weight:800;">착용 부위: 5 / 6</span>
+              </div>
+              <div class="tw-showroom-spec-stats">
+                <div class="spec-stat-item">
+                  <span class="lbl">공식 계수 기여</span>
+                  <span id="showroom-stat-coeff" class="val" style="color:#fde68a;">+205 계수</span>
+                </div>
+                <div class="spec-stat-item">
+                  <span class="lbl">명중치 (DEX)</span>
+                  <span id="showroom-stat-dex" class="val" style="color:#38bdf8;">+10 DEX</span>
+                </div>
+                <div class="spec-stat-item">
+                  <span class="lbl">이동속도 / HP</span>
+                  <span id="showroom-stat-speed" class="val" style="color:#6ee7b7;">이속 +3 / HP +2,000</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 7-Slot Equipped Pieces Quick Grid -->
+            <div class="tw-showroom-equipped-slots" id="showroom-equipped-slots">
+              <!-- Rendered by renderShowroomEquippedSlots() -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: 2,098-Item Wardrobe Browser -->
+        <div class="tw-showroom-wardrobe-col">
+          <div class="tw-wardrobe-card">
+            <!-- 7-Slot Category Filter Tabs -->
+            <div class="tw-wardrobe-tabs" id="showroom-wardrobe-slot-tabs">
+              <button class="tw-wtab-btn active" onclick="setShowroomSlotTab('showHead', this)">👑 투구 (715)</button>
+              <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showArmor', this)">👗 의상 (304)</button>
+              <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showBack', this)">🪽 날개 (132)</button>
+              <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showFace', this)">👓 얼굴 (101)</button>
+              <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showEffect', this)">✨ 효과 (426)</button>
+              <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showFoot', this)">👣 발자국 (416)</button>
+              <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showArms', this)">🗡️ 무기 (4)</button>
+            </div>
+
+            <!-- Search & Round Filter Bar -->
+            <div class="tw-wardrobe-filter-bar">
+              <div class="tw-wardrobe-search-row">
+                <input type="text" id="showroom-search-input" class="calc-input" placeholder="🔍 아이템 이름 또는 키워드 검색 (예: 수영복, 리본, 날개...)" oninput="onShowroomSearchInput()" style="flex:1;">
+                <select id="showroom-round-select" class="calc-input tw-select" style="width:160px;" onchange="onShowroomRoundChange(this.value)">
+                  <option value="">전체 회차 (1~83회차)</option>
+                </select>
+              </div>
+              <div class="tw-wardrobe-quick-row">
+                <div style="display:flex; gap:0.4rem; align-items:center;">
+                  <button type="button" class="btn-sm btn-outline active" id="btn-sf-all" onclick="setShowroomQuickFilter('', this)">전체</button>
+                  <button type="button" class="btn-sm btn-outline" id="btn-sf-monthly" onclick="setShowroomQuickFilter('monthly', this)">월템(月)</button>
+                  <button type="button" class="btn-sm btn-outline" id="btn-sf-special" onclick="setShowroomQuickFilter('special', this)">최신/스페셜</button>
+                </div>
+                <span id="showroom-item-counter" style="font-size:0.75rem; color:#38bdf8; font-weight:700;">총 715개 아이템</span>
+              </div>
+            </div>
+
+            <!-- Wardrobe Items Grid -->
+            <div class="tw-wardrobe-grid-container" id="showroom-wardrobe-grid">
+              <!-- Rendered by renderShowroomWardrobeItems() -->
+            </div>
+          </div>
         </div>
       </div>
     </section>

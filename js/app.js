@@ -45,6 +45,9 @@ function switchTab(tabId, btnEl) {
     const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
     if (targetBtn) targetBtn.classList.add('active');
   }
+  if (tabId === 'tab-dressroom' && typeof initShowroom === 'function') {
+    initShowroom();
+  }
 }
 
 function switchGrowthSection(secId, btnEl) {
@@ -5543,26 +5546,47 @@ var TW_DEFAULT_EQUIP_STATE = (typeof window !== 'undefined' && window.TW_DEFAULT
   vehicle: { key: "vehicle", label: "VEHICLE", name: "빈 슬롯 (탈것 미착용)", tier: "empty", dur: "", isOn: false }
 };
 
+const TW_CHARACTER_ROSTER = [
+  { key: 'boris', name: '보리스', fullName: '보리스 진네만', icon: '🗡️', type: '물리복합 / 베기', sub: '월하의 검사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_boris.png' },
+  { key: 'lucian', name: '루시안', fullName: '루시안 칼츠', icon: '⚔️', type: '물리 찌르기', sub: '쾌활한 모험가', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_lucian.png' },
+  { key: 'roamini', name: '로아미니', fullName: '로아미니', icon: '📿', type: '마법방어형 (MR)', sub: '기억을 잃은 주술사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_roamini.png' },
+  { key: 'clarice', name: '리체', fullName: '리체 아브릴', icon: '🧵', type: '마법방어형 (MR)', sub: '바느질하는 재봉사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_clarice.png' },
+  { key: 'tichiel', name: '티치엘', fullName: '티치엘 쥬스피앙', icon: '🪄', type: '마법방어 / 백마법', sub: '순수한 마법소녀', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_tichiel.png' },
+  { key: 'mila', name: '밀라', fullName: '밀라 네브리스', icon: '🪓', type: '물리 베기', sub: '붉은 사수 해적선장', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_mila.png' },
+  { key: 'ispin', name: '이스핀', fullName: '이스핀 샤를', icon: '🤺', type: '물리 찌르기', sub: '비운의 왕녀', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_ispin.png' },
+  { key: 'maximin', name: '막시민', fullName: '막시민 리프크네', icon: '🗡️', type: '마법베기 (INT+HACK)', sub: '시니컬한 탐정', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_maximin.png' },
+  { key: 'sivelin', name: '시벨린', fullName: '시벨린 우', icon: '🔱', type: '물리 찌르기 / 복합', sub: '진홍의 사신', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_sivelin.png' },
+  { key: 'nayatrei', name: '나야트레이', fullName: '나야트레이', icon: '🗡️', type: '물리 찌르기 / 복합', sub: '묘족의 마지막 생존자', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_nayatrei.png' },
+  { key: 'josua', name: '조슈아', fullName: '조슈아 폰 아르님', icon: '🔮', type: '마법공격 (INT)', sub: '아르님 가문의 소공작', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_josua.png' },
+  { key: 'lanziee', name: '란지에', fullName: '란지에 로젠크란츠', icon: '🔫', type: '마법총 / 물리총', sub: '냉철한 혁명가', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_lanziee.png' },
+  { key: 'issac', name: '이자크', fullName: '이자크 듀카스텔', icon: '🥊', type: '물리 찌르기 / 베기', sub: '하이아칸의 의적', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_issac.png' },
+  { key: 'anais', name: '아나이스', fullName: '아나이스 델 카릴', icon: '🧸', type: '마법방어 (소환수)', sub: '이중인격 마도사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_anais.png' },
+  { key: 'benya', name: '벤야', fullName: '벤야', icon: '👻', type: '마법방어 / 마법베기', sub: '영혼의 유령소녀', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_benya.png' },
+  { key: 'isolet', name: '이솔렛', fullName: '이솔렛', icon: '🗡️', type: '물리/마법 찬트', sub: '달의 섬 신녀', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_isolet.png' },
+  { key: 'nocturne', name: '녹턴', fullName: '녹턴 드 브릴랑', icon: '💥', type: '마법공격 (INT)', sub: '천재 기계공학자', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_nocturne.png' },
+  { key: 'yevgnen', name: '예프넨', fullName: '예프넨 진네만', icon: '⚔️', type: '물리복합 5형태', sub: '방랑하는 은빛 검사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_yevgnen.png' }
+];
+
 function getCharacterVisualInfo(profileId) {
   const cur = (typeof profiles !== 'undefined' && profiles.find(x => x.id === (profileId || currentProfileId))) || (typeof profiles !== 'undefined' ? profiles[0] : null);
   const name = cur ? cur.name : "테일즈위버 모험가";
   const charType = cur ? (cur.charType || cur.job || "모험가") : "모험가";
   const level = cur ? (cur.level || 310) : 310;
   
-  const charIcons = {
-    '보리스': '🗡️', '루시안': '⚔️', '란지에': '🔫', '막시민': '🗡️', '시벨린': '🔱',
-    '조슈아': '🔮', '이자크': '🥊', '밀라': '🪓', '티치엘': '🪄', '이스핀': '🤺',
-    '나야트레이': '🗡️', '아나이스': '🧸', '벤야': '👻', '이솔렛': '🗡️', '로아미니': '📿',
-    '녹턴': '💥', '리체': '🧵', '클라렛': '🏹', '예프넨': '⚔️'
-  };
-  let icon = '🧙‍♂️';
-  for (const [k, v] of Object.entries(charIcons)) {
-    if (name.includes(k) || charType.includes(k)) {
-      icon = v;
-      break;
-    }
+  let matched = TW_CHARACTER_ROSTER.find(c => name.includes(c.name) || charType.includes(c.name));
+  if (!matched) {
+    matched = TW_CHARACTER_ROSTER[2]; // Default: roamini
   }
-  return { name, charType, level, icon };
+
+  return {
+    name,
+    charType,
+    level,
+    icon: matched.icon,
+    charKey: matched.key,
+    sub: matched.sub,
+    imgUrl: matched.img
+  };
 }
 
 function countActiveAvatarPieces(equipState) {
@@ -5663,7 +5687,8 @@ function renderInGameEquipWindow(target, equipState, isEditable) {
   const standeeHtml = `
     <div class="tw-char-standee-box">
       <div class="tw-char-portrait-box">
-        <span class="tw-char-portrait-icon">${charInfo.icon}</span>
+        <img src="${charInfo.imgUrl}" alt="${charInfo.name}" class="tw-char-portrait-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+        <span class="tw-char-portrait-icon" style="display:none;">${charInfo.icon}</span>
       </div>
       <div class="tw-char-standee-info">
         <div class="tw-char-standee-name-row">
@@ -5673,8 +5698,11 @@ function renderInGameEquipWindow(target, equipState, isEditable) {
         <div class="tw-avatar-layer-chips">
           ${chipsHtml}
         </div>
-        <div class="tw-5set-indicator ${is5Set ? 'active' : 'inactive'}" title="${is5Set ? '화려한 아바타 5세트 활성화 (올스탯 +10, 이동속도 +3, HP +2000)' : '화려한 아바타 5부위 이상 착용 시 올스탯 +10 세트효과 적용'}">
-          ${is5Set ? '⭐ 아바타 5세트 ON (+10스탯)' : `아바타 세트: ${avatarCount}/5`}
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:3px;">
+          <div class="tw-5set-indicator ${is5Set ? 'active' : 'inactive'}" title="${is5Set ? '화려한 아바타 5세트 활성화 (올스탯 +10, 이동속도 +3, HP +2000)' : '화려한 아바타 5부위 이상 착용 시 올스탯 +10 세트효과 적용'}">
+            ${is5Set ? '⭐ 아바타 5세트 ON (+10스탯)' : `아바타 세트: ${avatarCount}/5`}
+          </div>
+          <button type="button" class="btn-sm btn-outline" style="font-size:0.62rem; padding:1px 6px;" onclick="switchTab('tab-dressroom')">👗 드레스룸 가기</button>
         </div>
       </div>
     </div>
@@ -7529,6 +7557,360 @@ function jumpToSpecupComparator(prefillGearKey, prefillRecKey) {
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
+
+// ==================== TAB 8: DEDICATED AVATAR SHOWROOM & DRESSROOM ====================
+let showroomSelectedChar = 'roamini';
+let showroomCurrentSlotTab = 'showHead';
+let showroomSearchQuery = '';
+let showroomRoundFilter = '';
+let showroomQuickFilter = '';
+let showroomOutfit = null;
+
+function initShowroom() {
+  if (!showroomOutfit) {
+    const cur = (typeof profiles !== 'undefined' && profiles.find(x => x.id === currentProfileId)) || (typeof profiles !== 'undefined' ? profiles[0] : null);
+    showroomOutfit = JSON.parse(JSON.stringify(cur?.twEquipState || toBeEquipState || TW_DEFAULT_EQUIP_STATE));
+  }
+  
+  // Match showroomSelectedChar to current profile
+  const curProf = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
+  if (curProf) {
+    const match = TW_CHARACTER_ROSTER.find(c => curProf.name.includes(c.name) || (curProf.charType && curProf.charType.includes(c.name)));
+    if (match) showroomSelectedChar = match.key;
+  }
+
+  renderShowroomCharPills();
+  
+  // Populate round dropdown if empty
+  const roundSel = document.getElementById('showroom-round-select');
+  if (roundSel && roundSel.options.length <= 1 && typeof TW_AVATAR_DB !== 'undefined') {
+    const rounds = TW_AVATAR_DB.getRounds();
+    let opts = '<option value="">전체 회차 (1~83회차)</option>';
+    rounds.forEach(r => {
+      opts += `<option value="${r}">${r}</option>`;
+    });
+    roundSel.innerHTML = opts;
+  }
+
+  renderShowroomStage();
+  renderShowroomWardrobeItems();
+}
+
+function renderShowroomCharPills() {
+  const container = document.getElementById('showroom-char-pills');
+  if (!container) return;
+
+  container.innerHTML = TW_CHARACTER_ROSTER.map(c => `
+    <button type="button" class="tw-char-pill ${showroomSelectedChar === c.key ? 'active' : ''}" onclick="selectShowroomChar('${c.key}')" title="${c.fullName} (${c.type})">
+      <span>${c.icon}</span>
+      <span>${c.name}</span>
+    </button>
+  `).join('');
+}
+
+function selectShowroomChar(charKey) {
+  showroomSelectedChar = charKey;
+  renderShowroomCharPills();
+  renderShowroomStage();
+}
+
+function renderShowroomStage() {
+  const charDef = TW_CHARACTER_ROSTER.find(c => c.key === showroomSelectedChar) || TW_CHARACTER_ROSTER[2];
+  const charNameEl = document.getElementById('showroom-char-name');
+  const charSubEl = document.getElementById('showroom-char-subtitle');
+  const heroImg = document.getElementById('showroom-hero-img');
+  const badge5Set = document.getElementById('showroom-5set-badge');
+  const tagsContainer = document.getElementById('showroom-floating-tags');
+  const pieceCountText = document.getElementById('showroom-piece-count-text');
+  const coeffEl = document.getElementById('showroom-stat-coeff');
+  const dexEl = document.getElementById('showroom-stat-dex');
+  const speedEl = document.getElementById('showroom-stat-speed');
+  const slotsContainer = document.getElementById('showroom-equipped-slots');
+
+  if (charNameEl) charNameEl.textContent = `${charDef.fullName} (${charDef.name})`;
+  if (charSubEl) charSubEl.textContent = `Lv.310 · ${charDef.sub} · ${charDef.type}`;
+  if (heroImg) {
+    heroImg.src = charDef.img;
+    heroImg.alt = charDef.fullName;
+  }
+
+  const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
+  const activeCount = countActiveAvatarPieces(outfit);
+  const is5Set = activeCount >= 5;
+
+  if (badge5Set) {
+    badge5Set.className = `tw-5set-indicator ${is5Set ? 'active' : 'inactive'}`;
+    badge5Set.textContent = is5Set ? '⭐ 아바타 5세트 ON (+10스탯)' : `아바타 세트: ${activeCount}/5 (미달성)`;
+  }
+
+  if (pieceCountText) {
+    pieceCountText.textContent = `착용 부위: ${activeCount} / 6`;
+    pieceCountText.style.color = is5Set ? '#6ee7b7' : '#94a3b8';
+  }
+
+  if (coeffEl) coeffEl.textContent = is5Set ? '+205 계수 (공식 x20.5)' : '+0 계수';
+  if (dexEl) dexEl.textContent = is5Set ? '+10 DEX' : '+0 DEX';
+  if (speedEl) speedEl.textContent = is5Set ? '이속 +3 / HP +2,000' : '효과 미적용';
+
+  // Render floating tags
+  const slotLayers = [
+    { key: 'showHead', label: '투구', icon: '👑' },
+    { key: 'showArmor', label: '의상', icon: '👗' },
+    { key: 'showBack', label: '날개', icon: '🪽' },
+    { key: 'showFace', label: '얼굴', icon: '👓' },
+    { key: 'showEffect', label: '효과', icon: '✨' },
+    { key: 'showFoot', label: '발자국', icon: '👣' },
+    { key: 'showArms', label: '무기', icon: '🗡️' }
+  ];
+
+  if (tagsContainer) {
+    let ftagsHtml = '';
+    slotLayers.forEach(l => {
+      const it = outfit[l.key];
+      if (it && it.name && it.isOn !== false && !it.name.includes('미착용') && !it.name.includes('없음') && !it.name.includes('빈 슬롯')) {
+        ftagsHtml += `
+          <div class="tw-showroom-ftag" title="${l.label}: ${it.name}">
+            <span>${l.icon}</span> <span>${it.name}</span>
+          </div>
+        `;
+      }
+    });
+    tagsContainer.innerHTML = ftagsHtml;
+  }
+
+  // Render 7-Slot Equipped Quick Rows
+  if (slotsContainer) {
+    slotsContainer.innerHTML = slotLayers.map(l => {
+      const it = outfit[l.key];
+      const hasItem = it && it.name && it.isOn !== false && !it.name.includes('미착용') && !it.name.includes('없음') && !it.name.includes('빈 슬롯');
+      const name = hasItem ? it.name : '외형 미착용';
+      return `
+        <div class="tw-showroom-slot-row ${hasItem ? 'active' : ''}">
+          <div class="tw-showroom-slot-left" onclick="setShowroomSlotTab('${l.key}')" style="cursor:pointer;" title="클릭하여 ${l.label} 아바타 목록 보기">
+            <span class="tw-showroom-slot-tag">${l.icon} ${l.label}</span>
+            <span class="tw-showroom-slot-name">${name}</span>
+          </div>
+          <div style="display:flex; gap:4px; align-items:center;">
+            ${hasItem ? `<button type="button" class="btn-sm btn-outline" style="font-size:0.62rem; padding:1px 5px;" onclick="unequipShowroomSlot('${l.key}')">벗기</button>` : ''}
+            <button type="button" class="btn-sm btn-outline" style="font-size:0.62rem; padding:1px 5px; color:#38bdf8;" onclick="setShowroomSlotTab('${l.key}')">변경</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function setShowroomSlotTab(slotKey, btnEl) {
+  showroomCurrentSlotTab = slotKey;
+  const tabs = document.querySelectorAll('.tw-wtab-btn');
+  tabs.forEach(t => t.classList.remove('active'));
+  if (btnEl) {
+    btnEl.classList.add('active');
+  } else {
+    const slotIdx = ['showHead', 'showArmor', 'showBack', 'showFace', 'showEffect', 'showFoot', 'showArms'].indexOf(slotKey);
+    if (slotIdx >= 0 && tabs[slotIdx]) tabs[slotIdx].classList.add('active');
+  }
+  renderShowroomWardrobeItems();
+}
+
+function onShowroomSearchInput() {
+  const input = document.getElementById('showroom-search-input');
+  showroomSearchQuery = input ? input.value.trim() : '';
+  renderShowroomWardrobeItems();
+}
+
+function onShowroomRoundChange(val) {
+  showroomRoundFilter = val;
+  renderShowroomWardrobeItems();
+}
+
+function setShowroomQuickFilter(type, btnEl) {
+  showroomQuickFilter = type;
+  ['btn-sf-all', 'btn-sf-monthly', 'btn-sf-special'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.classList.remove('active');
+  });
+  if (btnEl) btnEl.classList.add('active');
+  renderShowroomWardrobeItems();
+}
+
+function renderShowroomWardrobeItems() {
+  const grid = document.getElementById('showroom-wardrobe-grid');
+  const counter = document.getElementById('showroom-item-counter');
+  if (!grid || typeof TW_AVATAR_DB === 'undefined') return;
+
+  const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
+  const currentEquippedName = outfit[showroomCurrentSlotTab] ? outfit[showroomCurrentSlotTab].name : '';
+
+  let items = TW_AVATAR_DB.search(showroomSearchQuery, showroomCurrentSlotTab, showroomRoundFilter);
+
+  if (showroomQuickFilter === 'monthly') {
+    items = items.filter(it => it.isMonthly || (it.round && it.round.includes('월')));
+  } else if (showroomQuickFilter === 'special') {
+    items = items.filter(it => it.isSpecial || (it.round && (it.round.includes('스페셜') || it.round.includes('80') || it.round.includes('81') || it.round.includes('82') || it.round.includes('83'))));
+  }
+
+  if (counter) counter.textContent = `총 ${items.length.toLocaleString()}개 아이템`;
+
+  if (items.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 2.5rem; text-align: center; color: #94a3b8; font-size: 0.88rem;">
+        🔍 검색 조건에 일치하는 아바타 아이템이 없습니다.<br>
+        <span style="font-size:0.75rem; color:#64748b;">검색어나 회차 필터를 변경해보세요.</span>
+      </div>
+    `;
+    return;
+  }
+
+  const limit = 120;
+  const displayItems = items.slice(0, limit);
+
+  let html = `
+    <div class="tw-wardrobe-item-card" style="border-style:dashed; border-color:#475569;" onclick="unequipShowroomSlot('${showroomCurrentSlotTab}')">
+      <div class="tw-wardrobe-card-info">
+        <div class="tw-wardrobe-card-name" style="color:#94a3b8;">🚫 외형 미착용 (이 부위 벗기)</div>
+        <div class="tw-wardrobe-card-meta">
+          <span class="tw-avatar-round-tag">외형 해제</span>
+        </div>
+      </div>
+      <button type="button" class="btn-sm btn-outline" style="font-size:0.68rem; padding:2px 8px;">해제</button>
+    </div>
+  `;
+
+  displayItems.forEach(item => {
+    const isEquipped = currentEquippedName === item.name;
+    const monthlyTag = item.isMonthly ? '<span class="tw-avatar-monthly-tag">月</span>' : '';
+    const roundTag = item.round ? `<span class="tw-avatar-round-tag">${item.round}</span>` : '';
+    const origSlotTag = item.originalSlot ? `<span class="tw-avatar-round-tag" style="color:#38bdf8;">${item.originalSlot}</span>` : '';
+
+    html += `
+      <div class="tw-wardrobe-item-card ${isEquipped ? 'active' : ''}" onclick="tryOnAvatarItem('${item.id.replace(/'/g, "\\'")}', '${showroomCurrentSlotTab}')">
+        <div class="tw-wardrobe-card-info">
+          <div class="tw-wardrobe-card-name" title="${item.name}">${isEquipped ? '✨ ' : ''}${item.name}</div>
+          <div class="tw-wardrobe-card-meta">
+            ${roundTag}
+            ${monthlyTag}
+            ${origSlotTag}
+          </div>
+        </div>
+        <button type="button" class="btn-sm ${isEquipped ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:2px 8px;">
+          ${isEquipped ? '착용중' : '입어보기'}
+        </button>
+      </div>
+    `;
+  });
+
+  if (items.length > limit) {
+    html += `
+      <div style="grid-column: 1 / -1; padding: 0.75rem; text-align: center; color: #64748b; font-size: 0.75rem; background: #080c16; border-radius: 6px;">
+        외 ${items.length - limit}개의 아이템이 더 있습니다. 검색창을 이용해 빠르게 찾아보세요!
+      </div>
+    `;
+  }
+
+  grid.innerHTML = html;
+}
+
+function tryOnAvatarItem(avatarId, slotKey) {
+  if (!showroomOutfit) {
+    showroomOutfit = JSON.parse(JSON.stringify(toBeEquipState || TW_DEFAULT_EQUIP_STATE));
+  }
+  const avatar = typeof TW_AVATAR_DB !== 'undefined' ? TW_AVATAR_DB.getById(avatarId) : null;
+  if (!avatar) return;
+
+  showroomOutfit[slotKey] = {
+    key: slotKey,
+    name: avatar.name,
+    dur: "(100/100)",
+    tier: "avatar",
+    isOn: true,
+    round: avatar.round,
+    isMonthly: avatar.isMonthly
+  };
+
+  toBeEquipState[slotKey] = JSON.parse(JSON.stringify(showroomOutfit[slotKey]));
+
+  renderShowroomStage();
+  renderShowroomWardrobeItems();
+
+  if (document.getElementById('tw-equip-window-tobe')) {
+    renderInGameEquipWindow('tobe', toBeEquipState, true);
+    if (typeof updateDualEquipWindowDiff === 'function') updateDualEquipWindowDiff();
+  }
+}
+
+function unequipShowroomSlot(slotKey) {
+  if (!showroomOutfit) {
+    showroomOutfit = JSON.parse(JSON.stringify(toBeEquipState || TW_DEFAULT_EQUIP_STATE));
+  }
+  showroomOutfit[slotKey] = {
+    key: slotKey,
+    name: "외형 미착용",
+    dur: "",
+    tier: "avatar",
+    isOn: false
+  };
+
+  toBeEquipState[slotKey] = JSON.parse(JSON.stringify(showroomOutfit[slotKey]));
+
+  renderShowroomStage();
+  renderShowroomWardrobeItems();
+
+  if (document.getElementById('tw-equip-window-tobe')) {
+    renderInGameEquipWindow('tobe', toBeEquipState, true);
+    if (typeof updateDualEquipWindowDiff === 'function') updateDualEquipWindowDiff();
+  }
+}
+
+function saveShowroomToProfile() {
+  if (!showroomOutfit) return;
+  const showSlots = ['showHead', 'showArmor', 'showFace', 'showBack', 'showFoot', 'showEffect', 'showArms'];
+  
+  showSlots.forEach(s => {
+    if (showroomOutfit[s]) {
+      toBeEquipState[s] = JSON.parse(JSON.stringify(showroomOutfit[s]));
+      asIsEquipState[s] = JSON.parse(JSON.stringify(showroomOutfit[s]));
+    }
+  });
+
+  const p = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
+  if (p) {
+    if (!p.twEquipState) p.twEquipState = JSON.parse(JSON.stringify(asIsEquipState));
+    showSlots.forEach(s => {
+      if (showroomOutfit[s]) {
+        p.twEquipState[s] = JSON.parse(JSON.stringify(showroomOutfit[s]));
+      }
+    });
+    const m = calculateEquipStateMetrics(p.twEquipState);
+    p.totalCoeff = m.totalCoeff;
+    p.totalDex = m.totalDex;
+    try {
+      localStorage.setItem('tw_companion_profiles_v3', JSON.stringify(profiles));
+    } catch(e) {}
+  }
+
+  renderInGameEquipWindow('asis', asIsEquipState, false);
+  renderInGameEquipWindow('tobe', toBeEquipState, true);
+  if (typeof updateDualEquipWindowDiff === 'function') updateDualEquipWindowDiff();
+  renderShowroomStage();
+
+  alert(`🎉 '${p ? p.name : "캐릭터"}' 프로필에 아바타 세팅이 확정 저장되었습니다!\n6번 탭 [계수·전투 시험장]과 캐릭터 프로필에 공식 5세트 효과가 실시간 반영되었습니다.`);
+}
+
+function resetShowroomOutfit() {
+  const p = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
+  showroomOutfit = JSON.parse(JSON.stringify(p?.twEquipState || asIsEquipState || TW_DEFAULT_EQUIP_STATE));
+  toBeEquipState = JSON.parse(JSON.stringify(showroomOutfit));
+
+  renderShowroomStage();
+  renderShowroomWardrobeItems();
+
+  if (document.getElementById('tw-equip-window-tobe')) {
+    renderInGameEquipWindow('tobe', toBeEquipState, true);
+    if (typeof updateDualEquipWindowDiff === 'function') updateDualEquipWindowDiff();
+  }
+}
+
 
 
 if (document.readyState === 'loading') {

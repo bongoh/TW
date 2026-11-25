@@ -74,13 +74,13 @@
     background: rgba(56, 189, 248, 0.6);
   }
 
-  /* Sticky Category Tabs (8-Tabs Responsive 2x4 Grid) */
+  /* Sticky Category Tabs (9-Tabs Responsive 3x3 Grid) */
   .nav-tabs {
     position: sticky;
     top: 0.5rem;
     z-index: 100;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.45rem;
     background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(14px);
@@ -7558,4 +7558,403 @@
   align-items: center;
   justify-content: space-between;
 }
+
+/* ============================================================================
+   Standee Portrait Real Character Artwork Image
+   ============================================================================ */
+.tw-char-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 6px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.7));
+}
+
+/* ============================================================================
+   Dedicated Avatar Dressroom & Full-Body Showroom (Tab 8) Styles
+   ============================================================================ */
+.tw-showroom-container {
+  display: grid;
+  grid-template-columns: 430px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .tw-showroom-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tw-showroom-char-bar {
+  scrollbar-width: thin;
+}
+
+.tw-char-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.tw-char-pill:hover {
+  background: #28334f;
+  border-color: #38bdf8;
+  color: #f8fafc;
+}
+
+.tw-char-pill.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(14, 165, 233, 0.1));
+  border-color: #38bdf8;
+  color: #fde68a;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+/* Stage Card (Left Column) */
+.tw-showroom-stage-card {
+  background: #0d1222;
+  border: 1.5px solid #28334f;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+.tw-showroom-stage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.tw-showroom-char-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tw-showroom-char-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fde68a;
+}
+
+.tw-showroom-char-sub {
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+/* Hero Frame with Aura */
+.tw-showroom-hero-frame {
+  height: 420px;
+  position: relative;
+  background: radial-gradient(circle at center 60%, #17223b 0%, #080c18 85%);
+  border: 1.5px solid #28334f;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
+}
+
+.tw-showroom-aura-bg {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(168, 85, 247, 0.12) 50%, transparent 70%);
+  border-radius: 50%;
+  animation: twAuraPulse 4s ease-in-out infinite alternate;
+}
+
+.tw-showroom-aura-ring {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border: 1px dashed rgba(56, 189, 248, 0.35);
+  border-radius: 50%;
+  animation: twAuraSpin 25s linear infinite;
+}
+
+@keyframes twAuraPulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+
+@keyframes twAuraSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.tw-showroom-hero-img {
+  max-height: 380px;
+  max-width: 90%;
+  object-fit: contain;
+  z-index: 2;
+  filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 20px rgba(56, 189, 248, 0.35));
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tw-showroom-floating-tags {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tw-showroom-ftag {
+  font-size: 0.66rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #e0f2fe;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* 5-Set Spec Contribution Box */
+.tw-showroom-spec-box {
+  background: #13192f;
+  border: 1px solid #28334f;
+  border-radius: 8px;
+  padding: 0.65rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.tw-showroom-spec-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fde68a;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 0.3rem;
+}
+
+.tw-showroom-spec-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.tw-showroom-spec-stats .spec-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tw-showroom-spec-stats .lbl {
+  font-size: 0.64rem;
+  color: #94a3b8;
+}
+
+.tw-showroom-spec-stats .val {
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+/* 7-Slot Equipped Quick Rows */
+.tw-showroom-equipped-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tw-showroom-slot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0a0e1c;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.74rem;
+  transition: all 0.15s ease;
+}
+
+.tw-showroom-slot-row:hover {
+  border-color: #38bdf8;
+  background: #0f172a;
+}
+
+.tw-showroom-slot-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.tw-showroom-slot-tag {
+  font-size: 0.62rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  white-space: nowrap;
+}
+
+.tw-showroom-slot-name {
+  font-weight: 700;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tw-showroom-slot-row.active .tw-showroom-slot-name {
+  color: #fde68a;
+}
+
+/* Wardrobe Card (Right Column) */
+.tw-wardrobe-card {
+  background: #0d1222;
+  border: 1.5px solid #28334f;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+.tw-wardrobe-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #28334f;
+  padding-bottom: 0.65rem;
+}
+
+.tw-wtab-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #13192f;
+  border: 1px solid #28334f;
+  color: #94a3b8;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tw-wtab-btn:hover {
+  color: #f1f5f9;
+  border-color: #38bdf8;
+}
+
+.tw-wtab-btn.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
+  color: #e0f2fe;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+.tw-wardrobe-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #0a0e1c;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+}
+
+.tw-wardrobe-search-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tw-wardrobe-quick-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tw-wardrobe-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.5rem;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.tw-wardrobe-item-card {
+  background: #090d18;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 0.65rem 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tw-wardrobe-item-card:hover {
+  background: #111827;
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+.tw-wardrobe-item-card.active {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: #f59e0b;
+}
+
+.tw-wardrobe-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tw-wardrobe-card-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tw-wardrobe-item-card.active .tw-wardrobe-card-name {
+  color: #fde68a;
+}
+
+.tw-wardrobe-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 
