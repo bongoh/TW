@@ -5558,6 +5558,7 @@ const TW_CHARACTER_ROSTER = [
   { key: 'sivelin', name: '시벨린', fullName: '시벨린 우', icon: '🔱', type: '물리 찌르기 / 복합', sub: '진홍의 사신', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_sivelin.png' },
   { key: 'nayatrei', name: '나야트레이', fullName: '나야트레이', icon: '🗡️', type: '물리 찌르기 / 복합', sub: '묘족의 마지막 생존자', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_nayatrei.png' },
   { key: 'josua', name: '조슈아', fullName: '조슈아 폰 아르님', icon: '🔮', type: '마법공격 (INT)', sub: '아르님 가문의 소공작', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_josua.png' },
+  { key: 'chloe', name: '클로에', fullName: '클로에 다 폰티나', icon: '👑', type: '마법공격 (INT/수·뇌)', sub: '폰티나 가문의 영애', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_chloe.png' },
   { key: 'lanziee', name: '란지에', fullName: '란지에 로젠크란츠', icon: '🔫', type: '마법총 / 물리총', sub: '냉철한 혁명가', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_lanziee.png' },
   { key: 'issac', name: '이자크', fullName: '이자크 듀카스텔', icon: '🥊', type: '물리 찌르기 / 베기', sub: '하이아칸의 의적', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_issac.png' },
   { key: 'anais', name: '아나이스', fullName: '아나이스 델 카릴', icon: '🧸', type: '마법방어 (소환수)', sub: '이중인격 마도사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_anais.png' },
@@ -7652,7 +7653,7 @@ function updateSimulatorWhoCard() {
   const charInfo = TW_UNIFORM_DYE_DB.characters[tdbSimState.selectedChar] || { folder: 'naya', name: '나야트레이' };
   
   if (whoArt) {
-    whoArt.src = 'assets/uniform/' + charInfo.folder + '/' + charInfo.folder + '.png';
+    whoArt.src = charInfo.customImg || ('assets/uniform/' + (charInfo.folder || 'naya') + '/' + (charInfo.folder || 'naya') + '.png');
     whoArt.alt = charInfo.name;
   }
   if (whoName) {
@@ -7692,11 +7693,31 @@ function renderSimulatorStage() {
   const layer3 = document.getElementById('tdb-layer-3');
   const layer4 = document.getElementById('tdb-layer-4');
 
-  if (layerBase) layerBase.src = 'assets/uniform/' + folder + '/' + folder + '.png';
-  if (layer1) layer1.src = 'assets/uniform/' + folder + '/1-' + (dyes[1] || 'd') + '.png';
-  if (layer2) layer2.src = 'assets/uniform/' + folder + '/2-' + (dyes[2] || 'd') + '.png';
-  if (layer3) layer3.src = 'assets/uniform/' + folder + '/3-' + (dyes[3] || 'd') + '.png';
-  if (layer4) layer4.src = 'assets/uniform/' + folder + '/4-' + (dyes[4] || 'd') + '.png';
+  if (charInfo.customImg) {
+    if (layerBase) layerBase.src = charInfo.customImg;
+    if (layer1) layer1.style.display = 'none';
+    if (layer2) layer2.style.display = 'none';
+    if (layer3) layer3.style.display = 'none';
+    if (layer4) layer4.style.display = 'none';
+  } else {
+    if (layerBase) layerBase.src = 'assets/uniform/' + folder + '/' + folder + '.png';
+    if (layer1) {
+      layer1.src = 'assets/uniform/' + folder + '/1-' + (dyes[1] || 'd') + '.png';
+      layer1.style.display = 'block';
+    }
+    if (layer2) {
+      layer2.src = 'assets/uniform/' + folder + '/2-' + (dyes[2] || 'd') + '.png';
+      layer2.style.display = 'block';
+    }
+    if (layer3) {
+      layer3.src = 'assets/uniform/' + folder + '/3-' + (dyes[3] || 'd') + '.png';
+      layer3.style.display = 'block';
+    }
+    if (layer4) {
+      layer4.src = 'assets/uniform/' + folder + '/4-' + (dyes[4] || 'd') + '.png';
+      layer4.style.display = 'block';
+    }
+  }
 
   // Avatar sprite layers
   const slots = tdbSimState.equippedSlots;
@@ -7720,7 +7741,7 @@ function renderSimulatorStage() {
 
   // Body / Back classification
   if (slots.showArmor) {
-    const isBack = slots.showArmor.name.includes('날개') || slots.showArmor.name.includes('망토') || slots.showArmor.name.includes('배낭') || slots.showArmor.category === '등';
+    const isBack = slots.showArmor.name.includes('날개') || slots.showArmor.name.includes('망토') || slots.showArmor.name.includes('배낭') || slots.showArmor.name.includes('꼬리') || slots.showArmor.name.includes('등 뒤') || slots.showArmor.category === '등';
     if (isBack) {
       setLayerImg('tdb-layer-back', slots.showArmor);
       setLayerImg('tdb-layer-costume', null);
@@ -8110,10 +8131,10 @@ function openCharacterPickerModal() {
 
   grid.innerHTML = TW_CHARACTER_ROSTER.map(c => {
     const charInfo = TW_UNIFORM_DYE_DB.characters[c.key] || { folder: 'naya' };
-    const folder = charInfo.folder;
+    const charImg = charInfo.customImg || ('assets/uniform/' + (charInfo.folder || 'naya') + '/' + (charInfo.folder || 'naya') + '.png');
     const isSelected = (tdbSimState.selectedChar === c.key);
     return '<div class="tdb-char-picker-card ' + (isSelected ? 'active' : '') + '" onclick="selectSimulatorChar(\'' + c.key + '\')" title="' + c.fullName + '">' +
-      '<img src="assets/uniform/' + folder + '/' + folder + '.png" alt="' + c.name + '">' +
+      '<img src="' + charImg + '" alt="' + c.name + '">' +
       '<div style="display:flex; flex-direction:column; min-width:0;">' +
       '  <span class="tdb-char-picker-name">' + c.name + '</span>' +
       '  <span style="font-size:0.62rem; color:#94a3b8;">' + c.type.split('/')[0] + '</span>' +
@@ -8189,7 +8210,7 @@ function setSimulatorQuickFilter(type, btnEl) {
 
 function downloadSimulatorStandeePNG() {
   const charInfo = TW_UNIFORM_DYE_DB.characters[tdbSimState.selectedChar] || { folder: 'naya', name: '나야트레이' };
-  const folder = charInfo.folder;
+  const folder = charInfo.folder || 'naya';
   const dyes = tdbSimState.uniformDyes[tdbSimState.selectedChar] || { 1: "d", 2: "d", 3: "d", 4: "d" };
   const slots = tdbSimState.equippedSlots;
 
@@ -8199,35 +8220,38 @@ function downloadSimulatorStandeePNG() {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
-  // Layer stack from back to front
+  // Layer stack from back to front with slot tags
   const layers = [];
 
   // 1. Foot
-  if (slots.showFoot && slots.showFoot.layerUrl) layers.push(slots.showFoot.layerUrl);
+  if (slots.showFoot && slots.showFoot.layerUrl) layers.push({ url: slots.showFoot.layerUrl, slot: 'foot' });
   // 2. Back
   if (slots.showArmor && slots.showArmor.layerUrl) {
-    const isBack = slots.showArmor.name.includes('날개') || slots.showArmor.name.includes('망토') || slots.showArmor.name.includes('배낭');
-    if (isBack) layers.push(slots.showArmor.layerUrl);
+    const isBack = slots.showArmor.name.includes('날개') || slots.showArmor.name.includes('망토') || slots.showArmor.name.includes('배낭') || slots.showArmor.name.includes('꼬리') || slots.showArmor.name.includes('등 뒤') || slots.showArmor.category === '등';
+    if (isBack) layers.push({ url: slots.showArmor.layerUrl, slot: 'back' });
   }
-  // 3. Base body
-  layers.push('assets/uniform/' + folder + '/' + folder + '.png');
-  // 4. Uniform 4 parts
-  for (let i = 1; i <= 4; i++) {
-    layers.push('assets/uniform/' + folder + '/' + i + '-' + (dyes[i] || 'd') + '.png');
+  // 3. Base body & Uniform 4 parts
+  if (charInfo.customImg) {
+    layers.push({ url: charInfo.customImg, slot: 'base' });
+  } else {
+    layers.push({ url: 'assets/uniform/' + folder + '/' + folder + '.png', slot: 'base' });
+    for (let i = 1; i <= 4; i++) {
+      layers.push({ url: 'assets/uniform/' + folder + '/' + i + '-' + (dyes[i] || 'd') + '.png', slot: 'uniform' });
+    }
   }
   // 5. Costume
   if (slots.showArmor && slots.showArmor.layerUrl) {
-    const isBack = slots.showArmor.name.includes('날개') || slots.showArmor.name.includes('망토') || slots.showArmor.name.includes('배낭');
-    if (!isBack) layers.push(slots.showArmor.layerUrl);
+    const isBack = slots.showArmor.name.includes('날개') || slots.showArmor.name.includes('망토') || slots.showArmor.name.includes('배낭') || slots.showArmor.name.includes('꼬리') || slots.showArmor.name.includes('등 뒤') || slots.showArmor.category === '등';
+    if (!isBack) layers.push({ url: slots.showArmor.layerUrl, slot: 'costume' });
   }
   // 6. Face
-  if (slots.showFace && slots.showFace.layerUrl) layers.push(slots.showFace.layerUrl);
+  if (slots.showFace && slots.showFace.layerUrl) layers.push({ url: slots.showFace.layerUrl, slot: 'face' });
   // 7. Head
-  if (slots.showHead && slots.showHead.layerUrl) layers.push(slots.showHead.layerUrl);
+  if (slots.showHead && slots.showHead.layerUrl) layers.push({ url: slots.showHead.layerUrl, slot: 'head' });
   // 8. Weapon
-  if (slots.showSubArms && slots.showSubArms.layerUrl) layers.push(slots.showSubArms.layerUrl);
+  if (slots.showSubArms && slots.showSubArms.layerUrl) layers.push({ url: slots.showSubArms.layerUrl, slot: 'weapon' });
   // 9. Effect
-  if (slots.showEffect && slots.showEffect.layerUrl) layers.push(slots.showEffect.layerUrl);
+  if (slots.showEffect && slots.showEffect.layerUrl) layers.push({ url: slots.showEffect.layerUrl, slot: 'effect' });
 
   let loaded = 0;
   const imgObjs = new Array(layers.length);
@@ -8239,14 +8263,30 @@ function downloadSimulatorStandeePNG() {
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
     }
-    imgObjs.forEach(im => {
-      if (im) {
+    imgObjs.forEach(item => {
+      if (item && item.im) {
+        const { im, slot } = item;
         // Draw centered in 324x324
         const w = (im.naturalWidth || 108) * 3;
         const h = (im.naturalHeight || 108) * 3;
         const x = (canvas.width - w) / 2;
         const y = (canvas.height - h) / 2;
+        ctx.save();
+        if (slot === 'head') {
+          ctx.beginPath();
+          ctx.rect(x, y, w, h * 0.42);
+          ctx.clip();
+        } else if (slot === 'face') {
+          ctx.beginPath();
+          ctx.rect(x, y + h * 0.16, w, h * 0.36);
+          ctx.clip();
+        } else if (slot === 'foot') {
+          ctx.beginPath();
+          ctx.rect(x, y + h * 0.68, w, h * 0.32);
+          ctx.clip();
+        }
         ctx.drawImage(im, x, y, w, h);
+        ctx.restore();
       }
     });
     ctx.restore();
@@ -8258,11 +8298,11 @@ function downloadSimulatorStandeePNG() {
     showSimulatorToast('📸 \'' + charInfo.name + '\' 고해상도 투명 누끼 도트 PNG 저장이 완료되었습니다!');
   };
 
-  layers.forEach((u, i) => {
+  layers.forEach((entry, i) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      imgObjs[i] = img;
+      imgObjs[i] = { im: img, slot: entry.slot };
       loaded++;
       if (loaded === layers.length) finishDraw();
     };
@@ -8270,7 +8310,7 @@ function downloadSimulatorStandeePNG() {
       loaded++;
       if (loaded === layers.length) finishDraw();
     };
-    img.src = u;
+    img.src = entry.url;
   });
 }
 

@@ -9234,7 +9234,7 @@
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.8));
 }
 
-#tdb-layer-foot    { z-index: 5; }
+#tdb-layer-foot    { z-index: 5; clip-path: inset(68% 0 0 0); }
 #tdb-layer-back    { z-index: 8; }
 #tdb-layer-base    { z-index: 10; }
 #tdb-layer-1       { z-index: 20; }
@@ -9242,12 +9242,12 @@
 #tdb-layer-3       { z-index: 24; }
 #tdb-layer-4       { z-index: 26; }
 #tdb-layer-costume { z-index: 30; }
-#tdb-layer-face    { z-index: 40; }
-#tdb-layer-head    { z-index: 50; }
+#tdb-layer-face    { z-index: 40; clip-path: inset(16% 0 52% 0); }
+#tdb-layer-head    { z-index: 50; clip-path: inset(0 0 58% 0); }
 #tdb-layer-weapon  { z-index: 60; }
 #tdb-layer-effect  { z-index: 70; }
 
-#tdb-layer-foot, #tdb-layer-effect {
+#tdb-layer-effect {
   position: absolute;
   top: 50%;
   left: 50%;

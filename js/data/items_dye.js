@@ -175,6 +175,30 @@ var TW_UNIFORM_DYE_DB = {
         { key: "3", name: "코트장식2 & 치마", defaultCode: "d" },
         { key: "4", name: "신발", defaultCode: "d" }
       ]
+    },
+    "benya": {
+      folder: "benya",
+      name: "벤야",
+      fullName: "벤야",
+      customImg: "assets/avatar/benya_transparent.png",
+      parts: [
+        { key: "1", name: "원피스", defaultCode: "d" },
+        { key: "2", name: "리본", defaultCode: "d" },
+        { key: "3", name: "슈즈", defaultCode: "d" },
+        { key: "4", name: "장식", defaultCode: "d" }
+      ]
+    },
+    "yevgnen": {
+      folder: "yevgnen",
+      name: "예프넨",
+      fullName: "예프넨 진네만",
+      customImg: "assets/avatar/yevgnen_transparent.png",
+      parts: [
+        { key: "1", name: "코트", defaultCode: "d" },
+        { key: "2", name: "장식", defaultCode: "d" },
+        { key: "3", name: "바지", defaultCode: "d" },
+        { key: "4", name: "부츠", defaultCode: "d" }
+      ]
     }
   },
 
