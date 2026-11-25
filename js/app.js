@@ -7572,7 +7572,7 @@ function initShowroom() {
   if (!avatarSimMounted && window.TWAvatarSim && typeof window.TWAvatarSim.mount === 'function') {
     avatarSimMounted = true;
     window.TWAvatarSim.mount(host, {
-      css: 'assets/avatar-sim/css/app.css?v=20261125_dye74',
+      css: 'assets/avatar-sim/css/app.css?v=20261125_dye74_v2',
       data: 'assets/avatar-sim/',
       tdb: 'assets/avatar/icons/',
       art: 'assets/characters/',

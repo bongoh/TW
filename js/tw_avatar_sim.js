@@ -1036,13 +1036,20 @@
   }
 
   function fillGrid() {
+    const g = $('grid'); if (!g) return;
     if (st.cat === 'uniform') {
+      g.classList.add('dye-mode');
+      const fBox = $('filt'); if (fBox) { fBox.classList.add('hidden'); fBox.innerHTML = ''; }
+      const pBox = $('parts'); if (pBox) { pBox.classList.add('hidden'); pBox.innerHTML = ''; }
+      const sRow = $('search') && $('search').closest('.btn-row'); if (sRow) sRow.classList.add('hidden');
       renderUniformDyeGrid();
       return;
     }
+    g.classList.remove('dye-mode');
+    const sRow = $('search') && $('search').closest('.btn-row'); if (sRow) sRow.classList.remove('hidden');
     st.base = null; st.list = listFor(); st.shown = 0; gridPage = 0;
     filtRender();
-    const g = $('grid'); g.innerHTML = ''; g.scrollTop = 0;
+    g.innerHTML = ''; g.scrollTop = 0;
     const wait = !listKnown && st.cat !== 'hair' && st.cat !== 'bg';
     $('countLabel').textContent = wait ? '불러오는 중…' : `${st.list.length.toLocaleString()}개`;
     if (wait) { g.innerHTML = '<div class="grid-wait" role="status"><span class="spin"></span><span>아이템 목록을 불러오는 중…</span></div>'; pagerRender(0); return; }
