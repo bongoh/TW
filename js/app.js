@@ -7606,12 +7606,11 @@ function initShowroom() {
     equipViewState.selectedItem = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.itemDetails['av_sakura_naya'] : null;
   }
 
-  // Match showroomSelectedChar to current profile, defaulting to verified dot characters
-  const validDotChars = ['nayatrei', 'boris', 'lucian', 'tichiel', 'mila', 'lanziee', 'sivelin', 'issac', 'anais'];
+  // Match showroomSelectedChar to current profile
   const curProf = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
   if (curProf && curProf.name) {
     const match = TW_CHARACTER_ROSTER.find(c => curProf.name.includes(c.name) || (curProf.charType && curProf.charType.includes(c.name)));
-    if (match && validDotChars.includes(match.key)) {
+    if (match) {
       showroomSelectedChar = match.key;
       equipViewState.currentCharKey = match.key;
     } else {
@@ -7637,10 +7636,8 @@ function initShowroom() {
     roundSel.innerHTML = opts;
   }
 
-  renderEquipView();
-  renderInGameEquipSlots();
-  renderShowroomWardrobeItems();
-  if (typeof renderDyeStudio === 'function') renderDyeStudio();
+  // Direction 1: Default to Dye Mode for instant authentic dot visualization
+  switchShowroomSubMode('dye');
 }
 
 function renderShowroomCharPills() {
@@ -7691,7 +7688,7 @@ function selectShowroomChar(charKey) {
 // ============================================================================
 // DYEING & PAPER-DOLL AVATAR SYSTEM
 // ============================================================================
-var currentShowroomSubMode = 'avatar'; // 'avatar' | 'dye'
+var currentShowroomSubMode = 'dye'; // 'dye' | 'avatar'
 var currentDyeState = {
   selectedPartKey: 'hair',
   dyes: {}, // { [charKey]: { [partKey]: hexColor } }
@@ -7708,17 +7705,23 @@ function switchShowroomSubMode(mode) {
   const btnDye = document.getElementById('tw-btn-mode-dye');
   const viewAv = document.getElementById('showroom-view-avatar');
   const viewDye = document.getElementById('showroom-view-dye');
+  const stageTitle = document.getElementById('stage-main-title');
+  const stageBadge = document.getElementById('stage-sub-badge');
 
   if (mode === 'avatar') {
     if (btnAv) { btnAv.classList.add('btn-primary', 'active'); btnAv.classList.remove('btn-outline'); }
     if (btnDye) { btnDye.classList.remove('btn-primary', 'active'); btnDye.classList.add('btn-outline'); }
     if (viewAv) viewAv.style.display = '';
     if (viewDye) viewDye.style.display = 'none';
+    if (stageTitle) stageTitle.textContent = '아바타 5세트 스탯 시뮬레이터';
+    if (stageBadge) stageBadge.textContent = 'Equip 슬롯 & 외형 뷰어';
   } else {
     if (btnAv) { btnAv.classList.remove('btn-primary', 'active'); btnAv.classList.add('btn-outline'); }
     if (btnDye) { btnDye.classList.add('btn-primary', 'active'); btnDye.classList.remove('btn-outline'); }
     if (viewAv) viewAv.style.display = 'none';
     if (viewDye) viewDye.style.display = '';
+    if (stageTitle) stageTitle.textContent = '눈사람족 염색 시뮬레이션 스테이지';
+    if (stageBadge) stageBadge.textContent = '18인 실물 도트 뷰어';
     renderDyeStudio();
   }
   renderEquipView();
@@ -7950,16 +7953,8 @@ function renderEquipView() {
   const stage = document.getElementById('tw-paperdoll-stage');
   let placeholderEl = document.getElementById('pd-stage-placeholder');
 
-  // Permanently hide all synthetic layer overlays
-  ['pd-layer-armor', 'pd-layer-head', 'pd-layer-arms', 'pd-layer-back', 'pd-layer-face'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-  });
-
   const showArmor = outfit.showArmor;
   const isArmorOn = showArmor && showArmor.isOn !== false && !showArmor.name.includes('미착용') && !showArmor.name.includes('없음');
-  const showArms = outfit.showSubArms || outfit.showArms;
-  const isArmsOn = showArms && showArms.isOn !== false && !showArms.name.includes('미착용') && !showArms.name.includes('없음');
   const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
   const activeColor = charDyes[currentDyeState.selectedPartKey];
 
@@ -7969,22 +7964,26 @@ function renderEquipView() {
 
     let dotSrc = charRes.dotImg;
 
-    // 1. If in Dye mode (눈사람족 염색소) and has active Elthevo dye applied
-    if (currentShowroomSubMode === 'dye' && activeColor && typeof TW_DYE_DB !== 'undefined') {
-      const matchedPot = TW_DYE_DB.potions.find(p => p.hex.toLowerCase() === activeColor.toLowerCase());
-      if (matchedPot) {
-        dotSrc = `assets/avatar/${showroomSelectedChar}_dye_${matchedPot.id}.png`;
+    // 1. If in Dye mode (눈사람족 염색소)
+    if (currentShowroomSubMode === 'dye') {
+      if (activeColor && typeof TW_DYE_DB !== 'undefined') {
+        const matchedPot = TW_DYE_DB.potions.find(p => p.hex.toLowerCase() === activeColor.toLowerCase());
+        if (matchedPot) {
+          dotSrc = `assets/avatar/${showroomSelectedChar}_dye_${matchedPot.id}.png`;
+        }
+      } else {
+        dotSrc = charRes.dotImg;
       }
-    } else if (isArmorOn || isArmsOn) {
-      // 2. If in Avatar mode and wearing costume/weapon -> swap to authentic in-game costume dot!
+    } else {
+      // 2. If in Avatar mode (화바타 5세트 스탯 시뮬레이터)
       const selectedItemRes = typeof TW_AVATAR_RESOURCES !== 'undefined' && equipViewState.selectedItem 
         ? TW_AVATAR_RESOURCES.getItemResource(equipViewState.selectedItem.name || equipViewState.selectedItem.id) 
         : null;
 
       if (selectedItemRes && selectedItemRes.dotSprite) {
         dotSrc = selectedItemRes.dotSprite;
-      } else if (charRes.costumeDot) {
-        dotSrc = charRes.costumeDot;
+      } else {
+        dotSrc = charRes.dotImg;
       }
     }
 
@@ -7997,33 +7996,7 @@ function renderEquipView() {
       };
     }
   } else {
-    // 9 characters awaiting in-game dot extraction
     if (charImg) charImg.style.display = 'none';
-    if (!placeholderEl && stage) {
-      placeholderEl = document.createElement('div');
-      placeholderEl.id = 'pd-stage-placeholder';
-      stage.appendChild(placeholderEl);
-    }
-    if (placeholderEl) {
-      placeholderEl.style.display = 'flex';
-      placeholderEl.style.flexDirection = 'column';
-      placeholderEl.style.alignItems = 'center';
-      placeholderEl.style.justifyContent = 'center';
-      placeholderEl.style.textAlign = 'center';
-      placeholderEl.style.padding = '12px 8px';
-      placeholderEl.style.zIndex = '20';
-      placeholderEl.innerHTML = `
-        <div style="font-size:2.2rem; margin-bottom:4px; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8));">${charDef.icon}</div>
-        <div style="font-weight:800; font-size:0.95rem; color:#fde68a; margin-bottom:4px;">${charDef.name}</div>
-        <div style="font-size:0.7rem; color:#94a3b8; line-height:1.45; margin-bottom:10px; max-width:140px;">
-          인게임 실물 도트 추출 준비 중입니다.<br>
-          <span style="color:#38bdf8; font-weight:700;">도트 지원 9인 캐릭터</span>를 선택해 보세요!
-        </div>
-        <button type="button" class="btn-sm btn-primary" onclick="selectShowroomChar('nayatrei')" style="font-size:0.68rem; padding:3px 10px; font-weight:800; border-radius:4px;">
-          🗡️ 나야트레이 바로가기
-        </button>
-      `;
-    }
   }
 
   // Apply rotation classes to character image
@@ -8045,14 +8018,20 @@ function renderEquipView() {
   const reqCharEl = document.getElementById('ev-item-reqchar');
   const statusEl = document.getElementById('ev-action-status');
 
+  const activeCount = typeof countActiveAvatarPieces === 'function' ? countActiveAvatarPieces(outfit) : 0;
+  const is5Set = activeCount >= 5;
+
   if (titleEl) {
     if (currentShowroomSubMode === 'dye') {
       const count = Object.keys(charDyes).length;
-      titleEl.textContent = count > 0 
-        ? `🎨 ${charDef.name} 염색 적용 중 (${count}개 부위)`
-        : `✨ ${charDef.name} 기본 외형 (순수 투명 누끼 도트)`;
+      if (count > 0 && activeColor && typeof TW_DYE_DB !== 'undefined') {
+        const matchedPot = TW_DYE_DB.potions.find(p => p.hex.toLowerCase() === activeColor.toLowerCase());
+        titleEl.textContent = `🎨 ${charDef.name} [${matchedPot?.name || '눈사람족'}] 염색 적용 중 (${count}개 부위)`;
+      } else {
+        titleEl.textContent = `✨ ${charDef.name} 기본 외형 (엘티보 눈사람족 수장 염색 가능)`;
+      }
     } else {
-      titleEl.textContent = item.fullName || `${item.name} - ${TW_AVATAR_DB?.slots[item.slot]?.label || "아바타"}`;
+      titleEl.textContent = item.fullName || `${item.name} - ${TW_AVATAR_DB?.slots[item.slot]?.label || "SHOW 슬롯"}`;
     }
   }
   if (reqCharEl) reqCharEl.textContent = charDef.name;
@@ -8062,8 +8041,8 @@ function renderEquipView() {
       statusEl.textContent = "실시간 도트 염색 활성";
       statusEl.style.color = "#38bdf8";
     } else {
-      statusEl.textContent = isArmorOn ? "착용 중 (Equipped)" : "미착용";
-      statusEl.style.color = isArmorOn ? "#6ee7b7" : "#94a3b8";
+      statusEl.textContent = is5Set ? "⭐ 5세트 스탯 버프 활성 (+10 DEX, 이속+3, HP+2000)" : `착용 부위: ${activeCount}/5 (5세트 미달성)`;
+      statusEl.style.color = is5Set ? "#6ee7b7" : "#94a3b8";
     }
   }
 }

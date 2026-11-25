@@ -43,7 +43,7 @@
     <button class="tab-btn" data-tab="tab-craft" onclick="switchTab('tab-craft', this)">🔨 5. 제련 · 조합 · 공방</button>
     <button class="tab-btn" data-tab="tab-coeff" onclick="switchTab('tab-coeff', this)">🧮 6. 계수 · 전투 시험장</button>
     <button class="tab-btn" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">💰 7. 시드 · 재료 계산기</button>
-    <button class="tab-btn" data-tab="tab-dressroom" onclick="switchTab('tab-dressroom', this)">👗 8. 아바타 드레스룸</button>
+    <button class="tab-btn" data-tab="tab-dressroom" onclick="switchTab('tab-dressroom', this)">👗 8. 아바타 & 염색소</button>
   </nav>
 
   <!-- ==================== TAB 0: BEGINNER BURNING GROWTH GUIDE ==================== -->
@@ -5975,11 +5975,11 @@
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
           <div>
             <h2 style="margin:0 0 0.35rem 0; font-size:1.4rem; color:#fde68a; display:flex; align-items:center; gap:0.5rem;">
-              <span>👗 8. 아바타 드레스룸 & 전신 쇼룸</span>
-              <span class="badge-pill gold" style="font-size:0.75rem;">2,098종 전수 DB</span>
+              <span>👗 8. 아바타 5세트 스탯 버프 시뮬레이터 & 🎨 엘티보 눈사람족 염색소</span>
+              <span class="badge-pill gold" style="font-size:0.75rem;">2,098종 DB & 실시간 염색</span>
             </h2>
             <p style="margin:0; font-size:0.83rem; color:#94a3b8; line-height:1.5;">
-              호랑구님의 1~83회차 및 월간 확장 아이템 2,098종 백과사전 · 18인 전 캐릭터 실시간 코디 쇼룸 및 화려한 아바타 5세트 스탯 버프 시뮬레이터
+              호랑구님의 1~83회차 아바타 2,098종 전수 DB 및 5세트 스탯 버프 시뮬레이터 · 엘티보 눈사람족 18인 전 캐릭터 실시간 도트 염색소
             </p>
           </div>
           <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
@@ -6000,14 +6000,14 @@
           </div>
         </div>
 
-        <!-- Showroom Sub-Mode Switcher: Avatar Fitting vs Dyeing Studio -->
+        <!-- Showroom Sub-Mode Switcher: Dyeing Studio vs Avatar Fitting -->
         <div class="tw-showroom-mode-tabs" style="margin-top:0.85rem; padding-top:0.75rem; border-top:1px solid #28334f; display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
           <span style="font-size:0.8rem; font-weight:800; color:#cbd5e1;">🎯 코디 분류:</span>
-          <button type="button" id="tw-btn-mode-avatar" class="btn-sm btn-primary active" onclick="switchShowroomSubMode('avatar')" style="font-size:0.8rem; padding:0.4rem 0.9rem;">
-            👗 1. 화바타 피팅룸 (Show Avatar)
+          <button type="button" id="tw-btn-mode-dye" class="btn-sm btn-primary active" onclick="switchShowroomSubMode('dye')" style="font-size:0.8rem; padding:0.4rem 0.9rem;">
+            🎨 1. 엘티보 눈사람족 헤어/의상 염색소 (1,500만 SEED 실시간 염색)
           </button>
-          <button type="button" id="tw-btn-mode-dye" class="btn-sm btn-outline" onclick="switchShowroomSubMode('dye')" style="font-size:0.8rem; padding:0.4rem 0.9rem;">
-            🎨 2. 눈사람족 헤어/의상 염색소 (엘티보 1,500만 SEED)
+          <button type="button" id="tw-btn-mode-avatar" class="btn-sm btn-outline" onclick="switchShowroomSubMode('avatar')" style="font-size:0.8rem; padding:0.4rem 0.9rem;">
+            👗 2. 화바타 5세트 스탯 시뮬레이터 & 2,098종 DB
           </button>
         </div>
       </div>
@@ -6019,8 +6019,8 @@
           <div class="tw-paperdoll-header">
             <div style="display:flex; align-items:center; gap:0.5rem;">
               <span style="color:#38bdf8; font-size:1.1rem;">✨</span>
-              <span class="tw-paperdoll-title">캐릭터 페이퍼돌 스테이지</span>
-              <span class="badge-pill cyan" style="font-size:0.68rem;">투명 누끼 뷰어</span>
+              <span class="tw-paperdoll-title" id="stage-main-title">눈사람족 염색 시뮬레이션 스테이지</span>
+              <span class="badge-pill cyan" id="stage-sub-badge" style="font-size:0.68rem;">18인 실물 도트 뷰어</span>
             </div>
             <span id="ev-header-char-name" style="font-size:0.75rem; color:#94a3b8;">나야트레이 (Nayatrei)</span>
           </div>
@@ -6036,23 +6036,8 @@
                 <!-- Glowing Floor Pedestal Shadow -->
                 <div class="pd-pedestal-shadow"></div>
 
-                <!-- 1. Wings / Back (Z: 10) -->
-                <img id="pd-layer-back" class="pd-layer pd-back" style="display:none;" alt="날개">
-
-                <!-- 2. Main Character Body & Dye Sprite (Z: 20) -->
-                <img id="pd-char-img" class="pd-layer pd-char-img" src="assets/avatar/naya_transparent.png" alt="캐릭터 도트 외형">
-
-                <!-- 3. Show Avatar Armor / Costume (Z: 30) -->
-                <img id="pd-layer-armor" class="pd-layer pd-armor" style="display:none;" alt="아바타 의상">
-
-                <!-- 4. Face Deco (Z: 40) -->
-                <img id="pd-layer-face" class="pd-layer pd-face" style="display:none;" alt="얼굴">
-
-                <!-- 5. Head / Hat (Z: 50) -->
-                <img id="pd-layer-head" class="pd-layer pd-head" style="display:none;" alt="모자">
-
-                <!-- 6. Weapon / Arms (Z: 60) -->
-                <img id="pd-layer-arms" class="pd-layer pd-arms" style="display:none;" alt="무기">
+                <!-- Main Character Body & Dye Sprite (Z: 20) -->
+                <img id="pd-char-img" class="pd-layer pd-char-img" src="assets/avatar/nayatrei_transparent.png" alt="캐릭터 도트 외형">
               </div>
 
               <button type="button" class="tw-ev-arrow-btn" onclick="rotateEquipView(1)" title="우측 회전 (>)">
@@ -6087,7 +6072,7 @@
         </div>
 
         <!-- 2-A. Authentic Equip In-Game Window (REAL / SHOW) - Avatar Mode -->
-        <div id="showroom-view-avatar" class="showroom-view-panel tw-eq-window">
+        <div id="showroom-view-avatar" class="showroom-view-panel tw-eq-window" style="display:none;">
           <div class="tw-eq-header">
             <span class="tw-eq-title">Equip</span>
             <div class="tw-eq-ctrls">
@@ -6124,7 +6109,7 @@
         </div>
 
         <!-- 2-B. Authentic Dyeing Salon Window (눈사람족 수장 염색소) - Dye Mode -->
-        <div id="showroom-view-dye" class="showroom-view-panel tw-dye-window" style="display:none;">
+        <div id="showroom-view-dye" class="showroom-view-panel tw-dye-window">
           <div class="tw-dye-header">
             <div style="display:flex; align-items:center; gap:0.5rem;">
               <span>🎨</span>
