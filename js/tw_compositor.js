@@ -852,6 +852,7 @@ const TW = (() => {
       }
     }
     layers.sort((A, B) => (A.z - B.z) || (A.pri - B.pri) || (A.ei - B.ei));
+    layers.attach = attach;
     return layers;
   }
   const GESTURE_CHARS = new Set(['루시안']);
@@ -1023,7 +1024,29 @@ const TW = (() => {
       ctx.restore();
     }
   }
-  // opts: {anchor: [x, y] | null (centered), bg: css colour | null, scale}
+  // 장착 아바타 아이콘 캐시 (애니메이션이 없는 확장 아바타 아이템 캔버스 정밀 렌더링용)
+  const ICON_IMG_CACHE = new Map();
+  function getIconImage(url, onNeedRedraw) {
+    if (!url) return null;
+    let entry = ICON_IMG_CACHE.get(url);
+    if (!entry) {
+      const img = new Image();
+      entry = { img, loaded: false, failed: false };
+      ICON_IMG_CACHE.set(url, entry);
+      img.onload = () => {
+        entry.loaded = true;
+        if (typeof onNeedRedraw === 'function') onNeedRedraw();
+      };
+      img.onerror = () => {
+        entry.loaded = false;
+        entry.failed = true;
+      };
+      img.src = url;
+    }
+    return entry.loaded ? entry.img : null;
+  }
+
+  // opts: {anchor: [x, y] | null (centered), bg: css colour | null, scale, equip, tdbUrl, onNeedRedraw}
   function render(canvas, pose, t, opts = {}) {
     const ctx = canvas.getContext('2d'); const sc = opts.scale || 1;
     const w = canvas.width / sc, h = canvas.height / sc;
@@ -1043,7 +1066,117 @@ const TW = (() => {
       const [cx, cy] = coreCenter(pose), [ox, oy] = opts.underOff || [0, 0];
       ctx.drawImage(u, Math.round(ax + cx + ox - u.naturalWidth / 2), Math.round(ay + cy + oy - u.naturalHeight / 2));
     }
-    drawLayers(ctx, compose(pose, t), ax, ay);
+    const layers = compose(pose, t);
+
+    // 1. 캐릭터 신체 실시간 바운딩 박스 및 앵커 산출
+    const curLayers = layers.filter(l => l.tag === 'body' || l.tag === 'hair');
+    const b = bounds(curLayers.length ? curLayers : layers) || coreBox(pose);
+    const midX = ax + (b ? (b.minx + b.maxx) / 2 : 0);
+    const topY = ay + (b ? b.miny : -68);
+    const botY = ay + (b ? b.maxy : 0);
+    const cenY = ay + (b ? (b.miny + b.maxy) / 2 : -34);
+
+    // 2. 고유 애니메이션 프레임이 없어 스프라이트 레이어가 없는 장착 확장 아이템 선별
+    const drawnTags = new Set(layers.map(l => l.tag));
+    const c = S.chars[pose.char];
+    const equipMap = opts.equip || {};
+    const items = (pose.items || []).filter(i => !(pose.hidden && pose.hidden.has(i)));
+    const fallbacks = [];
+
+    for (const iid of items) {
+      // 이미 스프라이트 도트 레이어가 있는 경우 중복 렌더링 방지
+      const hasSprite = drawnTags.has('item' + iid) || drawnTags.has('foot' + iid) ||
+                        layers.some(l => l.tag === 'item' + iid || (l.tag && l.tag.startsWith('foot' + iid)));
+      if (hasSprite) continue;
+
+      const it = c && c.byId && (c.byId[iid] || c.byId[String(iid)]);
+      const slot = (it && it.slot) || Object.keys(equipMap).find(k => equipMap[k] === iid || equipMap[k] === +iid) || 'body';
+      if (slot === 'costume' || slot === 'weapon' || slot === 'sub') continue;
+
+      let url = opts.tdbUrl ? opts.tdbUrl(slot, iid, it) : null;
+      if (!url && S.tdb && S.tdb.icons && (S.tdb.icons[iid] || S.tdb.icons[String(iid)])) {
+        const fn = S.tdb.icons[iid] || S.tdb.icons[String(iid)];
+        url = (S.tdb.base || 'assets/avatar/icons/') + encodeURIComponent(fn.split('/').pop());
+      }
+      if (url) {
+        fallbacks.push({ iid, slot, url, name: it ? (it.name || '') : '' });
+      }
+    }
+
+    const drawFallbackItem = f => {
+      const img = getIconImage(f.url, opts.onNeedRedraw);
+      if (!img) return;
+      const nm = f.name || '';
+      let fw = 40, fh = 40, fx = midX - 20, fy = cenY - 20;
+
+      if (f.slot === 'back') {
+        // 효과 확장 (봄바람, 날개, 마법진, 오라 등): 캐릭터 뒤쪽 중심에 배치 (50x50)
+        fw = 50; fh = 50;
+        fx = midX - fw / 2;
+        fy = cenY - fh / 2 - 4;
+      } else if (f.slot === 'foot') {
+        // 다리 확장 (발자국, 바닥 이펙트): 캐릭터 발 밑 지면에 배치 (38x38)
+        fw = 38; fh = 38;
+        fx = midX - fw / 2;
+        fy = botY - fh / 2 - 4;
+      } else if (f.slot === 'body') {
+        // 몸 확장: 꼬리는 엉덩이/다리 뒤쪽 살짝 옆, 배낭/가방은 등 뒤
+        if (nm.includes('꼬리')) {
+          fw = 42; fh = 42;
+          fx = midX - fw / 2 - 8;
+          fy = cenY + 8;
+        } else if (nm.includes('배낭') || nm.includes('가방')) {
+          fw = 44; fh = 44;
+          fx = midX - fw / 2;
+          fy = cenY - 4;
+        } else {
+          fw = 46; fh = 46;
+          fx = midX - fw / 2;
+          fy = cenY - 2;
+        }
+      } else if (f.slot === 'head') {
+        // 투구 확장 (모자, 투구, 인형 탈, 리본 등): 머리 위에 안착 (얼굴 가림 방지)
+        fw = 44; fh = 44;
+        fx = midX - fw / 2;
+        fy = topY - fh * 0.45;
+      } else if (f.slot === 'face') {
+        // 머리 확장 (얼굴/목 부위):
+        if (nm.includes('머플러') || nm.includes('목도리') || nm.includes('스카프') || nm.includes('케이프') || nm.includes('목걸이')) {
+          // 머플러/스카프류는 목선/옷깃에 감김 (얼굴/눈 가리지 않음)
+          fw = 36; fh = 36;
+          fx = midX - fw / 2;
+          fy = cenY - 14;
+        } else if (nm.includes('안경') || nm.includes('선글라스') || nm.includes('고글') || nm.includes('마스크')) {
+          // 안경/선글라스는 눈높이에 맞춤
+          fw = 32; fh = 32;
+          fx = midX - fw / 2;
+          fy = topY + 18;
+        } else {
+          fw = 34; fh = 34;
+          fx = midX - fw / 2;
+          fy = cenY - 12;
+        }
+      }
+      ctx.drawImage(img, Math.round(fx), Math.round(fy), fw, fh);
+    };
+
+    // 3. 캐릭터 몸통 뒤 Z-Depth 레이어 렌더링 (효과 마법진, 발자국, 꼬리/날개/배낭)
+    for (const f of fallbacks) {
+      if (f.slot === 'back' || f.slot === 'foot' || f.slot === 'body') {
+        drawFallbackItem(f);
+      }
+    }
+
+    // 4. 캐릭터 정식 도트 레이어 렌더링 (몸체, 헤어, 제복 염색, 무기)
+    drawLayers(ctx, layers, ax, ay);
+
+    // 5. 캐릭터 전면 Z-Depth 레이어 렌더링 (머플러/안경, 투구/인형 탈 모자 확장)
+    for (const f of fallbacks) {
+      if (f.slot === 'face' || f.slot === 'head') {
+        drawFallbackItem(f);
+      }
+    }
+
     return [ax, ay];
   }
 

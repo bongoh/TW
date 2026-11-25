@@ -264,7 +264,12 @@
   const TDB_SLOTS = new Set(['head', 'face', 'body', 'back', 'foot', 'costume']);
   let TDB = { base: '', icons: {} };
   const tdbUrl = (slot, id, it) => {
-    if (TDB_SLOTS.has(slot) && TDB.icons[id]) return TDB.base + encodeURIComponent(TDB.icons[id].split('/').pop());
+    const fn = (TDB.icons && (TDB.icons[id] || TDB.icons[String(id)])) ||
+               (TW.S && TW.S.tdb && TW.S.tdb.icons && (TW.S.tdb.icons[id] || TW.S.tdb.icons[String(id)]));
+    if (fn) {
+      const base = TDB.base || (TW.S && TW.S.tdb && TW.S.tdb.base) || 'assets/avatar/icons/';
+      return base + encodeURIComponent(fn.split('/').pop());
+    }
     if (slot === 'costume') {
       const rec = it || (st && st.char && st.char.byId ? st.char.byId[id] : null);
       const iname = rec ? (rec.name || '') : '';
@@ -608,9 +613,14 @@
   // [New] · [Hidden] 목록 단추는 없앴다: 조건 판의 New · Hidden 체크가 지금 부위 안에서 거른다
   function listBtns() { bgButton(); }
   function openListCat(v) {
+    if (v === 'uniform' && st.equip.costume) {
+      delete st.equip.costume;
+      refreshSlots();
+    }
     st.cat = v; st.part = 'all'; st.q = ''; $('search').value = ''; closeSuggest();
     $('kinds').classList.toggle('hidden', NO_KIND_FILTER.has(v));
     syncGroup($('cats'), () => st.cat); listBtns(); partChips(); fillGrid();
+    if (v === 'uniform') refresh();
   }
 
   async function selectChar(ci) {
@@ -641,7 +651,14 @@
     if (!hasSub()) { delete byKey.sub; if (st.cat === 'sub') st.cat = 'head'; }          // nothing to hold in the off hand
     group($('cats'), CAT_ORDER.map(k => k === 'hair' ? ['hair', '헤어', '헤어 스타일'] : byKey[k]).filter(Boolean),
           // 다른 분류로 옮기면 검색어는 비운다 (자동완성 후보를 골라 그 분류로 가는 pickSuggest 는 검색어를 남긴다)
-          v => { st.cat = v; st.part = 'all'; st.q = ''; $('search').value = ''; closeSuggest(); $('kinds').classList.toggle('hidden', NO_KIND_FILTER.has(v)); listBtns(); partChips(); fillGrid(); }, () => st.cat);
+          v => {
+            if (v === 'uniform' && st.equip.costume) {
+              delete st.equip.costume;
+              refreshSlots();
+            }
+            st.cat = v; st.part = 'all'; st.q = ''; $('search').value = ''; closeSuggest(); $('kinds').classList.toggle('hidden', NO_KIND_FILTER.has(v)); listBtns(); partChips(); fillGrid();
+            if (v === 'uniform') refresh();
+          }, () => st.cat);
     placeShare(); listBtns();
     $('kinds').classList.toggle('hidden', NO_KIND_FILTER.has(st.cat));
     st.part = 'all'; partChips();
@@ -950,6 +967,12 @@
       g.innerHTML = '<div class="grid-empty">캐릭터를 먼저 선택해 주세요.</div>';
       return;
     }
+    // 기본의상 염색 모드에서는 확장 의상이 기본 제복을 가리지 않도록 자동 해제
+    if (st.equip.costume) {
+      delete st.equip.costume;
+      refreshSlots();
+      refresh();
+    }
     const cname = TW.S.index.chars[ci].name;
     const parts = TW.baseDyes(ci);
     if (!parts || !parts.length) {
@@ -957,7 +980,8 @@
       return;
     }
     if (st.uniformPart === undefined || st.uniformPart >= parts.length) {
-      st.uniformPart = 0;
+      const outfitIdx = parts.findIndex(([n]) => /옷|상의|원피스|드레스|외투|코트/.test(n));
+      st.uniformPart = outfitIdx >= 0 ? outfitIdx : 0;
     }
     const curK = st.uniformPart;
     const curVal = st.bdye[curK];
@@ -989,8 +1013,9 @@
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'dye-part-btn' + (k === curK ? ' on' : '');
+      const isOutfit = /옷|상의|원피스|드레스|외투|코트/.test(name);
       b.innerHTML = `<span class="dye-part-chip" style="background:${chipBg};${!v ? 'border-style:dashed;' : ''}"></span>
-        <span>${k + 1}. ${name}</span>
+        <span>${k + 1}. ${name}${isOutfit ? ' (기본의상)' : ''}</span>
         ${v ? `<span class="dye-part-reset" data-reset="${k}" title="이 부위 초기화">×</span>` : ''}`;
       b.onclick = ev => {
         if (ev.target.classList.contains('dye-part-reset')) {
@@ -1415,7 +1440,7 @@
              cdye: st.equip.costume && !NO_DYE.has(st.equip.costume) ? st.cdye[st.equip.costume] || null : null, eye: st.eye, eyeDye: st.eyeDye, lip: st.lip, lipDye: st.lipDye, weaponFx: settings.weaponFx !== false, raw: true };
     if (st.mode === 'tf') return { char: st.ci, motion: st.motion, dir: st.dir, hair: -1, items: st.tf ? [st.tf] : [], hairMode: 'all', hidden: new Set(), raw: true };
     return { char: st.ci, motion: st.motion, dir: st.dir, hair: st.hairHidden ? -1 : st.hair, dye: st.dye, items: Object.values(st.equip), hairMode: st.hairMode, hidden: st.hidden,
-             cdye: st.equip.costume && !NO_DYE.has(st.equip.costume) ? st.cdye[st.equip.costume] || null : null, bdye: ownOutfit() ? st.bdye : null,
+             cdye: st.equip.costume && !NO_DYE.has(st.equip.costume) ? st.cdye[st.equip.costume] || null : null, bdye: st.bdye,
              eye: st.eye, eyeDye: st.eyeDye, lip: st.lip, lipDye: st.lipDye, weaponFx: settings.weaponFx !== false };
   }
   // 광선 켜짐/꺼짐: 예프넨 소드셰이프의 광선 (compose.js WEAPON_BEAM) - 예프넨일 때만 보이고, 이 브라우저에 기억한다
@@ -2001,7 +2026,19 @@
   }
   function drawNow() {
     if (st.ci < 0 || !TW.S.chars[st.ci]) return;
-    try { TW.render($('view'), pose(), st.tick, { anchor, scale: st.zoom, under: bgOn() ? bgImage(st.bg) : null, underOff: bgOff() }); } catch (e) { console.error(e); }
+    try {
+      TW.render($('view'), pose(), st.tick, {
+        anchor,
+        scale: st.zoom,
+        under: bgOn() ? bgImage(st.bg) : null,
+        underOff: bgOff(),
+        equip: st.equip,
+        tdbUrl: (slot, id, it) => tdbUrl(slot, id, it),
+        onNeedRedraw: drawNow
+      });
+    } catch (e) {
+      console.error(e);
+    }
     $('tickLabel').textContent = `${st.tick} / ${st.maxT}`;
   }
   // one data tick per TICK_MS. The client's tick length is not known (60 ms looked slow next to the game): 45 ms
@@ -2013,17 +2050,45 @@
   // ---------------------------------------------------------------- export
   function download(canvas, name) { canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }, 'image/png'); }
   function baseName() { return `${TW.S.index.chars[st.ci].name}_m${st.motion}_d${st.dir}`; }
-  function savePng() { const cv = document.createElement('canvas'); cv.width = VIEW[0]; cv.height = VIEW[1]; TW.render(cv, pose(), st.tick, { anchor, scale: st.zoom }); download(cv, baseName() + `_t${st.tick}_x${st.zoom}.png`); }
+  function savePng() {
+    const cv = document.createElement('canvas');
+    cv.width = VIEW[0]; cv.height = VIEW[1];
+    TW.render(cv, pose(), st.tick, {
+      anchor,
+      scale: st.zoom,
+      equip: st.equip,
+      tdbUrl: (slot, id, it) => tdbUrl(slot, id, it)
+    });
+    download(cv, baseName() + `_t${st.tick}_x${st.zoom}.png`);
+  }
   function saveSheet() {
     const w = 220, h = 240, cv = document.createElement('canvas'); cv.width = w * 8; cv.height = h; const g = cv.getContext('2d');
     const p = pose();
-    TW.S.index.dir_order.forEach((d, i) => { const c = document.createElement('canvas'); c.width = w; c.height = h; TW.render(c, Object.assign({}, p, { dir: d }), st.tick, {}); g.drawImage(c, w * i, 0); });
+    TW.S.index.dir_order.forEach((d, i) => {
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      TW.render(c, Object.assign({}, p, { dir: d }), st.tick, {
+        equip: st.equip,
+        tdbUrl: (slot, id, it) => tdbUrl(slot, id, it)
+      });
+      g.drawImage(c, w * i, 0);
+    });
     download(cv, `${TW.S.index.chars[st.ci].name}_m${st.motion}_sheet.png`);
   }
   function saveFrames() {               // every key tick of the current pose as one strip (GIF encoding needs a library; see README)
     const p = pose(), times = TW.frameTimes(p), w = VIEW[0], h = VIEW[1];
     const cv = document.createElement('canvas'); cv.width = w * times.length; cv.height = h; const g = cv.getContext('2d');
-    times.forEach((t, i) => { const c = document.createElement('canvas'); c.width = w; c.height = h; TW.render(c, p, t, { anchor, scale: st.zoom }); g.drawImage(c, w * i, 0); });
+    times.forEach((t, i) => {
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      TW.render(c, p, t, {
+        anchor,
+        scale: st.zoom,
+        equip: st.equip,
+        tdbUrl: (slot, id, it) => tdbUrl(slot, id, it)
+      });
+      g.drawImage(c, w * i, 0);
+    });
     download(cv, baseName() + `_frames_${times.join('-')}.png`);
   }
 
@@ -2089,7 +2154,7 @@
       cv.width = Math.round(VIEW[0] * f); cv.height = Math.round(VIEW[1] * f);
       at = TW.centeredAnchor(p, cv.width / zoom, cv.height / zoom);
     }
-    TW.render(cv, p, tick, { anchor: at, scale: zoom, under: b ? null : under, underOff: bgOff() });
+    TW.render(cv, p, tick, { anchor: at, scale: zoom, under: b ? null : under, underOff: bgOff(), equip: st.equip, tdbUrl: (slot, id, it) => tdbUrl(slot, id, it) });
     // 조각들의 네모 칸은 실제 그림보다 클 수 있다(이펙트 칸은 대부분 투명): 실제로 그려진 픽셀만 남기고 여백을 다시 둔다.
     // 캐릭터 둘레 일정 범위(SHOT.reach × 캐릭터 키)까지만 담는다: 기둥처럼 크게 뻗는 이펙트는 잘리고 캐릭터가 작아지지 않는다
     let limit = null;
@@ -2104,7 +2169,7 @@
     if (b && under) {                                          // 잘라낸 자리 그대로, 배경을 깔고 다시 그린다
       const o = document.createElement('canvas'), pz = SHOT.pad * zoom, x0 = out.trimX ?? pz, y0 = out.trimY ?? pz;
       o.width = out.width; o.height = out.height;
-      TW.render(o, p, tick, { anchor: [at[0] - (x0 - pz) / zoom, at[1] - (y0 - pz) / zoom], scale: zoom, under, underOff: bgOff() });
+      TW.render(o, p, tick, { anchor: [at[0] - (x0 - pz) / zoom, at[1] - (y0 - pz) / zoom], scale: zoom, under, underOff: bgOff(), equip: st.equip, tdbUrl: (slot, id, it) => tdbUrl(slot, id, it) });
       out = o;
     }
     return new Promise(res => out.toBlob(res, 'image/png'));
