@@ -625,7 +625,7 @@
     $('whoArt').src = artUrl(idx.chars[ci].art); $('whoName').textContent = idx.chars[ci].name; $('whoCard').title = idx.chars[ci].full;
     // 6 per row: 제복염색 머리 얼굴 의상 등 발자국 / 헤어 확장의상 무기 보조 변신
     const byKey = Object.fromEntries(idx.slots.map(s => [s.key, [s.key, s.label.replace(' (방패/펜듈럼)', ''), s.label]]));
-    byKey.uniform = ['uniform', '제복 염색', '🎨 제복/염색 (74색)'];
+    byKey.uniform = ['uniform', '기본의상 염색', '🎨 기본의상/평복 염색 (74색)'];
     byKey.weapon_av = ['weapon_av', '확장 무기', '아바타 무기']; byKey.weapon_eq = ['weapon_eq', '일반 무기', '장비 무기'];
     if (byKey.sub && SUB_LABEL[idx.chars[ci].name]) byKey.sub = ['sub', SUB_LABEL[idx.chars[ci].name], byKey.sub[2]];
     if (!hasSub()) { delete byKey.sub; if (st.cat === 'sub') st.cat = 'head'; }          // nothing to hold in the off hand
@@ -951,7 +951,7 @@
     }
     const curK = st.uniformPart;
     const curVal = st.bdye[curK];
-    $('countLabel').textContent = '공식 74색 제복 염색';
+    $('countLabel').textContent = '공식 74색 기본의상 염색';
 
     const wrap = document.createElement('div');
     wrap.className = 'dye-studio';
@@ -961,7 +961,8 @@
     hdr.className = 'dye-header';
     hdr.innerHTML = `<div class="dye-title">
       <span>🎨</span>
-      <span><b>${cname}</b> 공식 제복 염색 Studio (${parts.length}개 부위)</span>
+      <span><b>${cname}</b> 공식 기본의상 염색 Studio (${parts.length}개 부위)</span>
+      <span style="font-size:11px;font-weight:normal;color:var(--muted);margin-left:8px;">(오를란느 제복·네냐플 교복 등 착용 제복은 [확장 의상] 탭)</span>
     </div>
     <div class="dye-actions">
       <button type="button" class="dye-act-btn" id="dyeResetPart">선택 부위 기본색</button>
@@ -1979,17 +1980,7 @@
   }
   function drawNow() {
     if (st.ci < 0 || !TW.S.chars[st.ci]) return;
-    try {
-      TW.render($('view'), pose(), st.tick, {
-        anchor,
-        scale: st.zoom,
-        under: bgOn() ? bgImage(st.bg) : null,
-        underOff: bgOff(),
-        equip: st.equip,
-        tdbUrl: (slot, id) => tdbUrl(slot, id),
-        onNeedRedraw: drawNow
-      });
-    } catch (e) { console.error(e); }
+    try { TW.render($('view'), pose(), st.tick, { anchor, scale: st.zoom, under: bgOn() ? bgImage(st.bg) : null, underOff: bgOff() }); } catch (e) { console.error(e); }
     $('tickLabel').textContent = `${st.tick} / ${st.maxT}`;
   }
   // one data tick per TICK_MS. The client's tick length is not known (60 ms looked slow next to the game): 45 ms
@@ -2001,42 +1992,17 @@
   // ---------------------------------------------------------------- export
   function download(canvas, name) { canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }, 'image/png'); }
   function baseName() { return `${TW.S.index.chars[st.ci].name}_m${st.motion}_d${st.dir}`; }
-  function savePng() {
-    const cv = document.createElement('canvas'); cv.width = VIEW[0]; cv.height = VIEW[1];
-    TW.render(cv, pose(), st.tick, {
-      anchor,
-      scale: st.zoom,
-      equip: st.equip,
-      tdbUrl: (slot, id) => tdbUrl(slot, id)
-    });
-    download(cv, baseName() + `_t${st.tick}_x${st.zoom}.png`);
-  }
+  function savePng() { const cv = document.createElement('canvas'); cv.width = VIEW[0]; cv.height = VIEW[1]; TW.render(cv, pose(), st.tick, { anchor, scale: st.zoom }); download(cv, baseName() + `_t${st.tick}_x${st.zoom}.png`); }
   function saveSheet() {
     const w = 220, h = 240, cv = document.createElement('canvas'); cv.width = w * 8; cv.height = h; const g = cv.getContext('2d');
     const p = pose();
-    TW.S.index.dir_order.forEach((d, i) => {
-      const c = document.createElement('canvas'); c.width = w; c.height = h;
-      TW.render(c, Object.assign({}, p, { dir: d }), st.tick, {
-        equip: st.equip,
-        tdbUrl: (slot, id) => tdbUrl(slot, id)
-      });
-      g.drawImage(c, w * i, 0);
-    });
+    TW.S.index.dir_order.forEach((d, i) => { const c = document.createElement('canvas'); c.width = w; c.height = h; TW.render(c, Object.assign({}, p, { dir: d }), st.tick, {}); g.drawImage(c, w * i, 0); });
     download(cv, `${TW.S.index.chars[st.ci].name}_m${st.motion}_sheet.png`);
   }
   function saveFrames() {               // every key tick of the current pose as one strip (GIF encoding needs a library; see README)
     const p = pose(), times = TW.frameTimes(p), w = VIEW[0], h = VIEW[1];
     const cv = document.createElement('canvas'); cv.width = w * times.length; cv.height = h; const g = cv.getContext('2d');
-    times.forEach((t, i) => {
-      const c = document.createElement('canvas'); c.width = w; c.height = h;
-      TW.render(c, p, t, {
-        anchor,
-        scale: st.zoom,
-        equip: st.equip,
-        tdbUrl: (slot, id) => tdbUrl(slot, id)
-      });
-      g.drawImage(c, w * i, 0);
-    });
+    times.forEach((t, i) => { const c = document.createElement('canvas'); c.width = w; c.height = h; TW.render(c, p, t, { anchor, scale: st.zoom }); g.drawImage(c, w * i, 0); });
     download(cv, baseName() + `_frames_${times.join('-')}.png`);
   }
 
@@ -2102,14 +2068,7 @@
       cv.width = Math.round(VIEW[0] * f); cv.height = Math.round(VIEW[1] * f);
       at = TW.centeredAnchor(p, cv.width / zoom, cv.height / zoom);
     }
-    TW.render(cv, p, tick, {
-      anchor: at,
-      scale: zoom,
-      under: b ? null : under,
-      underOff: bgOff(),
-      equip: st.equip,
-      tdbUrl: (slot, id) => tdbUrl(slot, id)
-    });
+    TW.render(cv, p, tick, { anchor: at, scale: zoom, under: b ? null : under, underOff: bgOff() });
     // 조각들의 네모 칸은 실제 그림보다 클 수 있다(이펙트 칸은 대부분 투명): 실제로 그려진 픽셀만 남기고 여백을 다시 둔다.
     // 캐릭터 둘레 일정 범위(SHOT.reach × 캐릭터 키)까지만 담는다: 기둥처럼 크게 뻗는 이펙트는 잘리고 캐릭터가 작아지지 않는다
     let limit = null;
