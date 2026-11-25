@@ -7648,25 +7648,23 @@ function renderShowroomCharPills() {
   if (!container) return;
 
   container.innerHTML = TW_CHARACTER_ROSTER.map(c => {
-    const hasDot = typeof TW_AVATAR_RESOURCES !== 'undefined' && TW_AVATAR_RESOURCES.characterDots[c.key] && TW_AVATAR_RESOURCES.characterDots[c.key].dotImg.startsWith('assets/');
-    const dotBadge = hasDot ? '<span style="font-size:0.58rem; background:#0284c7; color:#fff; padding:1px 3px; border-radius:3px; margin-left:3px;">도트</span>' : '';
     return `
       <button type="button" class="tw-char-pill ${showroomSelectedChar === c.key ? 'active' : ''}" onclick="selectShowroomChar('${c.key}')" title="${c.fullName} (${c.type})">
         <span>${c.icon}</span>
         <span>${c.name}</span>
-        ${dotBadge}
+        <span style="font-size:0.58rem; background:#0284c7; color:#fff; padding:1px 3px; border-radius:3px; margin-left:3px;">도트</span>
       </button>
     `;
   }).join('');
 }
 
 function selectShowroomChar(charKey) {
-  const validDotChars = ['nayatrei', 'boris', 'lucian', 'tichiel', 'mila', 'lanziee', 'sivelin', 'issac', 'anais'];
-  if (!validDotChars.includes(charKey)) {
-    const cObj = TW_CHARACTER_ROSTER.find(x => x.key === charKey);
-    alert(`💡 '${cObj ? cObj.fullName : charKey}' 캐릭터의 도트 스프라이트는 현재 순차 추출 중입니다.\n현재 100% 투명 도트가 지원되는 9개 캐릭터(나야트레이, 보리스, 루시안, 티치엘, 밀라, 란지에, 시벨린, 이자크, 아나이스)를 우선 체험하실 수 있습니다.`);
-    return;
-  }
+  if (charKey === 'naya') charKey = 'nayatrei';
+  if (charKey === 'joshua') charKey = 'josua';
+
+  const charDef = TW_CHARACTER_ROSTER.find(x => x.key === charKey);
+  if (!charDef) return;
+
   showroomSelectedChar = charKey;
   equipViewState.currentCharKey = charKey;
   equipViewState.currentAngleIndex = 0; // Always reset to Front!
@@ -7888,20 +7886,33 @@ function rgbToHex(r, g, b) {
 }
 
 function downloadCurrentPaperDollPNG() {
+  const stage = document.getElementById('tw-paperdoll-stage');
   const charImg = document.getElementById('pd-char-img');
-  if (!charImg) return;
+  if (!stage || !charImg) return;
 
   const exportCanvas = document.createElement('canvas');
   exportCanvas.width = 160;
-  exportCanvas.height = 200;
+  exportCanvas.height = 210;
   const ctx = exportCanvas.getContext('2d');
 
   ctx.save();
-  if (equipViewState.currentAngleIndex === 1 || equipViewState.currentAngleIndex === 3) {
+  const isFlipped = (equipViewState.currentAngleIndex === 1 || equipViewState.currentAngleIndex === 3);
+  if (isFlipped) {
     ctx.translate(exportCanvas.width, 0);
     ctx.scale(-1, 1);
   }
-  ctx.drawImage(charImg, 25, 20, 110, 150);
+
+  // Draw layers in order: back -> body -> armor -> face -> head -> arms
+  const layerIds = ['pd-layer-back', 'pd-char-img', 'pd-layer-armor', 'pd-layer-face', 'pd-layer-head', 'pd-layer-arms'];
+  layerIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.style.display !== 'none' && el.complete && el.naturalWidth > 0) {
+      try {
+        ctx.drawImage(el, 20, 15, 120, 160);
+      } catch (e) {}
+    }
+  });
+
   ctx.restore();
 
   const dataUrl = exportCanvas.toDataURL('image/png');
@@ -7914,13 +7925,10 @@ function downloadCurrentPaperDollPNG() {
 }
 
 function renderEquipView() {
-  const validDotChars = ['nayatrei', 'boris', 'lucian', 'tichiel', 'mila', 'lanziee', 'sivelin', 'issac', 'anais'];
-  if (!validDotChars.includes(showroomSelectedChar)) {
-    showroomSelectedChar = 'nayatrei';
-    equipViewState.currentCharKey = 'nayatrei';
-  }
+  if (showroomSelectedChar === 'naya') showroomSelectedChar = 'nayatrei';
+  if (showroomSelectedChar === 'joshua') showroomSelectedChar = 'josua';
 
-  const charDef = TW_CHARACTER_ROSTER.find(c => c.key === showroomSelectedChar) || TW_CHARACTER_ROSTER[9]; // default Naya
+  const charDef = TW_CHARACTER_ROSTER.find(c => c.key === showroomSelectedChar) || TW_CHARACTER_ROSTER[0];
   const headerNameEl = document.getElementById('ev-header-char-name');
   const angleTag = document.getElementById('ev-angle-tag');
   const charImg = document.getElementById('pd-char-img');
@@ -7941,24 +7949,114 @@ function renderEquipView() {
     }
   }
 
-  // Check if Show Armor (Costume) is equipped
+  // Check if Show Outfit (Costume / Accessories) is equipped
   const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
+  const isFlipped = (equipViewState.currentAngleIndex === 1 || equipViewState.currentAngleIndex === 3);
+
+  // 1. Show Armor (아바타 의상 / 옷 체인지)
   const showArmor = outfit.showArmor;
   const isArmorOn = showArmor && showArmor.isOn !== false && !showArmor.name.includes('미착용') && !showArmor.name.includes('없음');
-  if (isArmorOn && showroomSelectedChar === 'nayatrei' && showArmor.name.includes('벚꽃비') && !activeColor) {
-    dotSrc = 'assets/avatar/naya_sakura_dot.png';
+  const armorLayer = document.getElementById('pd-layer-armor');
+
+  if (isArmorOn && (!activeColor || currentShowroomSubMode !== 'dye')) {
+    if (showroomSelectedChar === 'nayatrei' && showArmor.name.includes('벚꽃비')) {
+      dotSrc = 'assets/avatar/nayatrei_sakura_dot.png';
+      if (armorLayer) armorLayer.style.display = 'none';
+    } else {
+      const armorSprite = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.resolveLayerSprite('showArmor', showArmor.name) : null;
+      if (armorLayer && armorSprite) {
+        armorLayer.src = armorSprite;
+        armorLayer.style.display = 'block';
+      } else if (armorLayer) {
+        armorLayer.style.display = 'none';
+      }
+    }
+  } else {
+    if (armorLayer) armorLayer.style.display = 'none';
+  }
+
+  // 2. Show Head (모자 / 헤어 장식)
+  const showHead = outfit.showHead;
+  const isHeadOn = showHead && showHead.isOn !== false && !showHead.name.includes('미착용') && !showHead.name.includes('없음');
+  const headLayer = document.getElementById('pd-layer-head');
+  if (isHeadOn) {
+    const headSprite = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.resolveLayerSprite('showHead', showHead.name) : null;
+    if (headLayer && headSprite) {
+      headLayer.src = headSprite;
+      headLayer.style.display = 'block';
+    } else if (headLayer) {
+      headLayer.style.display = 'none';
+    }
+  } else {
+    if (headLayer) headLayer.style.display = 'none';
+  }
+
+  // 3. Show Sub Arms (무기 확장 / 커프)
+  const showArms = outfit.showSubArms || outfit.showArms;
+  const isArmsOn = showArms && showArms.isOn !== false && !showArms.name.includes('미착용') && !showArms.name.includes('없음');
+  const armsLayer = document.getElementById('pd-layer-arms');
+  if (isArmsOn) {
+    const armsSprite = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.resolveLayerSprite('showSubArms', showArms.name) : null;
+    if (armsLayer && armsSprite) {
+      armsLayer.src = armsSprite;
+      armsLayer.style.display = 'block';
+    } else if (armsLayer) {
+      armsLayer.style.display = 'none';
+    }
+  } else {
+    if (armsLayer) armsLayer.style.display = 'none';
+  }
+
+  // 4. Show Back (날개 확장 / 등)
+  const showBack = outfit.showBack;
+  const isBackOn = showBack && showBack.isOn !== false && !showBack.name.includes('미착용') && !showBack.name.includes('없음');
+  const backLayer = document.getElementById('pd-layer-back');
+  if (isBackOn) {
+    const backSprite = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.resolveLayerSprite('showBack', showBack.name) : null;
+    if (backLayer && backSprite) {
+      backLayer.src = backSprite;
+      backLayer.style.display = 'block';
+    } else if (backLayer) {
+      backLayer.style.display = 'none';
+    }
+  } else {
+    if (backLayer) backLayer.style.display = 'none';
+  }
+
+  // 5. Show Face (얼굴 장식 / 안경 / 홍조)
+  const showFace = outfit.showFace;
+  const isFaceOn = showFace && showFace.isOn !== false && !showFace.name.includes('미착용') && !showFace.name.includes('없음');
+  const faceLayer = document.getElementById('pd-layer-face');
+  if (isFaceOn) {
+    const faceSprite = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.resolveLayerSprite('showFace', showFace.name) : null;
+    if (faceLayer && faceSprite) {
+      faceLayer.src = faceSprite;
+      faceLayer.style.display = 'block';
+    } else if (faceLayer) {
+      faceLayer.style.display = 'none';
+    }
+  } else {
+    if (faceLayer) faceLayer.style.display = 'none';
   }
 
   if (charImg) {
     charImg.src = dotSrc;
     charImg.alt = charDef.name;
-
-    // Apply rotation class
-    charImg.classList.remove('rotated-right', 'rotated-back');
-    if (equipViewState.currentAngleIndex === 1) charImg.classList.add('rotated-right');
-    else if (equipViewState.currentAngleIndex === 2) charImg.classList.add('rotated-back');
-    else if (equipViewState.currentAngleIndex === 3) charImg.classList.add('rotated-right');
+    // Guaranteed fallback so character is NEVER broken or transparent
+    charImg.onerror = function() {
+      this.onerror = null;
+      if (charDef.img) this.src = charDef.img;
+    };
   }
+
+  // Apply rotation classes to all visible layers
+  const allLayers = [charImg, armorLayer, headLayer, armsLayer, backLayer, faceLayer];
+  allLayers.forEach(l => {
+    if (!l) return;
+    l.classList.remove('rotated-right', 'rotated-back');
+    if (isFlipped) l.classList.add('rotated-right');
+    else if (equipViewState.currentAngleIndex === 2) l.classList.add('rotated-back');
+  });
 
   // Render Tooltip / Status details
   const item = equipViewState.selectedItem || {

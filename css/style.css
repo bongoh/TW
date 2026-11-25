@@ -8084,11 +8084,13 @@
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.85));
 }
 
-.pd-char-img.rotated-right {
+.pd-char-img.rotated-right,
+.pd-layer.rotated-right {
   transform: translateX(-50%) scaleX(-1);
 }
 
-.pd-char-img.rotated-back {
+.pd-char-img.rotated-back,
+.pd-layer.rotated-back {
   transform: translateX(-50%);
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.85)) brightness(0.85);
 }
