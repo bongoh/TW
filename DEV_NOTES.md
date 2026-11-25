@@ -2,7 +2,7 @@
 
 > **프로젝트명**: TalesWeaver All-in-One Companion & Strategy Guide  
 > **초기 시작 버전**: `v0.001`  
-> **현재 안정 버전**: `v0.040`  
+> **현재 안정 버전**: `v0.041`  
 > **작성 일자**: 2026-11-25  
 > **기술 스택**: Vanilla HTML5, Modern CSS3 (Grid/Flexbox/CSS Variables), ES6+ JavaScript, Responsive Design, GitHub Pages Ready  
 
@@ -52,10 +52,38 @@
 | **v0.038** | 2026-11-25 | 🛡️ 캐릭터 프로필 ↔ 인게임 장비창(Equip Window) 양방향 실시간 동기화 완비 (프로필 모달 3번 탭 12부위 상세 장비 현황 그리드, 순수+장비+펫 실시간 종합 전투 스탯 배너, 상단 바 실시간 착용 장비 뱃지) | 프로필 ↔ 인게임 템창 동기화 완성 |
 | **v0.039** | 2026-11-25 | 🎮 프로필 설정 모달 3번 탭 내 테일즈위버 인게임 장비창(Equip Window) 원형 직통 탑재 & 2열 대시보드 구축 (인게임 템창 슬롯 클릭 시 정밀 튜너 오버레이 연동, 실시간 KPI, 국템/이클 종결 원클릭 프리셋, 6번 탭 전투 시험장 As-Is 직결) | 프로필 템창 기획 원형 100% 일치 완성 |
 | **v0.040** | 2026-11-25 | 🛠️ 장비 슬롯 튜닝 모달 UI/UX 전면 개편 & 옵션 대폭 확장 (0~12강 완전 대칭 7열 그리드, 10대 실전 전이석 옵션 풀, 인챈트 접두어 6종, 직접 미세조정 인풋, 솔리드 다크 백드롭 번짐 차단, 문맥별 저장 버튼) | 튜너 모달 UIUX 개편 & 10대 옵션 확장 |
+| **v0.041** | 2026-11-25 | 📦 아이템 데이터베이스 물리적 분리 및 화려한 아바타 2,098종 전수 DB 구축 (`js/data/items_equipment.js`, `js/data/items_avatar.js`, 호랑구님 시트 21개 탭 1~83회차 전수 파싱, 7대 SHOW 슬롯 매핑, 세트 효과 및 고속 검색 엔진 탑재) | 아이템/아바타 DB 분리 및 아바타 2,098종 구축 |
 
 ---
 
 ## 📜 상세 버전별 변경 로그 (Detailed Changelog)
+
+---
+
+### [v0.041] - 2026-11-25
+#### 📦 Item Database Modular Separation & 2,098 Avatar Dataset Built
+- **목적**:
+  - 기존 단일 `data.js`의 비대화를 방지하고, 화면 렌더링 로직과 아이템 데이터베이스 간의 결합도를 낮추어 코드 꼬임을 원천 차단.
+  - 매직위버 호랑구님의 구글 스프레드시트 자료(21개 탭)를 전수 파싱하여 2,098종의 역대 화려한 아바타 및 월간 확장 아이템을 정규화 데이터베이스로 구축.
+- **주요 작업 내역**:
+  - `js/data/items_equipment.js`:
+    - 12부위 실전 장비 슬롯 정의, 0~12강 공식 강화 테이블, 4단계 인챈트 품질 테이블, 6대 접두어 및 10대 전이석 옵션 DB를 독립 모듈로 분리.
+    - `TW_DEFAULT_EQUIP_STATE`, `TW_INGAME_EQUIP_LAYOUT`, `KOREAN_STANDARD_TEMPLATE` 이관 및 전역 네임스페이스 바인딩.
+  - `js/data/items_avatar.js`:
+    - 호랑구님의 구글 시트 21개 탭(`01~05회차` ~ `81~83회차`, `月-교환 목록`, `17주년 출석 체크`) 자동 크롤링 및 정규화 파서 파이프라인 가동.
+    - 총 2,098개의 유니크 아바타 아이템 추출:
+      - `showHead`: 715종 (투구, 모자, 리본, 캡, 티아라, 헤어 등)
+      - `showArmor`: 304종 (코트, 드레스, 수영복, 정장, 교복, 한복, 로브 등)
+      - `showFace`: 101종 (안경, 머플러, 넥타이, 마스크, 홍조, 선글라스 등)
+      - `showBack`: 132종 (날개, 윙, 망토, 꼬리, 가방, 빗자루 등)
+      - `showFoot`: 416종 (발자국, 신발, 부츠, 슈즈, 스텝 등)
+      - `showEffect`: 426종 (마법진, 오라, 샤이닝, 전신 이펙트 등)
+      - `showSubArms`: 4종 (무기 확장류)
+    - 5세트 아바타 효과(올스탯 +10, 이동속도 +3, 최대 HP +2000) 내장.
+    - `TW_AVATAR_DB.search(query, slotKey, roundFilter)` 고속 색인 검색 메서드 탑재.
+    - `TW_AVATAR_DB.getBySlot(slotKey)`, `TW_AVATAR_DB.getRounds()`, `TW_AVATAR_DB.getById(id)` 헬퍼 API 제공.
+  - `index.html`:
+    - `<script src="js/data/items_equipment.js"></script>` 및 `<script src="js/data/items_avatar.js"></script>` 로더 연결.
 
 ---
 
