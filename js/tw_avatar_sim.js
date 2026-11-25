@@ -276,7 +276,7 @@
   // TalesDB's own list icons for the avatar parts (tdbicons.json: item id -> path on TalesDB's CDN)
   const TDB_SLOTS = new Set(['head', 'face', 'body', 'back', 'foot']);
   let TDB = { base: '', icons: {} };
-  const tdbUrl = (slot, id) => TDB_SLOTS.has(slot) && TDB.icons[id] ? TDB.base + TDB.icons[id].split('/').map(encodeURIComponent).join('/') : null;
+  const tdbUrl = (slot, id) => TDB_SLOTS.has(slot) && TDB.icons[id] ? TDB.base + encodeURIComponent(TDB.icons[id].split('/').pop()) : null;
   const tdbImg = url => `<img class="tdb" src="${url}" alt="" loading="lazy" decoding="async" draggable="false">`;
   // the icon from the shared sheets (icons/d: 64 per file, one request for a screenful) or else its own file
   const tdbIcon = (slot, id) => { if (!TDB_SLOTS.has(slot)) return null; const cell = TW.tdbCell(id); if (cell) return { cell }; const url = tdbUrl(slot, id); return url ? { url } : null; };
@@ -286,7 +286,14 @@
   // loaded with CORS. Inside TalesDB, its own CDN gives the avatar list icons (opts.tdb) and the character art
   // (opts.art) - the same files its other pages use, so the browser already has them.
   let DATA_BASE = 'data/', TDB_BASE = '', ART_BASE = '', cssReady = Promise.resolve();
-  const artUrl = name => (ART_BASE || DATA_BASE + 'art/') + encodeURIComponent(name) + '.png';
+  const CHAR_ART_MAP = {
+    '루시안': 'lucian', '보리스': 'boris', '막시민': 'maximin', '시벨린': 'sivelin',
+    '조슈아': 'josua', '란지에': 'lanziee', '이자크': 'issac', '밀라': 'mila',
+    '티치엘': 'tichiel', '이스핀': 'ispin', '나야트레이': 'nayatrei', '아나이스': 'anais',
+    '클로에': 'chloe', '벤야': 'benya', '이솔렛': 'isolet', '로아미니': 'roamini',
+    '녹턴': 'nocturne', '리체': 'clarice', '예프넨': 'yevgnen'
+  };
+  const artUrl = name => (ART_BASE || DATA_BASE + 'art/') + (CHAR_ART_MAP[name] || encodeURIComponent(name)) + '.png';
 
   async function main() {
     // everything the first screen needs is asked for at once: the data files, TalesDB's icon list and the last
