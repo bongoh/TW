@@ -7586,51 +7586,7 @@ var tdbSimState = {
 };
 
 function initShowroom() {
-  switchSimulatorMode('tdb-avatar');
-}
-
-function switchSimulatorMode(mode) {
-  const btnTdb = document.getElementById('btn-mode-tdb-avatar');
-  const btnUniform = document.getElementById('btn-mode-uniform-dye');
-  const btnAvatarDb = document.getElementById('btn-mode-avatar-db');
-  const viewTdb = document.getElementById('view-tdb-avatar');
-  const viewUniform = document.getElementById('view-uniform-dye');
-
-  if (mode === 'tdb-avatar') {
-    if (btnTdb) { btnTdb.className = 'btn-sm btn-primary active'; }
-    if (btnUniform) { btnUniform.className = 'btn-sm btn-outline'; }
-    if (btnAvatarDb) { btnAvatarDb.className = 'btn-sm btn-outline'; }
-    if (viewTdb) viewTdb.style.display = 'block';
-    if (viewUniform) viewUniform.style.display = 'none';
-  } else if (mode === 'uniform-dye') {
-    if (btnTdb) { btnTdb.className = 'btn-sm btn-outline'; }
-    if (btnUniform) { btnUniform.className = 'btn-sm btn-primary active'; }
-    if (btnAvatarDb) { btnAvatarDb.className = 'btn-sm btn-outline'; }
-    if (viewTdb) viewTdb.style.display = 'none';
-    if (viewUniform) viewUniform.style.display = 'block';
-    initTalesDbSimulator();
-    switchSimulatorCategory('uniform', document.querySelector('.tdb-cat-btn[data-cat="uniform"]'));
-    renderSimulatorStage();
-    renderSimulatorGrid();
-  } else if (mode === 'avatar-db') {
-    if (btnTdb) { btnTdb.className = 'btn-sm btn-outline'; }
-    if (btnUniform) { btnUniform.className = 'btn-sm btn-outline'; }
-    if (btnAvatarDb) { btnAvatarDb.className = 'btn-sm btn-primary active'; }
-    if (viewTdb) viewTdb.style.display = 'none';
-    if (viewUniform) viewUniform.style.display = 'block';
-    initTalesDbSimulator();
-    switchSimulatorCategory('showHead', document.querySelector('.tdb-cat-btn[data-cat="showHead"]'));
-    renderSimulatorStage();
-    renderSimulatorGrid();
-  }
-}
-
-function reloadTalesDbIframe() {
-  const frame = document.getElementById('tdb-avatar-sim-frame');
-  if (frame) {
-    frame.src = 'https://talesdb.xyz/simulator/avatar/?t=' + Date.now();
-    showSimulatorToast('🔄 테일즈DB 공식 캔버스 시뮬레이터가 새로고침되었습니다.');
-  }
+  initTalesDbSimulator();
 }
 
 function initTalesDbSimulator() {

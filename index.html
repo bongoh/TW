@@ -5996,64 +5996,8 @@
         </div>
       </div>
 
-      <!-- Simulator Mode Switcher Bar -->
-      <div class="sim-mode-switcher" style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap; background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:0.6rem 0.85rem; align-items:center; justify-content:space-between;">
-        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-          <button type="button" class="btn-sm btn-primary active" id="btn-mode-tdb-avatar" onclick="switchSimulatorMode('tdb-avatar')">
-            ✨ 8방향 공식 아바타 시뮬레이터 (Full Canvas Engine)
-          </button>
-          <button type="button" class="btn-sm btn-outline" id="btn-mode-uniform-dye" onclick="switchSimulatorMode('uniform-dye')">
-            🎨 제복 전용 4파트 74색 염색소 (오프라인 모드)
-          </button>
-          <button type="button" class="btn-sm btn-outline" id="btn-mode-avatar-db" onclick="switchSimulatorMode('avatar-db')">
-            📦 2,790종 아바타 도감 & 5세트 스탯
-          </button>
-        </div>
-        <div style="display:flex; gap:0.4rem; align-items:center;">
-          <span class="badge-pill gold" style="font-size:0.7rem;">🛡️ 데이터 영구 보존 3단계 구축 중</span>
-        </div>
-      </div>
-
-      <!-- 1. FULL CANVAS 8-WAY SIMULATOR VIEW (TalesDB CloudFront Certified Engine) -->
-      <div id="view-tdb-avatar" class="sim-view-pane" style="display:block;">
-        <div class="tdb-full-sim-toolbar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; background:#0f172a; border:1px solid #1e293b; border-bottom:none; border-radius:10px 10px 0 0; padding:0.65rem 1rem;">
-          <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
-            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></span>
-            <span style="font-weight:700; font-size:0.88rem; color:#f8fafc;">테일즈DB 공식 캔버스 페이퍼돌 엔진</span>
-            <span class="badge-pill blue" style="font-size:0.68rem;">19인 · 8방향 회전 · 5종 모션 · 2,790종 아바타 · 헤어/렌즈 염색</span>
-          </div>
-          <div style="display:flex; gap:0.5rem; align-items:center;">
-            <button type="button" class="btn-sm btn-outline" onclick="reloadTalesDbIframe()" style="font-size:0.75rem; padding:0.3rem 0.65rem;">
-              🔄 새로고침
-            </button>
-            <a href="https://talesdb.xyz/simulator/avatar/" target="_blank" rel="noopener noreferrer" class="btn-sm btn-primary-soft" style="font-size:0.75rem; padding:0.3rem 0.65rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.25rem;">
-              ↗️ 새 창 전체화면
-            </a>
-          </div>
-        </div>
-        <div class="tdb-full-sim-frame-wrap" style="position:relative; width:100%; height:960px; background:#0d1312; border:1px solid #1e293b; border-radius:0 0 10px 10px; overflow:hidden; box-shadow:0 12px 32px rgba(0,0,0,0.6);">
-          <iframe id="tdb-avatar-sim-frame" 
-                  src="https://talesdb.xyz/simulator/avatar/" 
-                  style="width:100%; height:100%; border:none; display:block;" 
-                  loading="eager" 
-                  title="테일즈DB 공식 아바타 시뮬레이터">
-          </iframe>
-        </div>
-        <div class="tip-box" style="margin-top:0.75rem; border-color:#0284c7; background:rgba(2,132,199,0.08);">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-            <span style="font-size:0.83rem; color:#bae6fd; line-height:1.5;">
-              🛡️ <b>데이터 영구 보존 대비</b>: 현재 테일즈DB 공식 캔버스 페이퍼돌 엔진을 구동 중이며, 만일의 외부 서버 중단 시에도 서비스가 지속되도록 오프라인 제복 염색소와 2,790종 로컬 아바타 DB가 함께 구축되어 있습니다.
-            </span>
-            <button type="button" class="btn-sm btn-outline" onclick="switchSimulatorMode('uniform-dye')" style="font-size:0.75rem; padding:0.25rem 0.6rem;">
-              🎨 오프라인 염색소로 전환
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2. OFFLINE STUDIO (Uniform Dye Salon & Local Avatar DB) -->
-      <div id="view-uniform-dye" class="sim-view-pane" style="display:none;">
-        <div class="tdb-sim-container">
+      <!-- Unified Native Avatar & Uniform Simulator -->
+      <div class="tdb-sim-container">
         <!-- 1. LEFT COLUMN: WHO BAR, CATEGORIES, SEARCH, ITEM/DYE GRID -->
         <div class="tdb-left">
           <div class="tdb-who-bar">
@@ -6184,7 +6128,6 @@
             </div>
           </div>
         </div>
-      </div><!-- /#view-uniform-dye -->
     </section>
   </div>
 
