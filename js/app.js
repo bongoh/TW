@@ -5519,7 +5519,7 @@ let customAbilityKey = 'superior';
 let customRandomOpts = { dmg: 3, acc: 15, elem: 10 };
 
 // In-Game Equip Window State Definitions
-const TW_DEFAULT_EQUIP_STATE = {
+var TW_DEFAULT_EQUIP_STATE = (typeof window !== 'undefined' && window.TW_DEFAULT_EQUIP_STATE) || {
   head: { key: "head", label: "REAL HEAD", name: "어비스 헬름", tier: "abyss", enhance: 10, quality: "standard", ability: "superior", optDmg: 0, optAcc: 15, optElem: 10, dur: "(52/52)", isOn: true, stat: 80, dex: 20 },
   showHead: { key: "showHead", label: "SHOW HEAD", name: "별빛 요정 리본", tier: "avatar", dur: "(100/100)", isOn: true },
   armor: { key: "armor", label: "REAL ARMOR", name: "+10 예리한 아노마라드 로브", tier: "abyss", enhance: 10, quality: "standard", ability: "superior", optDmg: 0, optAcc: 15, optElem: 10, dur: "(84/84)", isOn: true, stat: 80, dex: 20 },
@@ -5542,6 +5542,41 @@ const TW_DEFAULT_EQUIP_STATE = {
   relicLeft: { key: "relicLeft", label: "RELIC (LEFT)", name: "태양의 브레이슬릿 (+4)", tier: "relic", dur: "(100/100)", isOn: true, stat: 40, dex: 20 },
   vehicle: { key: "vehicle", label: "VEHICLE", name: "빈 슬롯 (탈것 미착용)", tier: "empty", dur: "", isOn: false }
 };
+
+function getCharacterVisualInfo(profileId) {
+  const cur = (typeof profiles !== 'undefined' && profiles.find(x => x.id === (profileId || currentProfileId))) || (typeof profiles !== 'undefined' ? profiles[0] : null);
+  const name = cur ? cur.name : "테일즈위버 모험가";
+  const charType = cur ? (cur.charType || cur.job || "모험가") : "모험가";
+  const level = cur ? (cur.level || 310) : 310;
+  
+  const charIcons = {
+    '보리스': '🗡️', '루시안': '⚔️', '란지에': '🔫', '막시민': '🗡️', '시벨린': '🔱',
+    '조슈아': '🔮', '이자크': '🥊', '밀라': '🪓', '티치엘': '🪄', '이스핀': '🤺',
+    '나야트레이': '🗡️', '아나이스': '🧸', '벤야': '👻', '이솔렛': '🗡️', '로아미니': '📿',
+    '녹턴': '💥', '리체': '🧵', '클라렛': '🏹', '예프넨': '⚔️'
+  };
+  let icon = '🧙‍♂️';
+  for (const [k, v] of Object.entries(charIcons)) {
+    if (name.includes(k) || charType.includes(k)) {
+      icon = v;
+      break;
+    }
+  }
+  return { name, charType, level, icon };
+}
+
+function countActiveAvatarPieces(equipState) {
+  if (!equipState) return 0;
+  const avatarSlots = ['showHead', 'showArmor', 'showFace', 'showBack', 'showFoot', 'showEffect'];
+  let count = 0;
+  avatarSlots.forEach(slotKey => {
+    const it = equipState[slotKey];
+    if (it && it.name && it.isOn !== false && !it.name.includes('미착용') && !it.name.includes('없음') && !it.name.includes('빈 슬롯')) {
+      count++;
+    }
+  });
+  return count;
+}
 
 let asIsEquipState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
 let toBeEquipState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
@@ -5579,6 +5614,8 @@ function isSlotUpgraded(slotKey) {
   const toBe = toBeEquipState[slotKey];
   if (!asIs || !toBe) return false;
   return (
+    asIs.name !== toBe.name ||
+    asIs.isOn !== toBe.isOn ||
     asIs.tier !== toBe.tier ||
     asIs.prefix !== toBe.prefix ||
     asIs.enhance !== toBe.enhance ||
@@ -5596,6 +5633,52 @@ function isSlotUpgraded(slotKey) {
 function renderInGameEquipWindow(target, equipState, isEditable) {
   const container = document.getElementById(`tw-equip-window-${target}`);
   if (!container || typeof TW_INGAME_EQUIP_LAYOUT === 'undefined') return;
+
+  const charInfo = getCharacterVisualInfo();
+  const avatarCount = countActiveAvatarPieces(equipState);
+  const is5Set = avatarCount >= 5;
+
+  const chipLayers = [
+    { key: 'showHead', label: '투구', icon: '👑' },
+    { key: 'showArmor', label: '의상', icon: '👗' },
+    { key: 'showBack', label: '날개', icon: '🪽' },
+    { key: 'showEffect', label: '효과', icon: '✨' },
+    { key: 'showFoot', label: '발자국', icon: '👣' },
+    { key: 'showFace', label: '얼굴', icon: '👓' }
+  ];
+
+  let chipsHtml = '';
+  chipLayers.forEach(layer => {
+    const it = equipState[layer.key];
+    const hasItem = it && it.name && it.isOn !== false && !it.name.includes('미착용') && !it.name.includes('없음') && !it.name.includes('빈 슬롯');
+    const chipText = hasItem ? it.name : `${layer.label} 없음`;
+    const clickAttr = isEditable ? `onclick="openAvatarDressroomModal('${layer.key}', '${target}')" title="클릭하여 ${layer.label} 아바타 변경 (드레스룸)"` : `title="${chipText}"`;
+    chipsHtml += `
+      <span class="tw-avatar-mini-chip ${hasItem ? 'active' : ''}" ${clickAttr}>
+        ${layer.icon} ${chipText}
+      </span>
+    `;
+  });
+
+  const standeeHtml = `
+    <div class="tw-char-standee-box">
+      <div class="tw-char-portrait-box">
+        <span class="tw-char-portrait-icon">${charInfo.icon}</span>
+      </div>
+      <div class="tw-char-standee-info">
+        <div class="tw-char-standee-name-row">
+          <span class="tw-char-standee-name" title="${charInfo.name} (${charInfo.charType})">${charInfo.name}</span>
+          <span class="tw-char-standee-lv">Lv.${charInfo.level}</span>
+        </div>
+        <div class="tw-avatar-layer-chips">
+          ${chipsHtml}
+        </div>
+        <div class="tw-5set-indicator ${is5Set ? 'active' : 'inactive'}" title="${is5Set ? '화려한 아바타 5세트 활성화 (올스탯 +10, 이동속도 +3, HP +2000)' : '화려한 아바타 5부위 이상 착용 시 올스탯 +10 세트효과 적용'}">
+          ${is5Set ? '⭐ 아바타 5세트 ON (+10스탯)' : `아바타 세트: ${avatarCount}/5`}
+        </div>
+      </div>
+    </div>
+  `;
 
   let rowsHtml = '';
   TW_INGAME_EQUIP_LAYOUT.forEach(rowDef => {
@@ -5640,9 +5723,22 @@ function renderInGameEquipWindow(target, equipState, isEditable) {
 
       const isRealTunable = isEditable;
       const isShowTunable = isEditable && (showKey === 'showSubArms' || showKey === 'relicLeft');
+      const isShowAvatar = ['showHead', 'showArmor', 'showFace', 'showBack', 'showFoot', 'showEffect', 'showArms'].includes(showKey);
 
       const realOn = realItem.isOn !== undefined ? realItem.isOn : (rowDef.real.defaultOn !== undefined ? rowDef.real.defaultOn : null);
       const showOn = showItem.isOn !== undefined ? showItem.isOn : (rowDef.show.defaultOn !== undefined ? rowDef.show.defaultOn : null);
+
+      let showOnClick = '';
+      let showTitle = '';
+      if (isShowTunable) {
+        showOnClick = `onclick="onInGameSlotClick('${showKey}', '${target}')"`;
+        showTitle = '클릭하여 라이도 커프 / 렐릭 튜닝';
+      } else if (isShowAvatar && isEditable) {
+        showOnClick = `onclick="openAvatarDressroomModal('${showKey}', '${target}')"`;
+        showTitle = '클릭하여 아바타 외형 검색 및 착용 (드레스룸)';
+      }
+
+      const isShowClickable = isShowTunable || (isShowAvatar && isEditable);
 
       rowsHtml += `
         <div class="tw-slot-row-group">
@@ -5667,9 +5763,9 @@ function renderInGameEquipWindow(target, equipState, isEditable) {
           </div>
 
           <!-- Show Item Subrow -->
-          <div class="tw-slot-subrow ${isShowTunable ? 'tunable' : ''} ${showUpgraded ? 'slot-upgraded' : ''}"
-               ${isShowTunable ? `onclick="onInGameSlotClick('${showKey}', '${target}')"` : (isEditable ? `onclick="cycleAvatarSlot('${showKey}', '${target}')"` : '')}
-               title="${isShowTunable ? '클릭하여 라이도 커프 / 렐릭 튜닝' : (isEditable ? '클릭하여 아바타 외형 토글' : '')}">
+          <div class="tw-slot-subrow ${isShowClickable ? 'tunable' : ''} ${showUpgraded ? 'slot-upgraded' : ''}"
+               ${showOnClick}
+               title="${showTitle}">
             <div class="tw-slot-icon-box">${rowDef.show.icon || '🎀'}</div>
             <div class="tw-slot-info-box">
               <div class="tw-slot-line-top">
@@ -5700,6 +5796,7 @@ function renderInGameEquipWindow(target, equipState, isEditable) {
       </div>
     </div>
     <div class="tw-window-body">
+      ${standeeHtml}
       ${rowsHtml}
     </div>
   `;
@@ -6160,18 +6257,223 @@ function saveSlotTunerModal() {
 function toggleSlotOnOff(slotKey, target, event) {
   if (event) event.stopPropagation();
   const state = target === 'asis' ? asIsEquipState : (target === 'modal' ? modalGearState : toBeEquipState);
-  if (!state || !state[slotKey]) return;
+  if (!state) return;
+  if (!state[slotKey]) {
+    state[slotKey] = { key: slotKey, name: "아이템", isOn: true };
+  }
   state[slotKey].isOn = !state[slotKey].isOn;
   renderInGameEquipWindow(target, state, target !== 'asis');
   if (target === 'modal') {
     updateModalGearKpiBanner(modalGearState);
     updateModalStatLiveSummary();
+    renderModalGearQuickChips(modalGearState);
+  } else {
+    updateDualEquipWindowDiff();
   }
 }
 
 function cycleAvatarSlot(slotKey, target) {
   if (target === 'asis') return;
-  toggleSlotOnOff(slotKey, target, null);
+  openAvatarDressroomModal(slotKey, target);
+}
+
+// ==================== AVATAR DRESSROOM & ENCYCLOPEDIA LOGIC ====================
+let currentDressroomSlot = 'showHead';
+let currentDressroomTarget = 'tobe';
+let dressroomSearchQuery = '';
+let dressroomRoundFilter = '';
+let dressroomQuickFilter = '';
+
+function openAvatarDressroomModal(slotKey, target = 'tobe') {
+  currentDressroomSlot = slotKey;
+  currentDressroomTarget = target;
+  dressroomSearchQuery = '';
+  dressroomRoundFilter = '';
+  dressroomQuickFilter = '';
+
+  const modal = document.getElementById('tw-avatar-dressroom-modal');
+  if (!modal) return;
+
+  const searchInput = document.getElementById('dressroom-search-input');
+  if (searchInput) searchInput.value = '';
+
+  const slotLabels = {
+    showHead: { name: "투구/모자 (SHOW HEAD)", icon: "👑" },
+    showArmor: { name: "몸/의상 (SHOW ARMOR)", icon: "👗" },
+    showFace: { name: "얼굴/안경 (SHOW FACE)", icon: "👓" },
+    showBack: { name: "등/날개 (SHOW BACK)", icon: "🪽" },
+    showFoot: { name: "발/발자국 (SHOW FOOT)", icon: "👣" },
+    showEffect: { name: "효과/마법진 (SHOW EFFECT)", icon: "✨" },
+    showArms: { name: "무기 확장 (SHOW ARMS)", icon: "⚔️" },
+    showSubArms: { name: "방패 확장 (SHOW SUB ARMS)", icon: "🛡️" }
+  };
+
+  const info = slotLabels[slotKey] || { name: `아바타 (${slotKey})`, icon: "🎀" };
+  const titleEl = document.getElementById('dressroom-slot-title');
+  const iconEl = document.getElementById('dressroom-slot-icon');
+  const subtitleEl = document.getElementById('dressroom-slot-subtitle');
+
+  if (titleEl) titleEl.textContent = `${info.name} 아바타 드레스룸`;
+  if (iconEl) iconEl.textContent = info.icon;
+  if (subtitleEl) subtitleEl.textContent = `호랑구님의 1~83회차 및 월간 확장 아이템 전수 DB에서 원하는 외형을 검색하고 1클릭으로 착용하세요.`;
+
+  // Populate round dropdown
+  const roundSelect = document.getElementById('dressroom-round-select');
+  if (roundSelect && typeof TW_AVATAR_DB !== 'undefined') {
+    const rounds = TW_AVATAR_DB.getRounds();
+    let optionsHtml = '<option value="">전체 회차 (1~83회차)</option>';
+    rounds.forEach(r => {
+      optionsHtml += `<option value="${r}">${r}</option>`;
+    });
+    roundSelect.innerHTML = optionsHtml;
+    roundSelect.value = '';
+  }
+
+  renderDressroomItems();
+  modal.classList.add('active');
+}
+
+function closeAvatarDressroomModal() {
+  const modal = document.getElementById('tw-avatar-dressroom-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+function onDressroomSearchInput() {
+  const input = document.getElementById('dressroom-search-input');
+  dressroomSearchQuery = input ? input.value.trim() : '';
+  renderDressroomItems();
+}
+
+function onDressroomRoundChange(val) {
+  dressroomRoundFilter = val;
+  renderDressroomItems();
+}
+
+function setDressroomQuickFilter(filterType) {
+  dressroomQuickFilter = filterType;
+  renderDressroomItems();
+}
+
+function renderDressroomItems() {
+  const grid = document.getElementById('dressroom-item-grid');
+  const countEl = document.getElementById('dressroom-item-count');
+  const status5Set = document.getElementById('dressroom-5set-status');
+  if (!grid || typeof TW_AVATAR_DB === 'undefined') return;
+
+  const targetState = currentDressroomTarget === 'modal' ? modalGearState : (currentDressroomTarget === 'asis' ? asIsEquipState : toBeEquipState);
+  const currentEquipped = targetState && targetState[currentDressroomSlot] ? targetState[currentDressroomSlot].name : '';
+
+  // Get search results
+  let items = TW_AVATAR_DB.search(dressroomSearchQuery, currentDressroomSlot, dressroomRoundFilter);
+
+  // Apply quick filters
+  if (dressroomQuickFilter === 'monthly') {
+    items = items.filter(it => it.isMonthly || (it.round && it.round.includes('월')));
+  } else if (dressroomQuickFilter === 'special') {
+    items = items.filter(it => it.isSpecial || (it.round && (it.round.includes('스페셜') || it.round.includes('80') || it.round.includes('81') || it.round.includes('82') || it.round.includes('83'))));
+  }
+
+  if (countEl) countEl.textContent = `총 ${items.length.toLocaleString()}개 아이템`;
+
+  // Update 5-set status
+  if (status5Set) {
+    const activeCount = countActiveAvatarPieces(targetState);
+    if (activeCount >= 5) {
+      status5Set.className = "tw-5set-indicator active";
+      status5Set.textContent = `⭐ 아바타 5세트: 활성화 (${activeCount}/5 - 올스탯 +10, 이속 +3, HP +2000)`;
+    } else {
+      status5Set.className = "tw-5set-indicator inactive";
+      status5Set.textContent = `아바타 5세트: 미달성 (${activeCount}/5)`;
+    }
+  }
+
+  if (items.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: #94a3b8; font-size: 0.85rem;">
+        🔍 조건에 일치하는 아바타 아이템이 없습니다.<br>
+        <span style="font-size:0.75rem; color:#64748b;">검색어나 회차 필터를 변경해보세요.</span>
+      </div>
+    `;
+    return;
+  }
+
+  // Render up to 120 items for snappy performance
+  const displayLimit = 120;
+  const displayItems = items.slice(0, displayLimit);
+
+  let html = '';
+  displayItems.forEach(item => {
+    const isEquipped = currentEquipped === item.name;
+    const monthlyTag = item.isMonthly ? '<span class="tw-avatar-monthly-tag">月</span>' : '';
+    const roundTag = item.round ? `<span class="tw-avatar-round-tag">${item.round}</span>` : '';
+    const origSlotTag = item.originalSlot ? `<span class="tw-avatar-round-tag" style="color:#38bdf8;">${item.originalSlot}</span>` : '';
+
+    html += `
+      <div class="tw-avatar-card ${isEquipped ? 'active' : ''}" onclick="equipAvatarItem('${item.id.replace(/'/g, "\\'")}')">
+        <div class="tw-avatar-card-info">
+          <div class="tw-avatar-card-name" title="${item.name}">${isEquipped ? '✨ ' : ''}${item.name}</div>
+          <div class="tw-avatar-card-meta">
+            ${roundTag}
+            ${monthlyTag}
+            ${origSlotTag}
+          </div>
+        </div>
+        <button type="button" class="btn-sm ${isEquipped ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:2px 8px;">
+          ${isEquipped ? '착용중' : '착용'}
+        </button>
+      </div>
+    `;
+  });
+
+  if (items.length > displayLimit) {
+    html += `
+      <div style="grid-column: 1 / -1; padding: 0.75rem; text-align: center; color: #64748b; font-size: 0.75rem; background: #080c16; border-radius: 6px;">
+        외 ${items.length - displayLimit}개의 아이템이 더 있습니다. 더 자세한 검색어로 찾아보세요!
+      </div>
+    `;
+  }
+
+  grid.innerHTML = html;
+}
+
+function equipAvatarItem(avatarId) {
+  const targetState = currentDressroomTarget === 'modal' ? modalGearState : (currentDressroomTarget === 'asis' ? asIsEquipState : toBeEquipState);
+  if (!targetState) return;
+
+  if (avatarId === null) {
+    targetState[currentDressroomSlot] = {
+      key: currentDressroomSlot,
+      name: "외형 미착용",
+      dur: "",
+      tier: "avatar",
+      isOn: false
+    };
+  } else {
+    const avatar = typeof TW_AVATAR_DB !== 'undefined' ? TW_AVATAR_DB.getById(avatarId) : null;
+    if (!avatar) return;
+
+    targetState[currentDressroomSlot] = {
+      key: currentDressroomSlot,
+      name: avatar.name,
+      dur: "(100/100)",
+      tier: "avatar",
+      isOn: true,
+      round: avatar.round,
+      isMonthly: avatar.isMonthly
+    };
+  }
+
+  closeAvatarDressroomModal();
+
+  if (currentDressroomTarget === 'modal') {
+    renderInGameEquipWindow('modal', modalGearState, true);
+    updateModalGearKpiBanner(modalGearState);
+    updateModalStatLiveSummary();
+    renderModalGearQuickChips(modalGearState);
+  } else {
+    renderInGameEquipWindow('tobe', toBeEquipState, true);
+    updateDualEquipWindowDiff();
+  }
 }
 
 function calculateEquipStateMetrics(state) {
@@ -6271,6 +6573,14 @@ function calculateEquipStateMetrics(state) {
     }
   });
 
+  // Avatar 5-Set Effect (+10 all stats, +3 ms, +2000 HP)
+  const avatarCount = countActiveAvatarPieces(state);
+  const isAvatar5SetActive = avatarCount >= 5;
+  if (isAvatar5SetActive) {
+    regularMainSum += 10;
+    regularDexSum += 10;
+  }
+
   // TalesWeaver Official Formula: Regular stats x20.5 + 0~12 Enhancement stats x32.5
   const regularCoeff = Math.round(regularMainSum * 20.5);
   const enhanceCoeff = Math.round(enhanceMainSum * 32.5);
@@ -6284,7 +6594,9 @@ function calculateEquipStateMetrics(state) {
     enhanceCoeff,
     totalCoeff,
     totalDex,
-    extraDmgPct
+    extraDmgPct,
+    avatarCount,
+    isAvatar5SetActive
   };
 }
 
@@ -6337,12 +6649,16 @@ function updateDualEquipWindowDiff() {
     arms: "무기", subArms: "서브", showSubArms: "라이도 커프",
     armor: "갑옷", head: "투구", face: "아뮬렛",
     back: "날개", hand: "건틀렛", foot: "부츠",
-    effect: "효과", artifact: "아티팩트", relicRight: "신조 렐릭", relicLeft: "태양 렐릭"
+    effect: "효과", artifact: "아티팩트", relicRight: "신조 렐릭", relicLeft: "태양 렐릭",
+    showHead: "아바타 투구", showArmor: "아바타 의상", showFace: "아바타 얼굴",
+    showBack: "아바타 날개", showFoot: "아바타 발자국", showEffect: "아바타 마법진", showArms: "아바타 무기"
   };
   Object.keys(slotNameMap).forEach(k => {
     if (isSlotUpgraded(k)) {
       const tb = toBeEquipState[k];
-      changedSlots.push(`<b>${slotNameMap[k]}</b>: ${tb.name || tb.tier}`);
+      if (tb) {
+        changedSlots.push(`<b>${slotNameMap[k]}</b>: ${tb.name || tb.tier}`);
+      }
     }
   });
 
@@ -6389,6 +6705,7 @@ function updateDualEquipWindowDiff() {
         <div style="display:flex; justify-content:center; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.75rem;">
           <span class="specup-diff-pill">계수 ${coeffDiff >= 0 ? '+' : ''}${coeffDiff.toLocaleString()}</span>
           <span class="specup-diff-pill">DEX ${dexDiff >= 0 ? '+' : ''}${dexDiff}</span>
+          ${toBeMetrics.isAvatar5SetActive ? '<span class="specup-diff-pill gold">⭐ 아바타 5세트 ON (+10스탯)</span>' : ''}
           ${killText}
         </div>
 
@@ -6424,11 +6741,11 @@ function updateDualEquipWindowDiff() {
         <!-- Changed Slots Pill List -->
         <div style="margin-top:0.6rem; padding-top:0.5rem; border-top:1px dashed #334155; font-size:0.75rem;">
           <div style="color:#94a3b8; font-weight:700; margin-bottom:0.3rem;">
-            🎯 교체 튜닝된 장비 (${changedSlots.length}부위):
+            🎯 교체 튜닝된 장비 및 아바타 (${changedSlots.length}부위):
           </div>
           ${changedSlots.length > 0 
             ? `<div style="display:flex; gap:0.35rem; flex-wrap:wrap;">${changedSlots.map(s => `<span class="specup-badge-pill gold" style="font-size:0.72rem;">${s}</span>`).join('')}</div>`
-            : `<span style="color:#64748b; font-style:italic;">오른쪽 [To-Be] 장비창의 슬롯을 클릭하여 다음 장비(예: 11강 이클립스)로 바꿔보세요!</span>`
+            : `<span style="color:#64748b; font-style:italic;">오른쪽 [To-Be] 장비창의 슬롯을 클릭하여 다음 장비(예: 11강 이클립스) 또는 아바타를 바꿔보세요!</span>`
           }
         </div>
       </div>
@@ -6442,6 +6759,12 @@ function updateDualEquipWindowDiff() {
 
     if (isSlotUpgraded('arms')) {
       adviceContent = "무기 강화는 공식 계수 <b>x32.5</b>가 적용되어 10강(+64, 계수 +2,080) 및 11강(+102, 계수 +3,315) 업그레이드 시 타당 대미지 상한선을 확실하게 뚫어냅니다.";
+    } else if (isSlotUpgraded('showHead') || isSlotUpgraded('showArmor') || isSlotUpgraded('showFace') || isSlotUpgraded('showBack') || isSlotUpgraded('showFoot') || isSlotUpgraded('showEffect')) {
+      if (toBeMetrics.isAvatar5SetActive) {
+        adviceContent = "축하합니다! <b>화려한 아바타 5세트</b>를 활성화하여 전 능력치 <b>올스탯 +10, 이동속도 +3, HP +2000</b> 세트 효과가 전투 계수에 실시간 반영되었습니다!";
+      } else {
+        adviceContent = "화려한 아바타 부위를 5개 이상 활성화하면 테일즈위버 공식 5세트 효과(<b>올스탯 +10, 이동속도 +3, HP +2000</b>)가 추가 발동됩니다.";
+      }
     } else if (isSlotUpgraded('back') || isSlotUpgraded('artifact')) {
       adviceContent = "날개와 아티팩트는 이클립스 3신기의 핵심으로, 기본 마방과 계수 상승폭이 매우 커 가장 1순위로 추천되는 고효율 부위입니다.";
     } else if (isSlotUpgraded('showSubArms')) {
@@ -6451,12 +6774,14 @@ function updateDualEquipWindowDiff() {
     }
 
     adviceEl.innerHTML = `
-      <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.3rem;">
-        <span style="font-size:1rem;">💡</span>
-        <span style="font-weight:800; color:#fde68a; font-size:0.86rem;">${adviceTitle}</span>
-      </div>
-      <div style="font-size:0.78rem; color:#cbd5e1; line-height:1.5;">
-        ${adviceContent}
+      <div class="senior-advice-card">
+        <div class="senior-advice-header">
+          <span class="icon">🧙‍♂️</span>
+          <span class="title">${adviceTitle}</span>
+        </div>
+        <div class="senior-advice-body">
+          ${adviceContent}
+        </div>
       </div>
     `;
   }

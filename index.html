@@ -7183,6 +7183,62 @@
   </div>
 </div>
 
+<!-- Avatar Dressroom & Encyclopedia Modal (#tw-avatar-dressroom-modal) -->
+<div id="tw-avatar-dressroom-modal" class="modal-backdrop" onclick="if(event.target === this) closeAvatarDressroomModal()">
+  <div class="modal-box tw-dressroom-box">
+    <div class="modal-header tw-dressroom-header">
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <span id="dressroom-slot-icon" style="font-size:1.4rem;">👗</span>
+        <div>
+          <h3 id="dressroom-slot-title" style="margin:0; font-size:1.05rem; color:#fde68a; font-weight:800;">아바타 드레스룸 & 백과사전</h3>
+          <div id="dressroom-slot-subtitle" style="font-size:0.72rem; color:#94a3b8; margin-top:2px;">호랑구님의 1~83회차 화려한 아바타 및 월간 확장 아이템 2,098종 전수 DB</div>
+        </div>
+      </div>
+      <button class="modal-close-btn" onclick="closeAvatarDressroomModal()">&times;</button>
+    </div>
+
+    <div class="tw-dressroom-search-bar">
+      <div class="tw-dressroom-inputs-row">
+        <input type="text" id="dressroom-search-input" class="calc-input" placeholder="🔍 아이템 이름 또는 키워드 검색 (예: 수영복, 리본, 날개, 드레스...)" oninput="onDressroomSearchInput()" style="flex:1;">
+        <select id="dressroom-round-select" class="calc-input tw-select" style="width:160px;" onchange="onDressroomRoundChange(this.value)">
+          <option value="">전체 회차 (1~83회차)</option>
+        </select>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <button type="button" class="btn-sm btn-outline" style="font-size:0.7rem; padding:2px 8px;" onclick="setDressroomQuickFilter('')">전체</button>
+          <button type="button" class="btn-sm btn-outline" style="font-size:0.7rem; padding:2px 8px;" onclick="setDressroomQuickFilter('monthly')">월템(月)</button>
+          <button type="button" class="btn-sm btn-outline" style="font-size:0.7rem; padding:2px 8px;" onclick="setDressroomQuickFilter('special')">최신/스페셜</button>
+        </div>
+        <span id="dressroom-item-count" style="font-size:0.72rem; color:#38bdf8; font-weight:700;">총 0개 아이템</span>
+      </div>
+    </div>
+
+    <div class="modal-body tw-dressroom-body">
+      <div class="tw-avatar-card" style="margin-bottom:0.5rem; border-style:dashed; border-color:#475569;" onclick="equipAvatarItem(null)">
+        <div class="tw-avatar-card-info">
+          <div class="tw-avatar-card-name" style="color:#94a3b8;">🚫 외형 미착용 (빈 슬롯으로 변경)</div>
+          <div class="tw-avatar-card-meta">
+            <span class="tw-avatar-round-tag">외형 해제</span>
+          </div>
+        </div>
+        <button type="button" class="btn-sm btn-outline" style="font-size:0.7rem; padding:3px 8px;">해제</button>
+      </div>
+
+      <div id="dressroom-item-grid" class="tw-avatar-list-grid">
+        <!-- Populated by renderDressroomItems() -->
+      </div>
+    </div>
+
+    <div class="modal-footer tw-dressroom-footer">
+      <div id="dressroom-5set-status" class="tw-5set-indicator inactive">
+        ⭐ 아바타 5세트: 미달성 (0/5)
+      </div>
+      <button type="button" class="btn-sm btn-outline" onclick="closeAvatarDressroomModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- Floating Back to Top Button -->
 <button type="button" id="btn-back-to-top" class="floating-top-btn" onclick="scrollToPageTop()" title="맨 위로 이동">⬆️</button>
 
