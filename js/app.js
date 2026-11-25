@@ -7632,6 +7632,7 @@ function initShowroom() {
   renderEquipView();
   renderInGameEquipSlots();
   renderShowroomWardrobeItems();
+  if (typeof renderDyeStudio === 'function') renderDyeStudio();
 }
 
 function renderShowroomCharPills() {
@@ -7666,87 +7667,494 @@ function selectShowroomChar(charKey) {
   renderShowroomCharPills();
   renderEquipView();
   renderInGameEquipSlots();
+  if (typeof renderDyeStudio === 'function') renderDyeStudio();
+}
+
+// ============================================================================
+// DYEING & PAPER-DOLL AVATAR SYSTEM
+// ============================================================================
+var currentShowroomSubMode = 'avatar'; // 'avatar' | 'dye'
+var currentDyeState = {
+  selectedPartKey: 'hair',
+  dyes: {}, // { [charKey]: { [partKey]: hexColor } }
+  stageEffects: {
+    circle: true,
+    title: true
+  }
+};
+var twCachedCharImgs = {};
+
+function switchShowroomSubMode(mode) {
+  currentShowroomSubMode = mode;
+  const btnAv = document.getElementById('tw-btn-mode-avatar');
+  const btnDye = document.getElementById('tw-btn-mode-dye');
+  const viewAv = document.getElementById('showroom-view-avatar');
+  const viewDye = document.getElementById('showroom-view-dye');
+
+  if (mode === 'avatar') {
+    if (btnAv) { btnAv.classList.add('btn-primary', 'active'); btnAv.classList.remove('btn-outline'); }
+    if (btnDye) { btnDye.classList.remove('btn-primary', 'active'); btnDye.classList.add('btn-outline'); }
+    if (viewAv) viewAv.style.display = '';
+    if (viewDye) viewDye.style.display = 'none';
+  } else {
+    if (btnAv) { btnAv.classList.remove('btn-primary', 'active'); btnAv.classList.add('btn-outline'); }
+    if (btnDye) { btnDye.classList.add('btn-primary', 'active'); btnDye.classList.remove('btn-outline'); }
+    if (viewAv) viewAv.style.display = 'none';
+    if (viewDye) viewDye.style.display = '';
+    renderDyeStudio();
+  }
+  renderEquipView();
+}
+
+function renderDyeStudio() {
+  renderDyeParts();
+  renderEltiboDyePalette();
+  updateDyeCostSummary();
+}
+
+function renderDyeParts() {
+  const container = document.getElementById('tw-dye-part-pills');
+  const descEl = document.getElementById('dye-selected-part-desc');
+  if (!container || typeof TW_DYE_DB === 'undefined') return;
+
+  const parts = TW_DYE_DB.getDefaultParts(showroomSelectedChar);
+  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
+
+  if (!parts.some(p => p.key === currentDyeState.selectedPartKey)) {
+    currentDyeState.selectedPartKey = parts[0]?.key || 'hair';
+  }
+
+  const selectedPart = parts.find(p => p.key === currentDyeState.selectedPartKey);
+  if (descEl && selectedPart) {
+    descEl.textContent = selectedPart.desc || selectedPart.name;
+  }
+
+  container.innerHTML = parts.map(p => {
+    const isSel = p.key === currentDyeState.selectedPartKey;
+    const curColor = charDyes[p.key] || p.defaultHex;
+    return `
+      <button type="button" class="tw-dye-part-pill ${isSel ? 'active' : ''}" onclick="selectDyePart('${p.key}')">
+        <span>${p.icon || '🎨'}</span>
+        <span>${p.name}</span>
+        <span class="tw-dye-color-dot" style="background:${curColor};"></span>
+      </button>
+    `;
+  }).join('');
+}
+
+function selectDyePart(partKey) {
+  currentDyeState.selectedPartKey = partKey;
+  renderDyeParts();
+  
+  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
+  const parts = typeof TW_DYE_DB !== 'undefined' ? TW_DYE_DB.getDefaultParts(showroomSelectedChar) : [];
+  const part = parts.find(p => p.key === partKey);
+  const curColor = charDyes[partKey] || part?.defaultHex || '#FF7E00';
+  syncRgbPickerUI(curColor);
+}
+
+function renderEltiboDyePalette() {
+  const container = document.getElementById('tw-dye-palette-grid');
+  if (!container || typeof TW_DYE_DB === 'undefined') return;
+
+  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
+  const activeColor = charDyes[currentDyeState.selectedPartKey] || '';
+
+  container.innerHTML = TW_DYE_DB.potions.map(pot => {
+    const isAct = activeColor.toLowerCase() === pot.hex.toLowerCase();
+    const badgeHtml = pot.badge ? `<span style="font-size:0.58rem; background:#0284c7; color:#fff; padding:0 3px; border-radius:2px; margin-left:auto;">${pot.badge}</span>` : '';
+    return `
+      <button type="button" class="tw-dye-color-btn ${isAct ? 'active' : ''}" onclick="applyPotionDye('${pot.id}')" title="${pot.name} (${pot.price} · ${pot.origin})">
+        <span class="tw-dye-swatch" style="background:${pot.hex};"></span>
+        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${pot.name}</span>
+        ${badgeHtml}
+      </button>
+    `;
+  }).join('');
+}
+
+function applyPotionDye(potionId) {
+  if (typeof TW_DYE_DB === 'undefined') return;
+  const pot = TW_DYE_DB.potions.find(p => p.id === potionId);
+  if (!pot) return;
+
+  if (!currentDyeState.dyes[showroomSelectedChar]) {
+    currentDyeState.dyes[showroomSelectedChar] = {};
+  }
+  currentDyeState.dyes[showroomSelectedChar][currentDyeState.selectedPartKey] = pot.hex;
+
+  renderDyeParts();
+  renderEltiboDyePalette();
+  syncRgbPickerUI(pot.hex);
+  updateDyeCostSummary();
+  renderEquipView();
+}
+
+function onCustomColorPick(hex) {
+  if (!currentDyeState.dyes[showroomSelectedChar]) {
+    currentDyeState.dyes[showroomSelectedChar] = {};
+  }
+  currentDyeState.dyes[showroomSelectedChar][currentDyeState.selectedPartKey] = hex;
+
+  syncRgbPickerUI(hex);
+  renderDyeParts();
+  renderEltiboDyePalette();
+  updateDyeCostSummary();
+  renderEquipView();
+}
+
+function syncRgbPickerUI(hex) {
+  const picker = document.getElementById('dye-color-picker');
+  const rInput = document.getElementById('dye-rgb-r');
+  const gInput = document.getElementById('dye-rgb-g');
+  const bInput = document.getElementById('dye-rgb-b');
+
+  if (picker) picker.value = hex;
+  const rgb = hexToRgb(hex);
+  if (rgb) {
+    if (rInput) rInput.value = rgb.r;
+    if (gInput) gInput.value = rgb.g;
+    if (bInput) bInput.value = rgb.b;
+  }
+}
+
+function onRgbNumberInput() {
+  const r = parseInt(document.getElementById('dye-rgb-r')?.value || '0', 10);
+  const g = parseInt(document.getElementById('dye-rgb-g')?.value || '0', 10);
+  const b = parseInt(document.getElementById('dye-rgb-b')?.value || '0', 10);
+  const hex = rgbToHex(Math.min(255, Math.max(0, r)), Math.min(255, Math.max(0, g)), Math.min(255, Math.max(0, b)));
+  
+  const picker = document.getElementById('dye-color-picker');
+  if (picker) picker.value = hex;
+}
+
+function applyCustomRgbDye() {
+  const picker = document.getElementById('dye-color-picker');
+  if (picker) onCustomColorPick(picker.value);
+}
+
+function resetAllDyes() {
+  if (currentDyeState.dyes[showroomSelectedChar]) {
+    delete currentDyeState.dyes[showroomSelectedChar];
+  }
+  renderDyeParts();
+  renderEltiboDyePalette();
+  updateDyeCostSummary();
+  renderEquipView();
+}
+
+function updateDyeCostSummary() {
+  const costEl = document.getElementById('dye-total-cost-text');
+  if (!costEl) return;
+  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
+  const count = Object.keys(charDyes).length;
+  const costSeed = count * 15000000;
+  costEl.textContent = count > 0 ? `${costSeed.toLocaleString()} SEED (${count}개 부위 염색)` : '0 SEED (기본 색상)';
+}
+
+function hexToRgb(hex) {
+  if (!hex) return null;
+  const c = hex.replace('#', '');
+  if (c.length === 6) {
+    return {
+      r: parseInt(c.substring(0, 2), 16),
+      g: parseInt(c.substring(2, 4), 16),
+      b: parseInt(c.substring(4, 6), 16)
+    };
+  }
+  return null;
+}
+
+function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map(x => {
+    const s = x.toString(16);
+    return s.length === 1 ? '0' + s : s;
+  }).join('').toUpperCase();
+}
+
+function toggleStageEffect(type) {
+  if (type === 'circle') {
+    currentDyeState.stageEffects.circle = !currentDyeState.stageEffects.circle;
+    const el = document.getElementById('pd-layer-magic-circle');
+    const btn = document.getElementById('btn-toggle-magic-circle');
+    if (el) el.style.display = currentDyeState.stageEffects.circle ? 'block' : 'none';
+    if (btn) {
+      if (currentDyeState.stageEffects.circle) {
+        btn.classList.add('active');
+        btn.textContent = '🌀 마법진 ON';
+      } else {
+        btn.classList.remove('active');
+        btn.textContent = '🌀 마법진 OFF';
+      }
+    }
+  } else if (type === 'title') {
+    currentDyeState.stageEffects.title = !currentDyeState.stageEffects.title;
+    const el = document.getElementById('pd-layer-title');
+    const btn = document.getElementById('btn-toggle-title-aura');
+    if (el) el.style.display = currentDyeState.stageEffects.title ? 'block' : 'none';
+    if (btn) {
+      if (currentDyeState.stageEffects.title) {
+        btn.classList.add('active');
+        btn.textContent = '🐯 타이틀 ON';
+      } else {
+        btn.classList.remove('active');
+        btn.textContent = '🐯 타이틀 OFF';
+      }
+    }
+  }
+}
+
+function downloadCurrentPaperDollPNG() {
+  const bodyCanvas = document.getElementById('pd-canvas-body');
+  if (!bodyCanvas) return;
+
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = 180;
+  exportCanvas.height = 220;
+  const ctx = exportCanvas.getContext('2d');
+
+  if (currentDyeState.stageEffects.circle) {
+    const circleImg = document.getElementById('pd-layer-magic-circle');
+    if (circleImg && circleImg.complete) {
+      ctx.drawImage(circleImg, 12, 160, 155, 52);
+    }
+  }
+
+  ctx.save();
+  if (equipViewState.currentAngleIndex === 1 || equipViewState.currentAngleIndex === 3) {
+    ctx.translate(exportCanvas.width, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.drawImage(bodyCanvas, 40, 25, bodyCanvas.width, bodyCanvas.height);
+  ctx.restore();
+
+  if (currentDyeState.stageEffects.title) {
+    const titleImg = document.getElementById('pd-layer-title');
+    if (titleImg && titleImg.complete) {
+      ctx.drawImage(titleImg, 25, 2, 130, 38);
+    }
+  }
+
+  const dataUrl = exportCanvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = `talesweaver_${showroomSelectedChar}_paperdoll.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function drawCharacterWithDye(canvas, ctx, img, charKey) {
+  canvas.width = img.naturalWidth || img.width || 100;
+  canvas.height = img.naturalHeight || img.height || 140;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  const charDyes = currentDyeState.dyes[charKey];
+  if (!charDyes || Object.keys(charDyes).length === 0) return;
+
+  const w = canvas.width;
+  const h = canvas.height;
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+
+  // Dye Hair
+  if (charDyes.hair) {
+    const dyeRgb = hexToRgb(charDyes.hair);
+    if (dyeRgb) {
+      const targetHsv = rgbToHsv(dyeRgb.r, dyeRgb.g, dyeRgb.b);
+      for (let y = 0; y < Math.floor(h * 0.52); y++) {
+        for (let x = 0; x < w; x++) {
+          const idx = (y * w + x) * 4;
+          const a = d[idx + 3];
+          if (a === 0) continue;
+          const r = d[idx], g = d[idx + 1], b = d[idx + 2];
+          const hsv = rgbToHsv(r, g, b);
+          const isSkin = (r > 200 && g > 150 && b > 120 && (r - b) > 30);
+          if (!isSkin && hsv.v > 0.3) {
+            const newRgb = hsvToRgb(targetHsv.h, Math.max(targetHsv.s, 0.55), hsv.v);
+            d[idx] = newRgb.r;
+            d[idx + 1] = newRgb.g;
+            d[idx + 2] = newRgb.b;
+          }
+        }
+      }
+    }
+  }
+
+  // Dye Top / Coat
+  const topDye = charDyes.top || charDyes.coat || charDyes.dress;
+  if (topDye) {
+    const dyeRgb = hexToRgb(topDye);
+    if (dyeRgb) {
+      const targetHsv = rgbToHsv(dyeRgb.r, dyeRgb.g, dyeRgb.b);
+      for (let y = Math.floor(h * 0.45); y < Math.floor(h * 0.78); y++) {
+        for (let x = 0; x < w; x++) {
+          const idx = (y * w + x) * 4;
+          const a = d[idx + 3];
+          if (a === 0) continue;
+          const r = d[idx], g = d[idx + 1], b = d[idx + 2];
+          const hsv = rgbToHsv(r, g, b);
+          const isSkin = (r > 200 && g > 150 && b > 120 && (r - b) > 30);
+          if (!isSkin && hsv.v > 0.15) {
+            const newRgb = hsvToRgb(targetHsv.h, Math.max(targetHsv.s, 0.5), hsv.v);
+            d[idx] = newRgb.r;
+            d[idx + 1] = newRgb.g;
+            d[idx + 2] = newRgb.b;
+          }
+        }
+      }
+    }
+  }
+
+  // Dye Pants / Boots
+  const pantsDye = charDyes.pants;
+  if (pantsDye) {
+    const dyeRgb = hexToRgb(pantsDye);
+    if (dyeRgb) {
+      const targetHsv = rgbToHsv(dyeRgb.r, dyeRgb.g, dyeRgb.b);
+      for (let y = Math.floor(h * 0.72); y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const idx = (y * w + x) * 4;
+          const a = d[idx + 3];
+          if (a === 0) continue;
+          const r = d[idx], g = d[idx + 1], b = d[idx + 2];
+          const hsv = rgbToHsv(r, g, b);
+          if (hsv.v > 0.15) {
+            const newRgb = hsvToRgb(targetHsv.h, Math.max(targetHsv.s, 0.5), hsv.v);
+            d[idx] = newRgb.r;
+            d[idx + 1] = newRgb.g;
+            d[idx + 2] = newRgb.b;
+          }
+        }
+      }
+    }
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+}
+
+function rgbToHsv(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, v = max;
+  const d = max - min;
+  s = max === 0 ? 0 : d / max;
+  if (max === min) {
+    h = 0;
+  } else {
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return { h, s, v };
+}
+
+function hsvToRgb(h, s, v) {
+  let r, g, b;
+  const i = Math.floor(h * 6);
+  const f = h * 6 - i;
+  const p = v * (1 - s);
+  const q = v * (1 - f * s);
+  const t = v * (1 - (1 - f) * s);
+  switch (i % 6) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    case 5: r = v; g = p; b = q; break;
+  }
+  return {
+    r: Math.round(r * 255),
+    g: Math.round(g * 255),
+    b: Math.round(b * 255)
+  };
 }
 
 function renderEquipView() {
   const charDef = TW_CHARACTER_ROSTER.find(c => c.key === showroomSelectedChar) || TW_CHARACTER_ROSTER[9]; // default Naya
   const headerNameEl = document.getElementById('ev-header-char-name');
-  const dotImg = document.getElementById('ev-char-dot-img');
   const angleTag = document.getElementById('ev-angle-tag');
+  const canvas = document.getElementById('pd-canvas-body');
 
   if (headerNameEl) headerNameEl.textContent = `${charDef.fullName} (${charDef.name})`;
+  if (angleTag) angleTag.textContent = equipViewState.angles[equipViewState.currentAngleIndex];
 
-  // Character dot visual mapping
-  if (dotImg) {
-    const resDot = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.characterDots[showroomSelectedChar] : null;
-    if (resDot && resDot.dotImg) {
-      dotImg.src = resDot.dotImg;
-    } else {
-      dotImg.src = charDef.img;
+  // Apply rotation classes to body canvas
+  if (canvas) {
+    canvas.classList.remove('rotated-right', 'rotated-back');
+    if (equipViewState.currentAngleIndex === 1) canvas.classList.add('rotated-right');
+    else if (equipViewState.currentAngleIndex === 2) canvas.classList.add('rotated-back');
+    else if (equipViewState.currentAngleIndex === 3) canvas.classList.add('rotated-right');
+  }
+
+  // Draw Character dot on Canvas with Dyeing
+  const resDot = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.characterDots[showroomSelectedChar] : null;
+  const imgSrc = (resDot && resDot.dotImg) ? resDot.dotImg : charDef.img;
+
+  if (canvas && canvas.getContext) {
+    const ctx = canvas.getContext('2d');
+    let img = twCachedCharImgs[imgSrc];
+    if (!img) {
+      img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = imgSrc;
+      img.onload = () => {
+        twCachedCharImgs[imgSrc] = img;
+        drawCharacterWithDye(canvas, ctx, img, showroomSelectedChar);
+      };
+    } else if (img.complete) {
+      drawCharacterWithDye(canvas, ctx, img, showroomSelectedChar);
     }
-    dotImg.alt = charDef.fullName;
-
-    // Apply rotation class
-    dotImg.classList.remove('rotated-right', 'rotated-back');
-    if (equipViewState.currentAngleIndex === 1) dotImg.classList.add('rotated-right');
-    else if (equipViewState.currentAngleIndex === 2) dotImg.classList.add('rotated-back');
-    else if (equipViewState.currentAngleIndex === 3) dotImg.classList.add('rotated-right');
   }
 
-  if (angleTag) {
-    angleTag.textContent = equipViewState.angles[equipViewState.currentAngleIndex];
-  }
-
-  // Render Tooltip details
+  // Render Tooltip / Status details
   const item = equipViewState.selectedItem || {
     name: "벚꽃비 의복 - 환 (나야)",
     fullName: "벚꽃비 의복 - 환 (나야) - 갑옷(갑옷 확장)",
     slot: "showArmor",
-    durability: "100/100",
-    hardness: 100,
-    inscript: "합성 횟수 MAX",
-    reqChar: "나야트레이",
-    desc: "벚꽃비 마을 사람들이 즐겨 입는 의복, 환의 술법이 서려 있다.",
-    isUntradable: true
+    reqChar: "나야트레이"
   };
 
   const titleEl = document.getElementById('ev-item-title');
-  const durEl = document.getElementById('ev-item-durability');
-  const hardEl = document.getElementById('ev-item-hardness');
-  const inscriptEl = document.getElementById('ev-item-inscript');
   const reqCharEl = document.getElementById('ev-item-reqchar');
-  const descEl = document.getElementById('ev-item-desc');
-  const tradeEl = document.getElementById('ev-item-trade');
   const statusEl = document.getElementById('ev-action-status');
 
-  if (titleEl) titleEl.textContent = item.fullName || `${item.name} - ${TW_AVATAR_DB?.slots[item.slot]?.label || "아바타"}`;
-  if (durEl) durEl.textContent = `내구도 ${item.durability || "100/100"}`;
-  if (hardEl) hardEl.textContent = `경도 ${item.hardness || 100}`;
-  if (inscriptEl) inscriptEl.textContent = item.inscript || "합성 횟수 MAX";
-  if (reqCharEl) reqCharEl.textContent = item.reqChar || "전체 캐릭터";
-  if (descEl) descEl.textContent = item.desc || "신비로운 힘이 깃든 화려한 아바타 의상.";
-  if (tradeEl) tradeEl.textContent = item.isUntradable !== false ? "교환불가[전속됨]" : "교환 가능";
+  if (titleEl) {
+    if (currentShowroomSubMode === 'dye') {
+      const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
+      const count = Object.keys(charDyes).length;
+      titleEl.textContent = count > 0 
+        ? `🎨 ${charDef.name} 염색 적용 중 (${count}개 부위)`
+        : `✨ ${charDef.name} 기본 외형 (순수 투명 누끼 도트)`;
+    } else {
+      titleEl.textContent = item.fullName || `${item.name} - ${TW_AVATAR_DB?.slots[item.slot]?.label || "아바타"}`;
+    }
+  }
+  if (reqCharEl) reqCharEl.textContent = charDef.name;
 
   const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
   const isEquipped = outfit[item.slot] && outfit[item.slot].name === item.name;
   if (statusEl) {
-    statusEl.textContent = isEquipped ? "착용 중 (Equipped)" : "미착용";
-    statusEl.style.color = isEquipped ? "#6ee7b7" : "#94a3b8";
+    if (currentShowroomSubMode === 'dye') {
+      statusEl.textContent = "실시간 도트 염색 활성";
+      statusEl.style.color = "#38bdf8";
+    } else {
+      statusEl.textContent = isEquipped ? "착용 중 (Equipped)" : "미착용";
+      statusEl.style.color = isEquipped ? "#6ee7b7" : "#94a3b8";
+    }
   }
 }
 
 function rotateEquipView(dir) {
   equipViewState.currentAngleIndex = (equipViewState.currentAngleIndex + dir + 4) % 4;
-  const dotImg = document.getElementById('ev-char-dot-img');
   const angleTag = document.getElementById('ev-angle-tag');
-
   if (angleTag) angleTag.textContent = equipViewState.angles[equipViewState.currentAngleIndex];
-  if (dotImg) {
-    dotImg.classList.remove('rotated-right', 'rotated-back');
-    if (equipViewState.currentAngleIndex === 1) dotImg.classList.add('rotated-right');
-    else if (equipViewState.currentAngleIndex === 2) dotImg.classList.add('rotated-back');
-    else if (equipViewState.currentAngleIndex === 3) dotImg.classList.add('rotated-right');
-  }
+  renderEquipView();
 }
 
 function inspectEquipViewItem(nameOrId) {

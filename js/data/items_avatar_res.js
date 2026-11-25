@@ -9,63 +9,63 @@ var TW_AVATAR_RESOURCES = {
     "nayatrei": {
       name: "나야트레이",
       charKey: "nayatrei",
-      dotImg: "assets/avatar/naya_sakura_dot.png",
+      dotImg: "assets/avatar/naya_transparent.png",
       defaultItem: "벚꽃비 의복 - 환 (나야)",
       rotationAngles: ["정면 (Isometric Front)", "우측면 (Right)", "배면 (Back)", "좌측면 (Left)"]
     },
     "boris": {
       name: "보리스",
       charKey: "boris",
-      dotImg: "assets/avatar/dot_boris.png",
+      dotImg: "assets/avatar/boris_transparent.png",
       defaultItem: "테일즈 야채 (태도)",
       rotationAngles: ["정면 (Isometric Front)", "우측면 (Right)", "배면 (Back)", "좌측면 (Left)"]
     },
     "lucian": {
       name: "루시안",
       charKey: "lucian",
-      dotImg: "assets/avatar/dot_lucian.png",
+      dotImg: "assets/avatar/lucian_transparent.png",
       defaultItem: "테일즈 야채 (세검)",
       rotationAngles: ["정면 (Isometric Front)", "우측면 (Right)", "배면 (Back)", "좌측면 (Left)"]
     },
     "tichiel": {
       name: "티치엘",
       charKey: "tichiel",
-      dotImg: "assets/avatar/dot_tichiel.png",
+      dotImg: "assets/avatar/tichiel_transparent.png",
       defaultItem: "테일즈 야채 (스태프)",
       rotationAngles: ["정면 (Isometric Front)", "우측면 (Right)", "배면 (Back)", "좌측면 (Left)"]
     },
     "mila": {
       name: "밀라",
       charKey: "mila",
-      dotImg: "assets/avatar/dot_mila.png",
+      dotImg: "assets/avatar/mila_transparent.png",
       defaultItem: "테일즈 야채 (채찍)",
       rotationAngles: ["정면 (Isometric Front)", "우측면 (Right)", "배면 (Back)", "좌측면 (Left)"]
     },
     "lanziee": {
       name: "란지에",
       charKey: "lanziee",
-      dotImg: "assets/avatar/dot_lanziee.png",
+      dotImg: "assets/avatar/lanziee_transparent.png",
       defaultItem: "테일즈 야채 (건)",
       rotationAngles: ["정면 (Isometric Front)", "우측면 (Right)", "배면 (Back)", "좌측면 (Left)"]
     },
     "sivelin": {
       name: "시벨린",
       charKey: "sivelin",
-      dotImg: "assets/avatar/dot_sivelin.png",
+      dotImg: "assets/avatar/sivelin_transparent.png",
       defaultItem: "테일즈 야채 (창)",
       rotationAngles: ["정면 (Isometric Front)", "우측면 (Right)", "배면 (Back)", "좌측면 (Left)"]
     },
     "issac": {
       name: "이자크",
       charKey: "issac",
-      dotImg: "assets/avatar/dot_issac.png",
+      dotImg: "assets/avatar/issac_transparent.png",
       defaultItem: "테일즈 야채 (클로)",
       rotationAngles: ["정면 (Isometric Front)", "우측면 (Right)", "배면 (Back)", "좌측면 (Left)"]
     },
     "anais": {
       name: "아나이스",
       charKey: "anais",
-      dotImg: "assets/avatar/dot_anais.png",
+      dotImg: "assets/avatar/anais_transparent.png",
       defaultItem: "테일즈 야채 (핸드벨)",
       rotationAngles: ["정면 (Isometric Front)", "우측면 (Right)", "배면 (Back)", "좌측면 (Left)"]
     },

@@ -5999,30 +5999,56 @@
             <!-- Populated by renderShowroomCharPills() -->
           </div>
         </div>
+
+        <!-- Showroom Sub-Mode Switcher: Avatar Fitting vs Dyeing Studio -->
+        <div class="tw-showroom-mode-tabs" style="margin-top:0.85rem; padding-top:0.75rem; border-top:1px solid #28334f; display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+          <span style="font-size:0.8rem; font-weight:800; color:#cbd5e1;">🎯 코디 분류:</span>
+          <button type="button" id="tw-btn-mode-avatar" class="btn-sm btn-primary active" onclick="switchShowroomSubMode('avatar')" style="font-size:0.8rem; padding:0.4rem 0.9rem;">
+            👗 1. 화바타 피팅룸 (Show Avatar)
+          </button>
+          <button type="button" id="tw-btn-mode-dye" class="btn-sm btn-outline" onclick="switchShowroomSubMode('dye')" style="font-size:0.8rem; padding:0.4rem 0.9rem;">
+            🎨 2. 눈사람족 헤어/의상 염색소 (엘티보 1,500만 SEED)
+          </button>
+        </div>
       </div>
 
-      <!-- In-Game Authentic Dual Showcase: Equip View (Left) & Equip Window (Right) -->
+      <!-- In-Game Authentic Dual Showcase: Paper-Doll Stage (Left) & [Equip/Dye] Window (Right) -->
       <div class="tw-ingame-showcase-grid">
-        <!-- 1. Authentic Equip View Window -->
-        <div class="tw-ev-window">
-          <div class="tw-ev-header">
-            <span class="tw-ev-wtitle">
-              <span style="color:#38bdf8;">💠</span>
-              <span>Equip View</span>
-            </span>
+        <!-- 1. Authentic Paper-Doll Transparent Stage Card -->
+        <div class="tw-paperdoll-card">
+          <div class="tw-paperdoll-header">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="color:#38bdf8; font-size:1.1rem;">✨</span>
+              <span class="tw-paperdoll-title">캐릭터 페이퍼돌 스테이지</span>
+              <span class="badge-pill cyan" style="font-size:0.68rem;">투명 누끼 뷰어</span>
+            </div>
             <span id="ev-header-char-name" style="font-size:0.75rem; color:#94a3b8;">나야트레이 (Nayatrei)</span>
           </div>
 
-          <div class="tw-ev-body">
-            <!-- Left: Character Dot Viewport Frame with In-Game Cyan Arrows -->
-            <div class="tw-ev-viewport">
+          <div class="tw-paperdoll-stage-body">
+            <!-- Stage Viewport (Transparent Layer Stack) -->
+            <div class="tw-paperdoll-stage-wrap">
               <button type="button" class="tw-ev-arrow-btn" onclick="rotateEquipView(-1)" title="좌측 회전 (<)">
                 <img src="assets/avatar/btn_arrow_left.png" alt="<">
               </button>
 
-              <div class="tw-ev-char-viewport">
-                <img id="ev-char-dot-img" src="assets/avatar/naya_sakura_dot.png" class="tw-ev-char-dot" alt="캐릭터 도트 외형">
-                <div id="ev-angle-tag" class="tw-ev-angle-tag">정면 (Front)</div>
+              <div class="tw-paperdoll-stage" id="tw-paperdoll-stage">
+                <!-- Layer 1: Floor Magic Circle (Z: 10) -->
+                <img id="pd-layer-magic-circle" class="pd-layer pd-magic-circle" src="assets/avatar/effect_magic_circle_trans.png" alt="마법진">
+                <!-- Layer 2: Wings / Back (Z: 20) -->
+                <img id="pd-layer-back" class="pd-layer pd-back" style="display:none;" alt="날개">
+                <!-- Layer 3: Main Character Body Canvas with Real-Time Dyeing (Z: 30) -->
+                <canvas id="pd-canvas-body" width="120" height="150" class="pd-layer pd-canvas-body"></canvas>
+                <!-- Layer 4: Show Avatar Armor / Costume (Z: 40) -->
+                <img id="pd-layer-armor" class="pd-layer pd-armor" style="display:none;" alt="아바타 의상">
+                <!-- Layer 5: Face Deco (Z: 50) -->
+                <img id="pd-layer-face" class="pd-layer pd-face" style="display:none;" alt="얼굴">
+                <!-- Layer 6: Head / Hat (Z: 60) -->
+                <img id="pd-layer-head" class="pd-layer pd-head" style="display:none;" alt="모자">
+                <!-- Layer 7: Weapon / Arms (Z: 70) -->
+                <img id="pd-layer-arms" class="pd-layer pd-arms" style="display:none;" alt="무기">
+                <!-- Layer 8: Tiger Title "범내려온다" (Z: 80) -->
+                <img id="pd-layer-title" class="pd-layer pd-title" src="assets/avatar/effect_tiger_title_trans.png" alt="타이틀">
               </div>
 
               <button type="button" class="tw-ev-arrow-btn" onclick="rotateEquipView(1)" title="우측 회전 (>)">
@@ -6030,53 +6056,37 @@
               </button>
             </div>
 
-            <!-- Right: Authentic In-Game Tooltip Panel -->
-            <div class="tw-ev-tooltip">
-              <div>
-                <div id="ev-item-title" class="tw-ev-title">벚꽃비 의복 - 환 (나야) - 갑옷(갑옷 확장)</div>
-                <div class="tw-ev-row" style="margin-top:4px;">
-                  <span id="ev-item-durability">내구도 100/100</span>
-                  <span id="ev-item-hardness">경도 100</span>
-                </div>
-                <div class="tw-ev-row" style="margin-top:2px;">
-                  <span class="tw-ev-cyan">인크립트</span>
-                  <span id="ev-item-inscript" class="tw-ev-red">합성 횟수 MAX</span>
-                </div>
-                <div class="tw-ev-row" style="margin-top:2px;">
-                  <span class="tw-ev-cyan">착용 가능 캐릭터</span>
-                  <span id="ev-item-reqchar" class="tw-ev-yellow">나야트레이</span>
-                </div>
-                <div id="ev-item-desc" class="tw-ev-desc" style="margin-top:4px;">
-                  벚꽃비 마을 사람들이 즐겨 입는 의복, 환의 술법이 서려 있다.
-                </div>
-                <div class="tw-ev-row" style="margin-top:2px;">
-                  <span id="ev-item-trade" class="tw-ev-red">교환불가[전속됨]</span>
+            <!-- Stage Control Toolbar -->
+            <div class="tw-paperdoll-controls">
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:0.4rem;">
+                <span id="ev-angle-tag" class="tw-ev-angle-tag">정면 (Isometric Front)</span>
+                <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap;">
+                  <button type="button" class="btn-sm btn-outline active" id="btn-toggle-magic-circle" onclick="toggleStageEffect('circle')" style="font-size:0.68rem; padding:2px 6px;">
+                    🌀 마법진 ON
+                  </button>
+                  <button type="button" class="btn-sm btn-outline active" id="btn-toggle-title-aura" onclick="toggleStageEffect('title')" style="font-size:0.68rem; padding:2px 6px;">
+                    🐯 타이틀 ON
+                  </button>
+                  <button type="button" class="btn-sm btn-primary-soft" onclick="downloadCurrentPaperDollPNG()" style="font-size:0.68rem; padding:2px 8px; font-weight:800;" title="현재 세팅된 투명 누끼 도트 이미지를 PNG로 저장">
+                    📸 투명 PNG 저장
+                  </button>
                 </div>
               </div>
+            </div>
 
-              <div>
-                <!-- Attribute icons strip -->
-                <div class="tw-ev-attr-strip">
-                  <img src="assets/avatar/attr_icons.png" alt="속성 아이콘">
-                </div>
-
-                <!-- Action buttons -->
-                <div class="tw-ev-actions">
-                  <button type="button" class="tw-ev-action-btn" onclick="previewCurrentEvItem()" title="착용 뷰">
-                    <img src="assets/avatar/btn_view.png" alt="보기">
-                  </button>
-                  <button type="button" class="tw-ev-action-btn" onclick="equipCurrentEvItem()" title="입어보기">
-                    <img src="assets/avatar/btn_confirm.png" alt="확인">
-                  </button>
-                  <span id="ev-action-status" style="font-size:0.75rem; color:#6ee7b7; font-weight:700; margin-left:auto;">착용 중</span>
-                </div>
+            <!-- Inspect Tooltip / Status Strip -->
+            <div class="tw-paperdoll-detail-strip">
+              <div id="ev-item-title" class="tw-ev-title" style="font-size:0.86rem; border:none; padding:0;">나야트레이 기본 스탠디</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#94a3b8; margin-top:3px;">
+                <span id="ev-item-reqchar" class="tw-ev-yellow">나야트레이</span>
+                <span id="ev-action-status" style="color:#6ee7b7; font-weight:700;">실시간 레이어 렌더링 활성</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 2. Authentic Equip In-Game Window (REAL / SHOW) -->
-        <div class="tw-eq-window">
+        <!-- 2-A. Authentic Equip In-Game Window (REAL / SHOW) - Avatar Mode -->
+        <div id="showroom-view-avatar" class="showroom-view-panel tw-eq-window">
           <div class="tw-eq-header">
             <span class="tw-eq-title">Equip</span>
             <div class="tw-eq-ctrls">
@@ -6109,6 +6119,83 @@
             <button type="button" class="btn-sm btn-primary-soft" onclick="saveShowroomToProfile()" style="width:100%; justify-content:center; padding:0.5rem; font-size:0.8rem; font-weight:800;">
               💾 이 코디를 내 캐릭터 프로필에 확정 착용
             </button>
+          </div>
+        </div>
+
+        <!-- 2-B. Authentic Dyeing Salon Window (눈사람족 수장 염색소) - Dye Mode -->
+        <div id="showroom-view-dye" class="showroom-view-panel tw-dye-window" style="display:none;">
+          <div class="tw-dye-header">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span>🎨</span>
+              <span class="tw-dye-title">눈사람족 헤어 & 의상 염색소</span>
+              <span class="badge-pill gold" style="font-size:0.68rem;">엘티보 1,500만 SEED</span>
+            </div>
+            <button type="button" class="btn-sm btn-outline" onclick="resetAllDyes()" style="font-size:0.68rem; padding:2px 6px;">
+              🔄 원래 색상 복원
+            </button>
+          </div>
+
+          <div class="tw-dye-body">
+            <!-- Step 1: 캐릭터 염색 파트 선택 -->
+            <div class="tw-dye-section">
+              <div class="tw-dye-section-title">
+                <span>1️⃣ 염색 부위(파트) 선택:</span>
+                <span id="dye-selected-part-desc" style="font-size:0.72rem; color:#94a3b8; font-weight:normal;"></span>
+              </div>
+              <div id="tw-dye-part-pills" class="tw-dye-part-pills">
+                <!-- Dynamically rendered by renderDyeParts() -->
+              </div>
+            </div>
+
+            <!-- Step 2: 엘티보 눈사람족 수장 염색약 (1,500만 SEED) -->
+            <div class="tw-dye-section">
+              <div class="tw-dye-section-title">
+                <span>2️⃣ 엘티보 눈사람족 수장 염색약 (1,500만 SEED 1일권):</span>
+                <span class="badge-pill cyan" style="font-size:0.65rem;">시드 염색약</span>
+              </div>
+              <div id="tw-dye-palette-grid" class="tw-dye-palette-grid">
+                <!-- Rendered by renderEltiboDyePalette() -->
+              </div>
+            </div>
+
+            <!-- Step 3: 만능 염색약 / 뷰티샵 (RGB 커스텀 피커) -->
+            <div class="tw-dye-section">
+              <div class="tw-dye-section-title">
+                <span>3️⃣ 만능 염색약 · RGB 컬러 직접 지정:</span>
+                <span class="badge-pill purple" style="font-size:0.65rem;">RGB 커스텀</span>
+              </div>
+              <div class="tw-dye-rgb-controls">
+                <input type="color" id="dye-color-picker" class="tw-dye-color-input" value="#FF7E00" onchange="onCustomColorPick(this.value)">
+                <div class="tw-dye-rgb-inputs">
+                  <div class="tw-dye-rgb-field">
+                    <span>R:</span>
+                    <input type="number" id="dye-rgb-r" min="0" max="255" value="255" oninput="onRgbNumberInput()">
+                  </div>
+                  <div class="tw-dye-rgb-field">
+                    <span>G:</span>
+                    <input type="number" id="dye-rgb-g" min="0" max="255" value="126" oninput="onRgbNumberInput()">
+                  </div>
+                  <div class="tw-dye-rgb-field">
+                    <span>B:</span>
+                    <input type="number" id="dye-rgb-b" min="0" max="255" value="0" oninput="onRgbNumberInput()">
+                  </div>
+                  <button type="button" class="btn-sm btn-primary-soft" onclick="applyCustomRgbDye()" style="font-size:0.72rem; padding:4px 10px;">
+                    적용
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4: 염색 견적 및 비용 계산 -->
+            <div class="tw-dye-footer-card">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.78rem; color:#cbd5e1; font-weight:700;">💰 총 예상 염색 비용:</span>
+                <span id="dye-total-cost-text" style="font-size:0.86rem; color:#fde68a; font-weight:800;">0 SEED</span>
+              </div>
+              <div style="font-size:0.72rem; color:#94a3b8; line-height:1.4;">
+                엘티보 마을 워프 근처의 '눈사람족 수장'에게서 구매 가능한 1일권 염색약 기준(개당 1,500만 SEED)이며, 만능 염색약은 RGB 직접 입력이 가능합니다.
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -6160,6 +6247,7 @@
 <script src="js/data/items_equipment.js"></script>
 <script src="js/data/items_avatar.js"></script>
 <script src="js/data/items_avatar_res.js"></script>
+<script src="js/data/items_dye.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 

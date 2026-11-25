@@ -7978,6 +7978,375 @@
   }
 }
 
+/* ==========================================================================
+   AUTHENTIC PAPER-DOLL STAGE & DYEING STUDIO STYLES
+   ========================================================================== */
+
+/* 1. Paper-Doll Card */
+.tw-paperdoll-card {
+  background: #181d2e;
+  border: 2px solid #3b4668;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tw-paperdoll-header {
+  background: linear-gradient(180deg, #2c385b 0%, #1a2238 100%);
+  padding: 8px 14px;
+  border-bottom: 1px solid #3b4668;
+  color: #e2e8f0;
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tw-paperdoll-title {
+  color: #fde68a;
+  letter-spacing: 0.5px;
+}
+
+.tw-paperdoll-stage-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: radial-gradient(circle at 50% 55%, #1e263d 0%, #0e1220 80%);
+}
+
+.tw-paperdoll-stage-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 14px;
+  position: relative;
+  min-height: 230px;
+}
+
+/* Central Stage with multi-layer paper-doll stack */
+.tw-paperdoll-stage {
+  position: relative;
+  width: 170px;
+  height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Layer Base */
+.pd-layer {
+  position: absolute;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* Magic circle floor */
+.pd-magic-circle {
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 155px;
+  height: 52px;
+  object-fit: contain;
+  opacity: 0.85;
+  z-index: 10;
+  filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.6));
+}
+
+/* Wing / Back */
+.pd-back {
+  top: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 130px;
+  max-height: 120px;
+  z-index: 20;
+}
+
+/* Main Character Canvas (Base Body + Dyeing) */
+.pd-canvas-body {
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 140px;
+  z-index: 30;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.7));
+}
+
+.pd-canvas-body.rotated-right {
+  transform: translateX(-50%) scaleX(-1);
+}
+
+.pd-canvas-body.rotated-back {
+  transform: translateX(-50%);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.7)) brightness(0.85);
+}
+
+/* Show Armor / Costume */
+.pd-armor {
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 140px;
+  z-index: 40;
+}
+
+/* Face */
+.pd-face {
+  top: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 50px;
+  z-index: 50;
+}
+
+/* Head / Hat */
+.pd-head {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 70px;
+  z-index: 60;
+}
+
+/* Arms / Weapon */
+.pd-arms {
+  top: 35px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 90px;
+  z-index: 70;
+}
+
+/* Tiger Title "범내려온다" */
+.pd-title {
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 38px;
+  object-fit: contain;
+  z-index: 80;
+  filter: drop-shadow(0 2px 8px rgba(168, 85, 247, 0.7));
+}
+
+/* Paper-Doll Controls */
+.tw-paperdoll-controls {
+  padding: 8px 12px;
+  background: #141827;
+  border-top: 1px solid #28334f;
+  border-bottom: 1px solid #28334f;
+}
+
+.tw-paperdoll-detail-strip {
+  padding: 10px 14px;
+  background: #101422;
+}
+
+/* 2. Dyeing Salon Window */
+.tw-dye-window {
+  background: #1e243a;
+  border: 2px solid #4a5783;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tw-dye-header {
+  background: linear-gradient(180deg, #3d4a75 0%, #222b49 100%);
+  padding: 8px 14px;
+  border-bottom: 1px solid #4a5783;
+  color: #f1f5f9;
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tw-dye-title {
+  color: #fde68a;
+  letter-spacing: 0.5px;
+}
+
+.tw-dye-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #171c2e;
+  flex: 1;
+}
+
+.tw-dye-section {
+  background: #1f263d;
+  border: 1px solid #323d60;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.tw-dye-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+}
+
+.tw-dye-part-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tw-dye-part-pill {
+  background: #161a2b;
+  border: 1px solid #39456e;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 0.74rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.tw-dye-part-pill:hover {
+  background: #252e4d;
+  border-color: #5d70ab;
+}
+
+.tw-dye-part-pill.active {
+  background: #1e3a8a;
+  border-color: #60a5fa;
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.4);
+}
+
+.tw-dye-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  display: inline-block;
+}
+
+.tw-dye-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 640px) {
+  .tw-dye-palette-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.tw-dye-color-btn {
+  background: #161a2b;
+  border: 1px solid #334064;
+  border-radius: 5px;
+  padding: 6px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.72rem;
+  color: #cbd5e1;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.tw-dye-color-btn:hover {
+  background: #222b49;
+  border-color: #5569a3;
+  transform: translateY(-1px);
+}
+
+.tw-dye-color-btn.active {
+  border-color: #fde68a;
+  box-shadow: 0 0 8px rgba(253, 230, 138, 0.5);
+  font-weight: 800;
+  color: #fde68a;
+}
+
+.tw-dye-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.tw-dye-rgb-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tw-dye-color-input {
+  width: 38px;
+  height: 34px;
+  border: 1px solid #4a5783;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.tw-dye-rgb-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.tw-dye-rgb-field {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.tw-dye-rgb-field input {
+  width: 44px;
+  padding: 3px 5px;
+  background: #121624;
+  border: 1px solid #334064;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 0.74rem;
+  text-align: center;
+}
+
+.tw-dye-footer-card {
+  background: #141827;
+  border: 1px solid #28334f;
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* 1. Equip View Window */
 .tw-ev-window {
   background: #252836;
