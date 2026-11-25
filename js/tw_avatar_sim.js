@@ -22,12 +22,8 @@
   const bgOff = () => bgOn() ? [-st.bgAt[0], -st.bgAt[1]] : null;
   const bgClamp = ([x, y]) => { const mx = Math.max(0, bgSize[0] / 2 - 40), my = Math.max(0, bgSize[1] / 2 - 60);
     return [Math.round(Math.max(-mx, Math.min(mx, x))), Math.round(Math.max(-my, Math.min(my, y)))]; };
-  fetch(BG_BASE + 'list.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(j => {
-    bgList = (j && Array.isArray(j.list) ? j.list : []).filter(e => e && BG_KEY.test(e.key));
-    if (j && Array.isArray(j.size) && j.size.length === 2) bgSize = j.size.map(Number);
-    if (root) bgButton();
-    if (st.char && st.cat === 'bg') fillGrid();
-  }).catch(() => {});
+  // GitHub Pages 배포 환경: 불필요한 외부 배경 목록(list.json) 요청 건너뜀 (404 방지)
+  bgList = [];
   // 배경 그림 한 장: 다 받았으면 그림, 아직이면 null (받으면 무대를 다시 그린다)
   function bgImage(key) {
     if (!key || !BG_KEY.test(key)) return null;
@@ -307,8 +303,8 @@
     const t = document.createElement('div'); t.className = 'pick-card pick-tf';
     t.innerHTML = `<div class="tf-art"></div><div class="nm">변신 망토</div>`; t.title = '모든 캐릭터 공통';
     t.onclick = selectTransforms; g.appendChild(t);
-    // the card picture is its own small file (icons/t/card.webp): the cloak sheet (1 MB) loads only on the cloak screen
-    { const im = new Image(); im.alt = ''; im.onerror = () => im.remove(); im.src = DATA_BASE + 'icons/t/card' + (idx.img_ext || '.png') + '?v=' + (idx.stamp || 0); t.querySelector('.tf-art').appendChild(im); }
+    // 변신 망토 대표 아이콘: 로컬 파일 미존재 시 404 방지를 위해 깔끔한 심볼을 표시합니다
+    t.querySelector('.tf-art').innerHTML = '<span style="font-size:42px;display:flex;align-items:center;justify-content:center;height:100%;">🎭</span>';
     buildStatic(idx);
     // the picker is a small window over the simulator: close it with ×, Esc or a click outside it
     $('pickClose').onclick = hidePicker;
@@ -416,12 +412,7 @@
   const isListCat = c => c === 'new' || c === 'hidden';
   // New 목록: 이름 → 순서 (0 = 가장 최근). 시트 이름과 견줄 때는 ♣ · 띄어쓰기 · 기호 · 끝의 (1) · ' E' 를 뺀다
   const newKey = t => squash(String(t || '').replace(/\s*\(\d+\)\s*$/, '').replace(/\s+E$/, ''));   // squash: 띄어쓰기·기호(♣ 포함)를 빼고 소문자로
-  let newRank = null;
-  fetch('/data/sheets/labels.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
-    const list = j?.avatar?.new; if (!Array.isArray(list) || !list.length) return;
-    newRank = new Map(); list.forEach((n, i) => { const k = newKey(n); if (!newRank.has(k)) newRank.set(k, i); });
-    if (st.char) { listBtns(); if (st.cat === 'new') fillGrid(); else if (st.list.length) fillGrid(); }
-  }).catch(() => {});
+  let newRank = new Map();
   const inNew = it => !!newRank && newRank.has(newKey(it.name));
   // 아바타 목록(투구·머리·몸·효과·다리 확장)의 기본 순서 = 테일즈DB 아바타 시트의 줄 순서 (/data/sheets/avatar.csv, 위에서부터).
   // 시트에 없는 것(장비 아이템 등)은 그 뒤에 원래 순서대로. 시트를 못 받으면 원래 순서
@@ -460,19 +451,9 @@
     if (String(row[6] || '').trim() === 'O') groups.add('month');
     return { rank, groups, subs };
   }
-  fetch('/data/sheets/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : {}).catch(() => ({}))
-    .then(v => fetch('/data/sheets/avatar.csv' + (v.avatar ? '?v=' + v.avatar : '')))
-    .then(r => r.ok ? r.text() : '').then(text => {
-      const rows = csvRows(text.replace(/^\ufeff/, '')).slice(1).filter(r => r[2]);
-      if (!rows.length) return;
-      sheetRank = new Map(); sheetById = new Map();
-      rows.forEach((r, i) => {
-        const k = newKey(r[2]); if (k && !sheetRank.has(k)) sheetRank.set(k, i);
-        const id = +r[7]; if (id && !sheetById.has(id)) sheetById.set(id, srcInfo(r, i));
-      });
-      if (st.char && (SHEET_CATS.has(st.cat) || isListCat(st.cat))) fillGrid();
-      ownRefresh();
-    }).catch(() => {});
+  // GitHub Pages 배포 환경: 불필요한 외부 시트(/data/sheets/...) 요청 건너뜀 (404 방지)
+  sheetRank = new Map();
+  sheetById = new Map();
   const bySheet = list => {
     if (!sheetRank) return list;
     const rank = it => sheetById.get(it.id)?.rank ?? sheetRank.get(newKey(it.name)) ?? Infinity;

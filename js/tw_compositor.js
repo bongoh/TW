@@ -118,8 +118,14 @@ const TW = (() => {
       S.chars[ci] = c; return c;
     });
   }
+  // 로컬에 실제로 존재하는 에셋 번호 목록 (404 방지용 가드)
+  const LOCAL_ANIMS = new Set([31, 136, 245, 516, 588, 915, 916, 917, 918, 919, 920, 921, 922, 923, 924, 925, 926, 927, 928, 929, 969, 3793, 3853, 4276, 4449, 4524, 4646, 4647, 4670, 4682, 4798, 4935, 4967, 4984, 4999, 5015, 5016, 5031, 5082, 5120, 5121, 5216, 5275, 5276, 5279, 5280, 5443, 5446, 5465, 5478, 5479, 5914, 5929, 5944, 5967, 6038, 6039, 6050, 6595, 6596, 6659, 7420, 7422, 7514, 8237, 8780, 8781, 9315, 9350, 9501, 10311, 10312, 10390, 10767, 10771, 11370, 11373, 12833, 13318, 13556, 13561, 13694, 13697, 13923, 13924, 13926, 13927, 13928, 13929, 13930, 13931, 13932, 13933, 16081, 20052, 20054, 20055, 22673, 22674, 22675, 22676, 22884, 22971, 23260, 23261, 23262, 23263, 23264, 23265, 23769, 30478, 30479, 30507, 30508, 32494, 32496, 32497, 33041, 38280, 44307, 45409, 45425, 45426, 45427, 45526, 45541, 45565, 47854, 56604, 56605, 56608, 56609, 56610, 56611, 56612, 56613, 70021, 74707, 75900, 75901, 76611, 76622, 76623, 76634, 76645, 76646, 76657, 76658, 76669, 76680, 79140, 79145, 79172, 79189, 79190, 79201, 79219, 79220, 79230, 79252, 79253, 79277, 79296, 79297, 79320, 79321, 80964, 80965, 80966, 80967, 81050, 81051, 83120, 85980, 86404, 86405, 86406, 86407, 86408, 86409, 87996, 88058, 88059, 88060, 88061, 93268, 93270, 95149, 95150, 107931, 112685, 112686, 123248]);
+  const LOCAL_TEXS = new Set([1, 25, 27, 63, 105, 115, 149, 208, 244, 330, 362, 486, 487, 488, 489, 490, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 512, 738, 742, 1273, 1305, 1427, 1493, 1494, 1496, 1507, 1550, 1551, 1552, 1569, 1571, 1586, 1591, 1606, 1607, 1657, 1660, 1662, 1663, 1664, 1665, 1677, 1680, 1770, 1771, 1772, 1774, 1775, 1782, 1792, 1805, 1813, 1814, 1853, 2039, 2041, 2087, 2110, 2119, 2263, 2284, 2299, 2300, 2395, 2403, 2472, 2492, 2494, 2607, 2653, 2658, 2744, 2916, 3043, 3053, 3094, 3112, 3115, 3126, 3127, 3129, 3130, 3131, 3132, 3133, 3134, 3135, 3136, 3312, 3581, 3641, 3642, 3643, 4219, 4220, 4221, 4222, 4260, 4261, 4262, 4263, 4274, 4277, 4306, 5284, 5285, 5305, 5306, 5607, 5608, 5609, 5694, 6375, 7220, 7421, 7462, 7463, 7464, 7465, 7468, 7510, 8293, 8294, 8301, 8302, 8303, 9953, 10129, 10202, 10412, 10494, 10495, 10496, 10497, 10498, 10499, 10854, 10913, 10914, 10915, 10916, 10917, 10918, 10921, 10922, 10923, 10924, 10925, 11158, 11159, 11182, 11801, 11897, 11899, 11902, 12352, 12361, 12362, 12927, 12929, 13134, 13135, 14402, 14575, 15525, 900010, 900024]);
+  const LOCAL_IDX_TEXS = new Set([32, 112, 421, 1136, 3126, 3127, 3128, 3129, 3130, 3131, 3132, 3133, 3134, 3135, 3136, 3187, 3312, 4306, 5694, 5699, 6375, 6376, 7468, 7510, 9953, 10129, 10202, 10494, 10495, 10496, 10497, 10498, 10499, 10913, 10914, 10915, 10916, 10917, 10918, 10921, 10922, 10923, 10924, 10925, 14402, 14575]);
+
   async function loadAnim(id) {
     if (S.anims[id] !== undefined) return S.anims[id];
+    if (!LOCAL_ANIMS.has(+id)) { S.anims[id] = null; return null; }
     return once('anim' + id, async () => {
       await ver(); await pass(); let a = null;
       // an animation of the private bundle (tw_websplit) is only there; anything else is tried there too when the
@@ -170,6 +176,7 @@ const TW = (() => {
   }
   async function loadTex(tid) {
     if (S.texs[tid] !== undefined) return S.texs[tid];
+    if (!LOCAL_TEXS.has(+tid)) { S.texs[tid] = null; return null; }
     return once('tex' + tid, async () => {
       await ver(); await pass(); let t = null;
       const known = S.tm[tid] && Object.keys(S.tm[tid]).length;   // frames came with the animations: no tex/<id>.json
@@ -179,8 +186,9 @@ const TW = (() => {
       for (const [base, vv] of bases) {
         const sg = base === S.base ? signed : u => u;     // the bundle has its own pass
         try {
+          const hasIdx = S.dyeTex.has(+tid) && LOCAL_IDX_TEXS.has(+tid);
           const [meta, img, idx] = await Promise.all([known ? { f: S.tm[tid] } : getJSON(sg(base + 'tex/' + tid + '.json' + vv)), loadImage(sg(base + 'tex/' + tid + ext() + vv)),
-                                                      S.dyeTex.has(+tid) ? loadImage(sg(base + 'tex/' + tid + '.idx' + ext() + vv)).catch(() => null) : null]);
+                                                      hasIdx ? loadImage(sg(base + 'tex/' + tid + '.idx' + ext() + vv)).catch(() => null) : null]);
           if (!known) S.tm[tid] = Object.assign(meta.f, S.tm[tid] || {});
           t = { id: +tid, meta, img, idx, lum: null, dyed: {} }; break;
         } catch (e) { t = null; }
@@ -1101,11 +1109,8 @@ const TW = (() => {
     }
   }
   function sheetCell(map, dir, kind, id, base = S.base) {
-    const m = map && map[kind]; const index = m ? m[id] : undefined;
-    if (index === undefined) return null;
-    const per = S.index.icon.per_sheet, cols = S.index.icon.cols, cell = kind === 'h' ? S.index.icon.hair : [S.index.icon.size, S.index.icon.size];
-    const k = Math.floor(index / per), i = index % per;
-    return { url: base + 'icons/' + dir + '/' + kind + k + ext() + '?v=' + (map.stamp || 0), x: (i % cols) * cell[0], y: Math.floor(i / cols) * cell[1], w: cell[0], h: cell[1] };
+    // 로컬 배포 환경: 미존재하는 시트 파일 404 요청 방지
+    return null;
   }
   // the transform cloak list (one for all characters) and its icon sheets
   async function loadTransforms() {
@@ -1124,8 +1129,8 @@ const TW = (() => {
   }
   // TalesDB's avatar list icon of an item in the shared sheets (icons/d, boot.json tdbsheet); null: not in a sheet
   function tdbCell(id) {
-    const m = S.tdbSheet, c = m && m.d && m.d[id]; if (!c) return null;
-    return { url: S.base + 'icons/d/d' + c[0] + ext() + '?v=' + (m.stamp || 0), x: (c[1] % m.cols) * m.cell, y: Math.floor(c[1] / m.cols) * m.cell, w: m.cell, h: m.cell };
+    // 로컬 배포 환경: 미존재하는 icons/d/ 시트 파일 404 요청 방지
+    return null;
   }
   // hair icon drawn in the browser (same window as the exporter: head + chest, 60x76)
   async function hairIcon(ci, sid, dye = 0) {
