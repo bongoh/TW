@@ -7977,7 +7977,13 @@ function renderEquipView() {
       }
     } else if (isArmorOn || isArmsOn) {
       // 2. If in Avatar mode and wearing costume/weapon -> swap to authentic in-game costume dot!
-      if (charRes.costumeDot) {
+      const selectedItemRes = typeof TW_AVATAR_RESOURCES !== 'undefined' && equipViewState.selectedItem 
+        ? TW_AVATAR_RESOURCES.getItemResource(equipViewState.selectedItem.name || equipViewState.selectedItem.id) 
+        : null;
+
+      if (selectedItemRes && selectedItemRes.dotSprite) {
+        dotSrc = selectedItemRes.dotSprite;
+      } else if (charRes.costumeDot) {
         dotSrc = charRes.costumeDot;
       }
     }
