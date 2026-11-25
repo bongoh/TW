@@ -7670,17 +7670,10 @@ function populateSimulatorRoundFilter() {
       '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'popular' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'popular\', this)">인기 12대 컬러</button>' +
       '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'rgb' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'rgb\', this)">인게임 RGB 조합표</button>';
   } else {
-    const roundsHtml = typeof TW_AVATAR_DB !== 'undefined' 
-      ? TW_AVATAR_DB.getRounds().map(r => '<option value="' + r + '" ' + (tdbSimState.roundFilter === r ? 'selected' : '') + '>' + r + '</option>').join('')
-      : '';
     filterWrap.innerHTML = 
       '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'all' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'all\', this)">전체</button>' +
-      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'monthly' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'monthly\', this)">월템(月)</button>' +
-      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'special' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'special\', this)">최신/스페셜</button>' +
-      '<select id="tdb-round-select" class="calc-input tw-select" style="font-size:0.68rem; padding:1px 6px; height:24px; width:130px; margin-left:auto;" onchange="onSimulatorRoundChange(this.value)">' +
-      '<option value="">전체 회차 (1~83)</option>' +
-      roundsHtml +
-      '</select>';
+      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'offline' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'offline\', this)">⚡ 오프라인 도트 (120종)</button>' +
+      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'monthly' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'monthly\', this)">월템(月)</button>';
   }
 }
 
@@ -7704,6 +7697,41 @@ function renderSimulatorStage() {
   if (layer2) layer2.src = 'assets/uniform/' + folder + '/2-' + (dyes[2] || 'd') + '.png';
   if (layer3) layer3.src = 'assets/uniform/' + folder + '/3-' + (dyes[3] || 'd') + '.png';
   if (layer4) layer4.src = 'assets/uniform/' + folder + '/4-' + (dyes[4] || 'd') + '.png';
+
+  // Avatar sprite layers
+  const slots = tdbSimState.equippedSlots;
+  const setLayerImg = (id, item) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (item && item.layerUrl) {
+      el.src = item.layerUrl;
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+      el.src = '';
+    }
+  };
+
+  setLayerImg('tdb-layer-foot', slots.showFoot);
+  setLayerImg('tdb-layer-face', slots.showFace);
+  setLayerImg('tdb-layer-head', slots.showHead);
+  setLayerImg('tdb-layer-weapon', slots.showSubArms);
+  setLayerImg('tdb-layer-effect', slots.showEffect);
+
+  // Body / Back classification
+  if (slots.showArmor) {
+    const isBack = slots.showArmor.name.includes('날개') || slots.showArmor.name.includes('망토') || slots.showArmor.name.includes('배낭') || slots.showArmor.category === '등';
+    if (isBack) {
+      setLayerImg('tdb-layer-back', slots.showArmor);
+      setLayerImg('tdb-layer-costume', null);
+    } else {
+      setLayerImg('tdb-layer-costume', slots.showArmor);
+      setLayerImg('tdb-layer-back', null);
+    }
+  } else {
+    setLayerImg('tdb-layer-costume', null);
+    setLayerImg('tdb-layer-back', null);
+  }
 
   // Apply Standee scale & rotation
   const standeeWrap = document.getElementById('tdb-standee-wrap');
@@ -7892,31 +7920,27 @@ function fallbackCopyText(text, name) {
 }
 
 function renderAvatarCategoryGrid(container, countLabel) {
-  if (typeof TW_AVATAR_DB === 'undefined') return;
+  const db = (typeof TW_TALESDB_AVATAR_DB !== 'undefined') ? TW_TALESDB_AVATAR_DB : (typeof TW_AVATAR_DB !== 'undefined' ? TW_AVATAR_DB : null);
+  if (!db) return;
 
   const slotKey = tdbSimState.selectedCategory;
-  let items = TW_AVATAR_DB.items.filter(it => it.slot === slotKey);
-
-  // Apply round filter
-  if (tdbSimState.roundFilter) {
-    items = items.filter(it => it.round === tdbSimState.roundFilter);
-  }
+  let items = db.items.filter(it => it.slot === slotKey);
 
   // Apply quick filter
-  if (tdbSimState.quickFilter === 'monthly') {
+  if (tdbSimState.quickFilter === 'offline') {
+    items = items.filter(it => it.hasLocal);
+  } else if (tdbSimState.quickFilter === 'monthly') {
     items = items.filter(it => it.isMonthly);
-  } else if (tdbSimState.quickFilter === 'special') {
-    items = items.filter(it => it.round.includes('80') || it.round.includes('81') || it.round.includes('82') || it.round.includes('83') || it.isMonthly);
   }
 
   // Apply search query
   const query = tdbSimState.searchQuery.toLowerCase();
   if (query) {
-    items = items.filter(it => it.name.toLowerCase().includes(query) || (it.tags && it.tags.some(t => t.toLowerCase().includes(query))));
+    items = items.filter(it => it.name.toLowerCase().includes(query) || (it.rawName && it.rawName.toLowerCase().includes(query)) || (it.tags && it.tags.some(t => t.toLowerCase().includes(query))));
   }
 
   if (countLabel) {
-    countLabel.textContent = '총 ' + items.length + '개 아이템';
+    countLabel.textContent = '총 ' + items.length + '개 아이템' + (tdbSimState.quickFilter === 'offline' ? ' (100% 오프라인 도트)' : '');
   }
 
   if (items.length === 0) {
@@ -7932,17 +7956,15 @@ function renderAvatarCategoryGrid(container, countLabel) {
   const html = '<div class="tdb-avatar-grid">' +
     items.map(it => {
       const isEquipped = (equippedItem && (equippedItem.id === it.id || equippedItem.name === it.name));
-      const res = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.getItemResource(it.name || it.id) : null;
-      const iconHtml = res && res.iconUrl 
-        ? '<img src="' + res.iconUrl + '" alt="' + it.name + '">'
-        : '<span>' + (TW_AVATAR_DB.slots[it.slot]?.icon || '👗') + '</span>';
+      const iconUrl = it.iconUrl || 'assets/avatar/icon_curff.png';
       return '<div class="tdb-item-card ' + (isEquipped ? 'equipped' : '') + '" onclick="toggleSimulatorAvatarItem(\'' + it.id + '\')" title="' + it.name + ' (' + it.round + ') - 클릭하여 착용/해제">' +
-        '<div class="tdb-item-card-icon">' + iconHtml + '</div>' +
+        '<div class="tdb-item-card-icon"><img src="' + iconUrl + '" alt="' + it.name + '" loading="lazy" onerror="this.onerror=null; this.src=\'assets/avatar/icon_curff.png\';"></div>' +
         '<div class="tdb-item-card-info">' +
         '  <span class="tdb-item-card-name">' + it.name + '</span>' +
         '  <div class="tdb-item-card-tag">' +
-        '    <span class="badge-pill" style="font-size:0.6rem; padding:0 3px;">' + it.round + '</span>' +
-        '    ' + (it.isMonthly ? '<span class="badge-pill gold" style="font-size:0.58rem; padding:0 2px;">월템</span>' : '') +
+        '    ' + (it.hasLocal ? '<span class="badge-pill" style="font-size:0.55rem; padding:0 3px; background:#047857; color:#a7f3d0; border-color:#059669;">오프라인</span>' : '') +
+        '    <span class="badge-pill" style="font-size:0.58rem; padding:0 3px;">' + it.round + '</span>' +
+        '    ' + (it.isMonthly ? '<span class="badge-pill gold" style="font-size:0.55rem; padding:0 2px;">월템</span>' : '') +
         '  </div>' +
         '</div>' +
         (isEquipped ? '<span class="tdb-item-card-check">착용중</span>' : '') +
@@ -7954,8 +7976,9 @@ function renderAvatarCategoryGrid(container, countLabel) {
 }
 
 function toggleSimulatorAvatarItem(itemId) {
-  if (typeof TW_AVATAR_DB === 'undefined') return;
-  const item = TW_AVATAR_DB.getById(itemId);
+  const db = (typeof TW_TALESDB_AVATAR_DB !== 'undefined') ? TW_TALESDB_AVATAR_DB : (typeof TW_AVATAR_DB !== 'undefined' ? TW_AVATAR_DB : null);
+  if (!db) return;
+  const item = db.getById(itemId);
   if (!item) return;
 
   const current = tdbSimState.equippedSlots[item.slot];
@@ -7967,6 +7990,7 @@ function toggleSimulatorAvatarItem(itemId) {
     tdbSimState.equippedSlots[item.slot] = item;
   }
 
+  renderSimulatorStage();
   renderSimulatorGrid();
   renderSimulatorSlots();
   updateSimulator5SetBuff();
@@ -8007,7 +8031,7 @@ function renderSimulatorSlots() {
         '<span class="tdb-slot-del" onclick="event.stopPropagation(); unequipSimulatorSlot(\'' + s.key + '\')" title="탈의">✕</span>' +
         '</div>';
     } else {
-      return '<div class="tdb-slot-card" onclick="switchSimulatorCategory(\'' + s.key + '\', document.querySelector(\'.tdb-cat-btn[data-cat=\\\'${s.key}\\\'\'))" title="클릭하여 ' + s.name + ' 아이템 찾기">' +
+      return '<div class="tdb-slot-card" onclick="switchSimulatorCategory(\'' + s.key + '\', document.querySelector(\'.tdb-cat-btn[data-cat=\\\'' + s.key + '\\\']\'))" title="클릭하여 ' + s.name + ' 아이템 찾기">' +
         '<span class="tdb-slot-lbl">' + s.icon + ' ' + s.name + '</span>' +
         '<span class="tdb-slot-name" style="color:#64748b;">(미착용)</span>' +
         '</div>';
@@ -8019,6 +8043,7 @@ function renderSimulatorSlots() {
 
 function unequipSimulatorSlot(slotKey) {
   tdbSimState.equippedSlots[slotKey] = null;
+  renderSimulatorStage();
   renderSimulatorSlots();
   renderSimulatorGrid();
   updateSimulator5SetBuff();
@@ -8166,6 +8191,7 @@ function downloadSimulatorStandeePNG() {
   const charInfo = TW_UNIFORM_DYE_DB.characters[tdbSimState.selectedChar] || { folder: 'naya', name: '나야트레이' };
   const folder = charInfo.folder;
   const dyes = tdbSimState.uniformDyes[tdbSimState.selectedChar] || { 1: "d", 2: "d", 3: "d", 4: "d" };
+  const slots = tdbSimState.equippedSlots;
 
   const canvas = document.createElement('canvas');
   canvas.width = 324;
@@ -8173,46 +8199,76 @@ function downloadSimulatorStandeePNG() {
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
-  const urls = [
-    'assets/uniform/' + folder + '/' + folder + '.png',
-    'assets/uniform/' + folder + '/1-' + (dyes[1] || 'd') + '.png',
-    'assets/uniform/' + folder + '/2-' + (dyes[2] || 'd') + '.png',
-    'assets/uniform/' + folder + '/3-' + (dyes[3] || 'd') + '.png',
-    'assets/uniform/' + folder + '/4-' + (dyes[4] || 'd') + '.png'
-  ];
+  // Layer stack from back to front
+  const layers = [];
+
+  // 1. Foot
+  if (slots.showFoot && slots.showFoot.layerUrl) layers.push(slots.showFoot.layerUrl);
+  // 2. Back
+  if (slots.showArmor && slots.showArmor.layerUrl) {
+    const isBack = slots.showArmor.name.includes('날개') || slots.showArmor.name.includes('망토') || slots.showArmor.name.includes('배낭');
+    if (isBack) layers.push(slots.showArmor.layerUrl);
+  }
+  // 3. Base body
+  layers.push('assets/uniform/' + folder + '/' + folder + '.png');
+  // 4. Uniform 4 parts
+  for (let i = 1; i <= 4; i++) {
+    layers.push('assets/uniform/' + folder + '/' + i + '-' + (dyes[i] || 'd') + '.png');
+  }
+  // 5. Costume
+  if (slots.showArmor && slots.showArmor.layerUrl) {
+    const isBack = slots.showArmor.name.includes('날개') || slots.showArmor.name.includes('망토') || slots.showArmor.name.includes('배낭');
+    if (!isBack) layers.push(slots.showArmor.layerUrl);
+  }
+  // 6. Face
+  if (slots.showFace && slots.showFace.layerUrl) layers.push(slots.showFace.layerUrl);
+  // 7. Head
+  if (slots.showHead && slots.showHead.layerUrl) layers.push(slots.showHead.layerUrl);
+  // 8. Weapon
+  if (slots.showSubArms && slots.showSubArms.layerUrl) layers.push(slots.showSubArms.layerUrl);
+  // 9. Effect
+  if (slots.showEffect && slots.showEffect.layerUrl) layers.push(slots.showEffect.layerUrl);
 
   let loaded = 0;
-  const imgs = [];
-  urls.forEach((u, i) => {
+  const imgObjs = new Array(layers.length);
+
+  const finishDraw = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    if (tdbSimState.rotationAngle === 1) {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    imgObjs.forEach(im => {
+      if (im) {
+        // Draw centered in 324x324
+        const w = (im.naturalWidth || 108) * 3;
+        const h = (im.naturalHeight || 108) * 3;
+        const x = (canvas.width - w) / 2;
+        const y = (canvas.height - h) / 2;
+        ctx.drawImage(im, x, y, w, h);
+      }
+    });
+    ctx.restore();
+
+    const link = document.createElement('a');
+    link.download = 'talesweaver_' + charInfo.name + '_standee.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showSimulatorToast('📸 \'' + charInfo.name + '\' 고해상도 투명 누끼 도트 PNG 저장이 완료되었습니다!');
+  };
+
+  layers.forEach((u, i) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
+      imgObjs[i] = img;
       loaded++;
-      imgs[i] = img;
-      if (loaded === urls.length) {
-        if (tdbSimState.rotationAngle === 1) {
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
-        }
-        imgs.forEach(im => {
-          if (im) ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
-        });
-        const link = document.createElement('a');
-        link.download = 'talesweaver_' + charInfo.name + '_dye_standee.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        showSimulatorToast('📸 \'' + charInfo.name + '\' 투명 누끼 도트 PNG가 다운로드되었습니다.');
-      }
+      if (loaded === layers.length) finishDraw();
     };
     img.onerror = () => {
       loaded++;
-      if (loaded === urls.length && imgs[0]) {
-        ctx.drawImage(imgs[0], 0, 0, canvas.width, canvas.height);
-        const link = document.createElement('a');
-        link.download = 'talesweaver_' + charInfo.name + '_standee.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      }
+      if (loaded === layers.length) finishDraw();
     };
     img.src = u;
   });

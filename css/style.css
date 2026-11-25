@@ -9234,11 +9234,29 @@
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.8));
 }
 
-#tdb-layer-base { z-index: 10; }
-#tdb-layer-1    { z-index: 20; }
-#tdb-layer-2    { z-index: 30; }
-#tdb-layer-3    { z-index: 40; }
-#tdb-layer-4    { z-index: 50; }
+#tdb-layer-foot    { z-index: 5; }
+#tdb-layer-back    { z-index: 8; }
+#tdb-layer-base    { z-index: 10; }
+#tdb-layer-1       { z-index: 20; }
+#tdb-layer-2       { z-index: 22; }
+#tdb-layer-3       { z-index: 24; }
+#tdb-layer-4       { z-index: 26; }
+#tdb-layer-costume { z-index: 30; }
+#tdb-layer-face    { z-index: 40; }
+#tdb-layer-head    { z-index: 50; }
+#tdb-layer-weapon  { z-index: 60; }
+#tdb-layer-effect  { z-index: 70; }
+
+#tdb-layer-foot, #tdb-layer-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+}
 
 /* Stage Overlays */
 .tdb-ov {
@@ -9246,7 +9264,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  z-index: 60;
+  z-index: 100;
   pointer-events: auto;
 }
 
@@ -9345,7 +9363,7 @@
   justify-content: center;
   backdrop-filter: blur(4px);
   transition: all 0.15s ease;
-  z-index: 60;
+  z-index: 100;
 }
 .tdb-arrow:hover {
   background: rgba(2, 132, 199, 0.8);
