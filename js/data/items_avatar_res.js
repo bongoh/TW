@@ -163,7 +163,7 @@ var TW_AVATAR_RESOURCES = {
       name: "예프넨",
       charKey: "yevgnen",
       hasRealDot: true,
-      dotImg: "assets/avatar/yevgnen_transparent.png",
+      dotImg: "assets/characters/yevgnen.png",
       costumeDot: "assets/avatar/costume_sakura_yevgnen.png",
       defaultItem: "벚꽃비 의복 - 환 (예프넨)",
       rotationAngles: ["정면 (Isometric Front)", "우측면 (Right)", "배면 (Back)", "좌측면 (Left)"]

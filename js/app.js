@@ -5547,25 +5547,25 @@ var TW_DEFAULT_EQUIP_STATE = (typeof window !== 'undefined' && window.TW_DEFAULT
 };
 
 const TW_CHARACTER_ROSTER = [
-  { key: 'boris', name: '보리스', fullName: '보리스 진네만', icon: '🗡️', type: '물리복합 / 베기', sub: '월하의 검사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_boris.png' },
-  { key: 'lucian', name: '루시안', fullName: '루시안 칼츠', icon: '⚔️', type: '물리 찌르기', sub: '쾌활한 모험가', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_lucian.png' },
-  { key: 'roamini', name: '로아미니', fullName: '로아미니', icon: '📿', type: '마법방어형 (MR)', sub: '기억을 잃은 주술사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_roamini.png' },
-  { key: 'clarice', name: '리체', fullName: '리체 아브릴', icon: '🧵', type: '마법방어형 (MR)', sub: '바느질하는 재봉사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_clarice.png' },
-  { key: 'tichiel', name: '티치엘', fullName: '티치엘 쥬스피앙', icon: '🪄', type: '마법방어 / 백마법', sub: '순수한 마법소녀', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_tichiel.png' },
-  { key: 'mila', name: '밀라', fullName: '밀라 네브리스', icon: '🪓', type: '물리 베기', sub: '붉은 사수 해적선장', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_mila.png' },
-  { key: 'ispin', name: '이스핀', fullName: '이스핀 샤를', icon: '🤺', type: '물리 찌르기', sub: '비운의 왕녀', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_ispin.png' },
-  { key: 'maximin', name: '막시민', fullName: '막시민 리프크네', icon: '🗡️', type: '마법베기 (INT+HACK)', sub: '시니컬한 탐정', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_maximin.png' },
-  { key: 'sivelin', name: '시벨린', fullName: '시벨린 우', icon: '🔱', type: '물리 찌르기 / 복합', sub: '진홍의 사신', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_sivelin.png' },
-  { key: 'nayatrei', name: '나야트레이', fullName: '나야트레이', icon: '🗡️', type: '물리 찌르기 / 복합', sub: '묘족의 마지막 생존자', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_nayatrei.png' },
-  { key: 'josua', name: '조슈아', fullName: '조슈아 폰 아르님', icon: '🔮', type: '마법공격 (INT)', sub: '아르님 가문의 소공작', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_josua.png' },
-  { key: 'chloe', name: '클로에', fullName: '클로에 다 폰티나', icon: '👑', type: '마법공격 (INT/수·뇌)', sub: '폰티나 가문의 영애', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_chloe.png' },
-  { key: 'lanziee', name: '란지에', fullName: '란지에 로젠크란츠', icon: '🔫', type: '마법총 / 물리총', sub: '냉철한 혁명가', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_lanziee.png' },
-  { key: 'issac', name: '이자크', fullName: '이자크 듀카스텔', icon: '🥊', type: '물리 찌르기 / 베기', sub: '하이아칸의 의적', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_issac.png' },
-  { key: 'anais', name: '아나이스', fullName: '아나이스 델 카릴', icon: '🧸', type: '마법방어 (소환수)', sub: '이중인격 마도사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_anais.png' },
-  { key: 'benya', name: '벤야', fullName: '벤야', icon: '👻', type: '마법방어 / 마법베기', sub: '영혼의 유령소녀', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_benya.png' },
-  { key: 'isolet', name: '이솔렛', fullName: '이솔렛', icon: '🗡️', type: '물리/마법 찬트', sub: '달의 섬 신녀', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_isolet.png' },
-  { key: 'nocturne', name: '녹턴', fullName: '녹턴 드 브릴랑', icon: '💥', type: '마법공격 (INT)', sub: '천재 기계공학자', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_nocturne.png' },
-  { key: 'yevgnen', name: '예프넨', fullName: '예프넨 진네만', icon: '⚔️', type: '물리복합 5형태', sub: '방랑하는 은빛 검사', img: 'https://ssl.nexon.com/s2/game/tales/renewal_2018/character/img_char_header_yevgnen.png' }
+  { key: 'boris', name: '보리스', fullName: '보리스 진네만', icon: '🗡️', type: '물리복합 / 베기', sub: '월하의 검사', img: 'assets/characters/boris.png' },
+  { key: 'lucian', name: '루시안', fullName: '루시안 칼츠', icon: '⚔️', type: '물리 찌르기', sub: '쾌활한 모험가', img: 'assets/characters/lucian.png' },
+  { key: 'roamini', name: '로아미니', fullName: '로아미니', icon: '📿', type: '마법방어형 (MR)', sub: '기억을 잃은 주술사', img: 'assets/characters/roamini.png' },
+  { key: 'clarice', name: '리체', fullName: '리체 아브릴', icon: '🧵', type: '마법방어형 (MR)', sub: '바느질하는 재봉사', img: 'assets/characters/clarice.png' },
+  { key: 'tichiel', name: '티치엘', fullName: '티치엘 쥬스피앙', icon: '🪄', type: '마법방어 / 백마법', sub: '순수한 마법소녀', img: 'assets/characters/tichiel.png' },
+  { key: 'mila', name: '밀라', fullName: '밀라 네브리스', icon: '🪓', type: '물리 베기', sub: '붉은 사수 해적선장', img: 'assets/characters/mila.png' },
+  { key: 'ispin', name: '이스핀', fullName: '이스핀 샤를', icon: '🤺', type: '물리 찌르기', sub: '비운의 왕녀', img: 'assets/characters/ispin.png' },
+  { key: 'maximin', name: '막시민', fullName: '막시민 리프크네', icon: '🗡️', type: '마법베기 (INT+HACK)', sub: '시니컬한 탐정', img: 'assets/characters/maximin.png' },
+  { key: 'sivelin', name: '시벨린', fullName: '시벨린 우', icon: '🔱', type: '물리 찌르기 / 복합', sub: '진홍의 사신', img: 'assets/characters/sivelin.png' },
+  { key: 'nayatrei', name: '나야트레이', fullName: '나야트레이', icon: '🗡️', type: '물리 찌르기 / 복합', sub: '묘족의 마지막 생존자', img: 'assets/characters/nayatrei.png' },
+  { key: 'josua', name: '조슈아', fullName: '조슈아 폰 아르님', icon: '🔮', type: '마법공격 (INT)', sub: '아르님 가문의 소공작', img: 'assets/characters/josua.png' },
+  { key: 'chloe', name: '클로에', fullName: '클로에 다 폰티나', icon: '👑', type: '마법공격 (INT/수·뇌)', sub: '폰티나 가문의 영애', img: 'assets/characters/chloe.png' },
+  { key: 'lanziee', name: '란지에', fullName: '란지에 로젠크란츠', icon: '🔫', type: '마법총 / 물리총', sub: '냉철한 혁명가', img: 'assets/characters/lanziee.png' },
+  { key: 'issac', name: '이자크', fullName: '이자크 듀카스텔', icon: '🥊', type: '물리 찌르기 / 베기', sub: '하이아칸의 의적', img: 'assets/characters/issac.png' },
+  { key: 'anais', name: '아나이스', fullName: '아나이스 델 카릴', icon: '🧸', type: '마법방어 (소환수)', sub: '이중인격 마도사', img: 'assets/characters/anais.png' },
+  { key: 'benya', name: '벤야', fullName: '벤야', icon: '👻', type: '마법방어 / 마법베기', sub: '영혼의 유령소녀', img: 'assets/characters/benya.png' },
+  { key: 'isolet', name: '이솔렛', fullName: '이솔렛', icon: '🗡️', type: '물리/마법 찬트', sub: '달의 섬 신녀', img: 'assets/characters/isolet.png' },
+  { key: 'nocturne', name: '녹턴', fullName: '녹턴 드 브릴랑', icon: '💥', type: '마법공격 (INT)', sub: '천재 기계공학자', img: 'assets/characters/nocturne.png' },
+  { key: 'yevgnen', name: '예프넨', fullName: '예프넨 진네만', icon: '⚔️', type: '물리복합 5형태', sub: '방랑하는 은빛 검사', img: 'assets/characters/yevgnen.png' }
 ];
 
 function getCharacterVisualInfo(profileId) {
@@ -7650,14 +7650,14 @@ function initTalesDbSimulator() {
 function updateSimulatorWhoCard() {
   const whoArt = document.getElementById('tdb-who-art');
   const whoName = document.getElementById('tdb-who-name');
-  const charInfo = TW_UNIFORM_DYE_DB.characters[tdbSimState.selectedChar] || { folder: 'naya', name: '나야트레이' };
+  const rosterChar = TW_CHARACTER_ROSTER.find(c => c.key === tdbSimState.selectedChar) || TW_CHARACTER_ROSTER[0];
   
   if (whoArt) {
-    whoArt.src = charInfo.customImg || ('assets/uniform/' + (charInfo.folder || 'naya') + '/' + (charInfo.folder || 'naya') + '.png');
-    whoArt.alt = charInfo.name;
+    whoArt.src = 'assets/characters/' + rosterChar.key + '.png';
+    whoArt.alt = '';
   }
   if (whoName) {
-    whoName.textContent = charInfo.name;
+    whoName.textContent = rosterChar.name;
   }
 }
 
@@ -7679,13 +7679,15 @@ function populateSimulatorRoundFilter() {
 }
 
 function renderSimulatorStage() {
-  const charInfo = TW_UNIFORM_DYE_DB.characters[tdbSimState.selectedChar] || { folder: 'naya', name: '나야트레이', fullName: '나야트레이' };
-  const folder = charInfo.folder || 'naya';
+  const charKey = tdbSimState.selectedChar;
+  const rosterChar = TW_CHARACTER_ROSTER.find(c => c.key === charKey) || TW_CHARACTER_ROSTER[0];
+  const charInfo = TW_UNIFORM_DYE_DB.characters[charKey] || { folder: charKey, name: rosterChar.name, fullName: rosterChar.fullName };
+  const folder = charInfo.folder || charKey;
 
-  if (!tdbSimState.uniformDyes[tdbSimState.selectedChar]) {
-    tdbSimState.uniformDyes[tdbSimState.selectedChar] = { 1: "d", 2: "d", 3: "d", 4: "d" };
+  if (!tdbSimState.uniformDyes[charKey]) {
+    tdbSimState.uniformDyes[charKey] = { 1: "d", 2: "d", 3: "d", 4: "d" };
   }
-  const dyes = tdbSimState.uniformDyes[tdbSimState.selectedChar];
+  const dyes = tdbSimState.uniformDyes[charKey];
 
   const layerBase = document.getElementById('tdb-layer-base');
   const layer1 = document.getElementById('tdb-layer-1');
@@ -7693,30 +7695,43 @@ function renderSimulatorStage() {
   const layer3 = document.getElementById('tdb-layer-3');
   const layer4 = document.getElementById('tdb-layer-4');
 
-  if (charInfo.customImg) {
-    if (layerBase) layerBase.src = charInfo.customImg;
+  if (tdbSimState.selectedCategory === 'uniform') {
+    // Uniform Dye Salon mode: Render base with 4 dynamic color overlay layers
+    if (charInfo.customImg) {
+      if (layerBase) layerBase.src = charInfo.customImg;
+      if (layer1) layer1.style.display = 'none';
+      if (layer2) layer2.style.display = 'none';
+      if (layer3) layer3.style.display = 'none';
+      if (layer4) layer4.style.display = 'none';
+    } else {
+      if (layerBase) layerBase.src = 'assets/uniform/' + folder + '/' + folder + '.png';
+      if (layer1) {
+        layer1.src = 'assets/uniform/' + folder + '/1-' + (dyes[1] || 'd') + '.png';
+        layer1.style.display = 'block';
+      }
+      if (layer2) {
+        layer2.src = 'assets/uniform/' + folder + '/2-' + (dyes[2] || 'd') + '.png';
+        layer2.style.display = 'block';
+      }
+      if (layer3) {
+        layer3.src = 'assets/uniform/' + folder + '/3-' + (dyes[3] || 'd') + '.png';
+        layer3.style.display = 'block';
+      }
+      if (layer4) {
+        layer4.src = 'assets/uniform/' + folder + '/4-' + (dyes[4] || 'd') + '.png';
+        layer4.style.display = 'block';
+      }
+    }
+  } else {
+    // Avatar Simulator mode: Render authentic official TalesDB 350x350 illustration as base standee
+    if (layerBase) {
+      layerBase.src = 'assets/characters/' + charKey + '.png';
+      layerBase.style.display = 'block';
+    }
     if (layer1) layer1.style.display = 'none';
     if (layer2) layer2.style.display = 'none';
     if (layer3) layer3.style.display = 'none';
     if (layer4) layer4.style.display = 'none';
-  } else {
-    if (layerBase) layerBase.src = 'assets/uniform/' + folder + '/' + folder + '.png';
-    if (layer1) {
-      layer1.src = 'assets/uniform/' + folder + '/1-' + (dyes[1] || 'd') + '.png';
-      layer1.style.display = 'block';
-    }
-    if (layer2) {
-      layer2.src = 'assets/uniform/' + folder + '/2-' + (dyes[2] || 'd') + '.png';
-      layer2.style.display = 'block';
-    }
-    if (layer3) {
-      layer3.src = 'assets/uniform/' + folder + '/3-' + (dyes[3] || 'd') + '.png';
-      layer3.style.display = 'block';
-    }
-    if (layer4) {
-      layer4.src = 'assets/uniform/' + folder + '/4-' + (dyes[4] || 'd') + '.png';
-      layer4.style.display = 'block';
-    }
   }
 
   // Avatar sprite layers - Robust error suppression (never display broken image text)
@@ -7749,7 +7764,6 @@ function renderSimulatorStage() {
       setLayerImg('tdb-layer-costume', null);
     } else {
       // Check if character-specific sakura/hanbok costume exists
-      const charKey = tdbSimState.selectedChar;
       const sakuraPath = 'assets/avatar/costume_sakura_' + charKey + '.png';
       if (slots.showArmor.name.includes('사쿠라') || slots.showArmor.name.includes('벚꽃')) {
         setLayerImg('tdb-layer-costume', { layerUrl: sakuraPath });
@@ -7785,7 +7799,7 @@ function renderSimulatorStage() {
 
   const angleNames = ["정면 (Isometric Front)", "좌측면 (Left)", "배면 (Back View)", "우측면 (Right)"];
   if (angleTag) angleTag.textContent = angleNames[tdbSimState.rotationAngle];
-  if (charFullTag) charFullTag.textContent = (charInfo.fullName || charInfo.name) + ' (' + charInfo.name + ')';
+  if (charFullTag) charFullTag.textContent = (rosterChar.fullName || rosterChar.name) + ' (' + rosterChar.name + ')';
   if (zoomLabel) zoomLabel.textContent = tdbSimState.zoomLevel.toFixed(1) + 'x';
 }
 
@@ -7802,6 +7816,7 @@ function switchSimulatorCategory(catKey, btnEl) {
   if (btnEl) btnEl.classList.add('active');
 
   populateSimulatorRoundFilter();
+  renderSimulatorStage();
   renderSimulatorGrid();
 }
 
@@ -8140,11 +8155,10 @@ function openCharacterPickerModal() {
   if (!modal || !grid) return;
 
   grid.innerHTML = TW_CHARACTER_ROSTER.map(c => {
-    const charInfo = TW_UNIFORM_DYE_DB.characters[c.key] || { folder: 'naya' };
-    const charImg = charInfo.customImg || ('assets/uniform/' + (charInfo.folder || 'naya') + '/' + (charInfo.folder || 'naya') + '.png');
     const isSelected = (tdbSimState.selectedChar === c.key);
+    const charImg = 'assets/characters/' + c.key + '.png';
     return '<div class="tdb-char-picker-card ' + (isSelected ? 'active' : '') + '" onclick="selectSimulatorChar(\'' + c.key + '\')" title="' + c.fullName + '">' +
-      '<img src="' + charImg + '" alt="' + c.name + '">' +
+      '<img src="' + charImg + '" alt="" loading="lazy">' +
       '<div style="display:flex; flex-direction:column; min-width:0;">' +
       '  <span class="tdb-char-picker-name">' + c.name + '</span>' +
       '  <span style="font-size:0.62rem; color:#94a3b8;">' + c.type.split('/')[0] + '</span>' +
@@ -8241,13 +8255,17 @@ function downloadSimulatorStandeePNG() {
     if (isBack) layers.push({ url: slots.showArmor.layerUrl, slot: 'back' });
   }
   // 3. Base body & Uniform 4 parts
-  if (charInfo.customImg) {
-    layers.push({ url: charInfo.customImg, slot: 'base' });
-  } else {
-    layers.push({ url: 'assets/uniform/' + folder + '/' + folder + '.png', slot: 'base' });
-    for (let i = 1; i <= 4; i++) {
-      layers.push({ url: 'assets/uniform/' + folder + '/' + i + '-' + (dyes[i] || 'd') + '.png', slot: 'uniform' });
+  if (tdbSimState.selectedCategory === 'uniform') {
+    if (charInfo.customImg) {
+      layers.push({ url: charInfo.customImg, slot: 'base' });
+    } else {
+      layers.push({ url: 'assets/uniform/' + folder + '/' + folder + '.png', slot: 'base' });
+      for (let i = 1; i <= 4; i++) {
+        layers.push({ url: 'assets/uniform/' + folder + '/' + i + '-' + (dyes[i] || 'd') + '.png', slot: 'uniform' });
+      }
     }
+  } else {
+    layers.push({ url: 'assets/characters/' + tdbSimState.selectedChar + '.png', slot: 'base' });
   }
   // 5. Costume
   if (slots.showArmor && slots.showArmor.layerUrl) {

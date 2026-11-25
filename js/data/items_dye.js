@@ -180,7 +180,7 @@ var TW_UNIFORM_DYE_DB = {
       folder: "benya",
       name: "벤야",
       fullName: "벤야",
-      customImg: "assets/avatar/benya_transparent.png",
+      customImg: "assets/characters/benya.png",
       parts: [
         { key: "1", name: "원피스", defaultCode: "d" },
         { key: "2", name: "리본", defaultCode: "d" },
@@ -192,7 +192,7 @@ var TW_UNIFORM_DYE_DB = {
       folder: "yevgnen",
       name: "예프넨",
       fullName: "예프넨 진네만",
-      customImg: "assets/avatar/yevgnen_transparent.png",
+      customImg: "assets/characters/yevgnen.png",
       parts: [
         { key: "1", name: "코트", defaultCode: "d" },
         { key: "2", name: "장식", defaultCode: "d" },
