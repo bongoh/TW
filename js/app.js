@@ -7606,15 +7606,23 @@ function initShowroom() {
     equipViewState.selectedItem = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.itemDetails['av_sakura_naya'] : null;
   }
 
-  // Match showroomSelectedChar to current profile
+  // Match showroomSelectedChar to current profile, defaulting to verified dot characters
+  const validDotChars = ['nayatrei', 'boris', 'lucian', 'tichiel', 'mila', 'lanziee', 'sivelin', 'issac', 'anais'];
   const curProf = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
   if (curProf && curProf.name) {
     const match = TW_CHARACTER_ROSTER.find(c => curProf.name.includes(c.name) || (curProf.charType && curProf.charType.includes(c.name)));
-    if (match) {
+    if (match && validDotChars.includes(match.key)) {
       showroomSelectedChar = match.key;
       equipViewState.currentCharKey = match.key;
+    } else {
+      showroomSelectedChar = 'nayatrei';
+      equipViewState.currentCharKey = 'nayatrei';
     }
+  } else {
+    showroomSelectedChar = 'nayatrei';
+    equipViewState.currentCharKey = 'nayatrei';
   }
+  equipViewState.currentAngleIndex = 0; // Always start Front!
 
   renderShowroomCharPills();
   
@@ -7653,8 +7661,15 @@ function renderShowroomCharPills() {
 }
 
 function selectShowroomChar(charKey) {
+  const validDotChars = ['nayatrei', 'boris', 'lucian', 'tichiel', 'mila', 'lanziee', 'sivelin', 'issac', 'anais'];
+  if (!validDotChars.includes(charKey)) {
+    const cObj = TW_CHARACTER_ROSTER.find(x => x.key === charKey);
+    alert(`💡 '${cObj ? cObj.fullName : charKey}' 캐릭터의 도트 스프라이트는 현재 순차 추출 중입니다.\n현재 100% 투명 도트가 지원되는 9개 캐릭터(나야트레이, 보리스, 루시안, 티치엘, 밀라, 란지에, 시벨린, 이자크, 아나이스)를 우선 체험하실 수 있습니다.`);
+    return;
+  }
   showroomSelectedChar = charKey;
   equipViewState.currentCharKey = charKey;
+  equipViewState.currentAngleIndex = 0; // Always reset to Front!
 
   // Check character default item
   if (typeof TW_AVATAR_RESOURCES !== 'undefined' && TW_AVATAR_RESOURCES.characterDots[charKey]) {
@@ -7872,68 +7887,22 @@ function rgbToHex(r, g, b) {
   }).join('').toUpperCase();
 }
 
-function toggleStageEffect(type) {
-  if (type === 'circle') {
-    currentDyeState.stageEffects.circle = !currentDyeState.stageEffects.circle;
-    const el = document.getElementById('pd-layer-magic-circle');
-    const btn = document.getElementById('btn-toggle-magic-circle');
-    if (el) el.style.display = currentDyeState.stageEffects.circle ? 'block' : 'none';
-    if (btn) {
-      if (currentDyeState.stageEffects.circle) {
-        btn.classList.add('active');
-        btn.textContent = '🌀 마법진 ON';
-      } else {
-        btn.classList.remove('active');
-        btn.textContent = '🌀 마법진 OFF';
-      }
-    }
-  } else if (type === 'title') {
-    currentDyeState.stageEffects.title = !currentDyeState.stageEffects.title;
-    const el = document.getElementById('pd-layer-title');
-    const btn = document.getElementById('btn-toggle-title-aura');
-    if (el) el.style.display = currentDyeState.stageEffects.title ? 'block' : 'none';
-    if (btn) {
-      if (currentDyeState.stageEffects.title) {
-        btn.classList.add('active');
-        btn.textContent = '🐯 타이틀 ON';
-      } else {
-        btn.classList.remove('active');
-        btn.textContent = '🐯 타이틀 OFF';
-      }
-    }
-  }
-}
-
 function downloadCurrentPaperDollPNG() {
-  const bodyCanvas = document.getElementById('pd-canvas-body');
-  if (!bodyCanvas) return;
+  const charImg = document.getElementById('pd-char-img');
+  if (!charImg) return;
 
   const exportCanvas = document.createElement('canvas');
-  exportCanvas.width = 180;
-  exportCanvas.height = 220;
+  exportCanvas.width = 160;
+  exportCanvas.height = 200;
   const ctx = exportCanvas.getContext('2d');
-
-  if (currentDyeState.stageEffects.circle) {
-    const circleImg = document.getElementById('pd-layer-magic-circle');
-    if (circleImg && circleImg.complete) {
-      ctx.drawImage(circleImg, 12, 160, 155, 52);
-    }
-  }
 
   ctx.save();
   if (equipViewState.currentAngleIndex === 1 || equipViewState.currentAngleIndex === 3) {
     ctx.translate(exportCanvas.width, 0);
     ctx.scale(-1, 1);
   }
-  ctx.drawImage(bodyCanvas, 40, 25, bodyCanvas.width, bodyCanvas.height);
+  ctx.drawImage(charImg, 25, 20, 110, 150);
   ctx.restore();
-
-  if (currentDyeState.stageEffects.title) {
-    const titleImg = document.getElementById('pd-layer-title');
-    if (titleImg && titleImg.complete) {
-      ctx.drawImage(titleImg, 25, 2, 130, 38);
-    }
-  }
 
   const dataUrl = exportCanvas.toDataURL('image/png');
   const a = document.createElement('a');
@@ -7944,172 +7913,51 @@ function downloadCurrentPaperDollPNG() {
   document.body.removeChild(a);
 }
 
-function drawCharacterWithDye(canvas, ctx, img, charKey) {
-  canvas.width = img.naturalWidth || img.width || 100;
-  canvas.height = img.naturalHeight || img.height || 140;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-  const charDyes = currentDyeState.dyes[charKey];
-  if (!charDyes || Object.keys(charDyes).length === 0) return;
-
-  const w = canvas.width;
-  const h = canvas.height;
-  const imgData = ctx.getImageData(0, 0, w, h);
-  const d = imgData.data;
-
-  // Dye Hair
-  if (charDyes.hair) {
-    const dyeRgb = hexToRgb(charDyes.hair);
-    if (dyeRgb) {
-      const targetHsv = rgbToHsv(dyeRgb.r, dyeRgb.g, dyeRgb.b);
-      for (let y = 0; y < Math.floor(h * 0.52); y++) {
-        for (let x = 0; x < w; x++) {
-          const idx = (y * w + x) * 4;
-          const a = d[idx + 3];
-          if (a === 0) continue;
-          const r = d[idx], g = d[idx + 1], b = d[idx + 2];
-          const hsv = rgbToHsv(r, g, b);
-          const isSkin = (r > 200 && g > 150 && b > 120 && (r - b) > 30);
-          if (!isSkin && hsv.v > 0.3) {
-            const newRgb = hsvToRgb(targetHsv.h, Math.max(targetHsv.s, 0.55), hsv.v);
-            d[idx] = newRgb.r;
-            d[idx + 1] = newRgb.g;
-            d[idx + 2] = newRgb.b;
-          }
-        }
-      }
-    }
-  }
-
-  // Dye Top / Coat
-  const topDye = charDyes.top || charDyes.coat || charDyes.dress;
-  if (topDye) {
-    const dyeRgb = hexToRgb(topDye);
-    if (dyeRgb) {
-      const targetHsv = rgbToHsv(dyeRgb.r, dyeRgb.g, dyeRgb.b);
-      for (let y = Math.floor(h * 0.45); y < Math.floor(h * 0.78); y++) {
-        for (let x = 0; x < w; x++) {
-          const idx = (y * w + x) * 4;
-          const a = d[idx + 3];
-          if (a === 0) continue;
-          const r = d[idx], g = d[idx + 1], b = d[idx + 2];
-          const hsv = rgbToHsv(r, g, b);
-          const isSkin = (r > 200 && g > 150 && b > 120 && (r - b) > 30);
-          if (!isSkin && hsv.v > 0.15) {
-            const newRgb = hsvToRgb(targetHsv.h, Math.max(targetHsv.s, 0.5), hsv.v);
-            d[idx] = newRgb.r;
-            d[idx + 1] = newRgb.g;
-            d[idx + 2] = newRgb.b;
-          }
-        }
-      }
-    }
-  }
-
-  // Dye Pants / Boots
-  const pantsDye = charDyes.pants;
-  if (pantsDye) {
-    const dyeRgb = hexToRgb(pantsDye);
-    if (dyeRgb) {
-      const targetHsv = rgbToHsv(dyeRgb.r, dyeRgb.g, dyeRgb.b);
-      for (let y = Math.floor(h * 0.72); y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          const idx = (y * w + x) * 4;
-          const a = d[idx + 3];
-          if (a === 0) continue;
-          const r = d[idx], g = d[idx + 1], b = d[idx + 2];
-          const hsv = rgbToHsv(r, g, b);
-          if (hsv.v > 0.15) {
-            const newRgb = hsvToRgb(targetHsv.h, Math.max(targetHsv.s, 0.5), hsv.v);
-            d[idx] = newRgb.r;
-            d[idx + 1] = newRgb.g;
-            d[idx + 2] = newRgb.b;
-          }
-        }
-      }
-    }
-  }
-
-  ctx.putImageData(imgData, 0, 0);
-}
-
-function rgbToHsv(r, g, b) {
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h, s, v = max;
-  const d = max - min;
-  s = max === 0 ? 0 : d / max;
-  if (max === min) {
-    h = 0;
-  } else {
-    switch (max) {
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
-    }
-    h /= 6;
-  }
-  return { h, s, v };
-}
-
-function hsvToRgb(h, s, v) {
-  let r, g, b;
-  const i = Math.floor(h * 6);
-  const f = h * 6 - i;
-  const p = v * (1 - s);
-  const q = v * (1 - f * s);
-  const t = v * (1 - (1 - f) * s);
-  switch (i % 6) {
-    case 0: r = v; g = t; b = p; break;
-    case 1: r = q; g = v; b = p; break;
-    case 2: r = p; g = v; b = t; break;
-    case 3: r = p; g = q; b = v; break;
-    case 4: r = t; g = p; b = v; break;
-    case 5: r = v; g = p; b = q; break;
-  }
-  return {
-    r: Math.round(r * 255),
-    g: Math.round(g * 255),
-    b: Math.round(b * 255)
-  };
-}
-
 function renderEquipView() {
+  const validDotChars = ['nayatrei', 'boris', 'lucian', 'tichiel', 'mila', 'lanziee', 'sivelin', 'issac', 'anais'];
+  if (!validDotChars.includes(showroomSelectedChar)) {
+    showroomSelectedChar = 'nayatrei';
+    equipViewState.currentCharKey = 'nayatrei';
+  }
+
   const charDef = TW_CHARACTER_ROSTER.find(c => c.key === showroomSelectedChar) || TW_CHARACTER_ROSTER[9]; // default Naya
   const headerNameEl = document.getElementById('ev-header-char-name');
   const angleTag = document.getElementById('ev-angle-tag');
-  const canvas = document.getElementById('pd-canvas-body');
+  const charImg = document.getElementById('pd-char-img');
 
   if (headerNameEl) headerNameEl.textContent = `${charDef.fullName} (${charDef.name})`;
   if (angleTag) angleTag.textContent = equipViewState.angles[equipViewState.currentAngleIndex];
 
-  // Apply rotation classes to body canvas
-  if (canvas) {
-    canvas.classList.remove('rotated-right', 'rotated-back');
-    if (equipViewState.currentAngleIndex === 1) canvas.classList.add('rotated-right');
-    else if (equipViewState.currentAngleIndex === 2) canvas.classList.add('rotated-back');
-    else if (equipViewState.currentAngleIndex === 3) canvas.classList.add('rotated-right');
+  // Resolve base dot sprite
+  let dotSrc = `assets/avatar/${showroomSelectedChar}_transparent.png`;
+
+  // Check if character has an active Eltibo potion dye
+  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
+  const activeColor = charDyes[currentDyeState.selectedPartKey];
+  if (activeColor && typeof TW_DYE_DB !== 'undefined') {
+    const matchedPot = TW_DYE_DB.potions.find(p => p.hex.toLowerCase() === activeColor.toLowerCase());
+    if (matchedPot) {
+      dotSrc = `assets/avatar/${showroomSelectedChar}_dye_${matchedPot.id}.png`;
+    }
   }
 
-  // Draw Character dot on Canvas with Dyeing
-  const resDot = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.characterDots[showroomSelectedChar] : null;
-  const imgSrc = (resDot && resDot.dotImg) ? resDot.dotImg : charDef.img;
+  // Check if Show Armor (Costume) is equipped
+  const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
+  const showArmor = outfit.showArmor;
+  const isArmorOn = showArmor && showArmor.isOn !== false && !showArmor.name.includes('미착용') && !showArmor.name.includes('없음');
+  if (isArmorOn && showroomSelectedChar === 'nayatrei' && showArmor.name.includes('벚꽃비') && !activeColor) {
+    dotSrc = 'assets/avatar/naya_sakura_dot.png';
+  }
 
-  if (canvas && canvas.getContext) {
-    const ctx = canvas.getContext('2d');
-    let img = twCachedCharImgs[imgSrc];
-    if (!img) {
-      img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = imgSrc;
-      img.onload = () => {
-        twCachedCharImgs[imgSrc] = img;
-        drawCharacterWithDye(canvas, ctx, img, showroomSelectedChar);
-      };
-    } else if (img.complete) {
-      drawCharacterWithDye(canvas, ctx, img, showroomSelectedChar);
-    }
+  if (charImg) {
+    charImg.src = dotSrc;
+    charImg.alt = charDef.name;
+
+    // Apply rotation class
+    charImg.classList.remove('rotated-right', 'rotated-back');
+    if (equipViewState.currentAngleIndex === 1) charImg.classList.add('rotated-right');
+    else if (equipViewState.currentAngleIndex === 2) charImg.classList.add('rotated-back');
+    else if (equipViewState.currentAngleIndex === 3) charImg.classList.add('rotated-right');
   }
 
   // Render Tooltip / Status details
@@ -8126,7 +7974,6 @@ function renderEquipView() {
 
   if (titleEl) {
     if (currentShowroomSubMode === 'dye') {
-      const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
       const count = Object.keys(charDyes).length;
       titleEl.textContent = count > 0 
         ? `🎨 ${charDef.name} 염색 적용 중 (${count}개 부위)`
@@ -8137,15 +7984,13 @@ function renderEquipView() {
   }
   if (reqCharEl) reqCharEl.textContent = charDef.name;
 
-  const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
-  const isEquipped = outfit[item.slot] && outfit[item.slot].name === item.name;
   if (statusEl) {
     if (currentShowroomSubMode === 'dye') {
       statusEl.textContent = "실시간 도트 염색 활성";
       statusEl.style.color = "#38bdf8";
     } else {
-      statusEl.textContent = isEquipped ? "착용 중 (Equipped)" : "미착용";
-      statusEl.style.color = isEquipped ? "#6ee7b7" : "#94a3b8";
+      statusEl.textContent = isArmorOn ? "착용 중 (Equipped)" : "미착용";
+      statusEl.style.color = isArmorOn ? "#6ee7b7" : "#94a3b8";
     }
   }
 }

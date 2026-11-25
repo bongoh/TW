@@ -6026,29 +6026,33 @@
           </div>
 
           <div class="tw-paperdoll-stage-body">
-            <!-- Stage Viewport (Transparent Layer Stack) -->
+            <!-- Stage Viewport (Centered Standee with Glowing Pedestal) -->
             <div class="tw-paperdoll-stage-wrap">
               <button type="button" class="tw-ev-arrow-btn" onclick="rotateEquipView(-1)" title="좌측 회전 (<)">
                 <img src="assets/avatar/btn_arrow_left.png" alt="<">
               </button>
 
               <div class="tw-paperdoll-stage" id="tw-paperdoll-stage">
-                <!-- Layer 1: Floor Magic Circle (Z: 10) -->
-                <img id="pd-layer-magic-circle" class="pd-layer pd-magic-circle" src="assets/avatar/effect_magic_circle_trans.png" alt="마법진">
-                <!-- Layer 2: Wings / Back (Z: 20) -->
+                <!-- Glowing Floor Pedestal Shadow -->
+                <div class="pd-pedestal-shadow"></div>
+
+                <!-- 1. Wings / Back (Z: 10) -->
                 <img id="pd-layer-back" class="pd-layer pd-back" style="display:none;" alt="날개">
-                <!-- Layer 3: Main Character Body Canvas with Real-Time Dyeing (Z: 30) -->
-                <canvas id="pd-canvas-body" width="120" height="150" class="pd-layer pd-canvas-body"></canvas>
-                <!-- Layer 4: Show Avatar Armor / Costume (Z: 40) -->
+
+                <!-- 2. Main Character Body & Dye Sprite (Z: 20) -->
+                <img id="pd-char-img" class="pd-layer pd-char-img" src="assets/avatar/naya_transparent.png" alt="캐릭터 도트 외형">
+
+                <!-- 3. Show Avatar Armor / Costume (Z: 30) -->
                 <img id="pd-layer-armor" class="pd-layer pd-armor" style="display:none;" alt="아바타 의상">
-                <!-- Layer 5: Face Deco (Z: 50) -->
+
+                <!-- 4. Face Deco (Z: 40) -->
                 <img id="pd-layer-face" class="pd-layer pd-face" style="display:none;" alt="얼굴">
-                <!-- Layer 6: Head / Hat (Z: 60) -->
+
+                <!-- 5. Head / Hat (Z: 50) -->
                 <img id="pd-layer-head" class="pd-layer pd-head" style="display:none;" alt="모자">
-                <!-- Layer 7: Weapon / Arms (Z: 70) -->
+
+                <!-- 6. Weapon / Arms (Z: 60) -->
                 <img id="pd-layer-arms" class="pd-layer pd-arms" style="display:none;" alt="무기">
-                <!-- Layer 8: Tiger Title "범내려온다" (Z: 80) -->
-                <img id="pd-layer-title" class="pd-layer pd-title" src="assets/avatar/effect_tiger_title_trans.png" alt="타이틀">
               </div>
 
               <button type="button" class="tw-ev-arrow-btn" onclick="rotateEquipView(1)" title="우측 회전 (>)">
@@ -6059,13 +6063,10 @@
             <!-- Stage Control Toolbar -->
             <div class="tw-paperdoll-controls">
               <div style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:0.4rem;">
-                <span id="ev-angle-tag" class="tw-ev-angle-tag">정면 (Isometric Front)</span>
+                <span id="ev-angle-tag" class="tw-ev-angle-tag">정면 (Front)</span>
                 <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap;">
-                  <button type="button" class="btn-sm btn-outline active" id="btn-toggle-magic-circle" onclick="toggleStageEffect('circle')" style="font-size:0.68rem; padding:2px 6px;">
-                    🌀 마법진 ON
-                  </button>
-                  <button type="button" class="btn-sm btn-outline active" id="btn-toggle-title-aura" onclick="toggleStageEffect('title')" style="font-size:0.68rem; padding:2px 6px;">
-                    🐯 타이틀 ON
+                  <button type="button" class="btn-sm btn-outline" onclick="resetAllDyes()" style="font-size:0.68rem; padding:2px 8px;">
+                    🔄 원래 색상 복원
                   </button>
                   <button type="button" class="btn-sm btn-primary-soft" onclick="downloadCurrentPaperDollPNG()" style="font-size:0.68rem; padding:2px 8px; font-weight:800;" title="현재 세팅된 투명 누끼 도트 이미지를 PNG로 저장">
                     📸 투명 PNG 저장
@@ -6079,7 +6080,7 @@
               <div id="ev-item-title" class="tw-ev-title" style="font-size:0.86rem; border:none; padding:0;">나야트레이 기본 스탠디</div>
               <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#94a3b8; margin-top:3px;">
                 <span id="ev-item-reqchar" class="tw-ev-yellow">나야트레이</span>
-                <span id="ev-action-status" style="color:#6ee7b7; font-weight:700;">실시간 레이어 렌더링 활성</span>
+                <span id="ev-action-status" style="color:#6ee7b7; font-weight:700;">실시간 도트 렌더링 활성</span>
               </div>
             </div>
           </div>

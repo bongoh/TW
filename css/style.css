@@ -8020,20 +8020,36 @@
 .tw-paperdoll-stage-wrap {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 14px;
+  justify-content: center;
+  gap: 2.5rem;
+  padding: 24px 16px;
   position: relative;
-  min-height: 230px;
+  min-height: 250px;
 }
 
 /* Central Stage with multi-layer paper-doll stack */
 .tw-paperdoll-stage {
   position: relative;
-  width: 170px;
+  width: 160px;
   height: 210px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Glowing pedestal shadow under character feet */
+.pd-pedestal-shadow {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.45) 0%, rgba(99, 102, 241, 0.25) 45%, rgba(0, 0, 0, 0) 75%);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  z-index: 5;
 }
 
 /* Layer Base */
@@ -8042,61 +8058,50 @@
   image-rendering: -webkit-optimize-contrast;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s ease;
   pointer-events: none;
-}
-
-/* Magic circle floor */
-.pd-magic-circle {
-  bottom: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 155px;
-  height: 52px;
-  object-fit: contain;
-  opacity: 0.85;
-  z-index: 10;
-  filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.6));
 }
 
 /* Wing / Back */
 .pd-back {
-  top: 25px;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: 130px;
-  max-height: 120px;
-  z-index: 20;
-}
-
-/* Main Character Canvas (Base Body + Dyeing) */
-.pd-canvas-body {
   top: 15px;
   left: 50%;
   transform: translateX(-50%);
-  width: 100px;
-  height: 140px;
-  z-index: 30;
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.7));
+  max-width: 140px;
+  max-height: 130px;
+  z-index: 10;
 }
 
-.pd-canvas-body.rotated-right {
+/* Main Character Dot Image (Base Body + Dyeing) */
+.pd-char-img {
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 160px;
+  object-fit: contain;
+  z-index: 20;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.85));
+}
+
+.pd-char-img.rotated-right {
   transform: translateX(-50%) scaleX(-1);
 }
 
-.pd-canvas-body.rotated-back {
+.pd-char-img.rotated-back {
   transform: translateX(-50%);
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.7)) brightness(0.85);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.85)) brightness(0.85);
 }
 
 /* Show Armor / Costume */
 .pd-armor {
-  top: 15px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  width: 100px;
-  height: 140px;
-  z-index: 40;
+  width: 120px;
+  height: 160px;
+  object-fit: contain;
+  z-index: 30;
 }
 
 /* Face */
@@ -8105,16 +8110,16 @@
   left: 50%;
   transform: translateX(-50%);
   max-width: 50px;
-  z-index: 50;
+  z-index: 40;
 }
 
 /* Head / Hat */
 .pd-head {
-  top: 8px;
+  top: 4px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 70px;
-  z-index: 60;
+  max-width: 80px;
+  z-index: 50;
 }
 
 /* Arms / Weapon */
@@ -8123,19 +8128,7 @@
   left: 50%;
   transform: translateX(-50%);
   max-width: 90px;
-  z-index: 70;
-}
-
-/* Tiger Title "범내려온다" */
-.pd-title {
-  top: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 130px;
-  height: 38px;
-  object-fit: contain;
-  z-index: 80;
-  filter: drop-shadow(0 2px 8px rgba(168, 85, 247, 0.7));
+  z-index: 60;
 }
 
 /* Paper-Doll Controls */
