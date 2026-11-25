@@ -9234,28 +9234,70 @@
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.8));
 }
 
-#tdb-layer-foot    { z-index: 5; clip-path: inset(68% 0 0 0); }
-#tdb-layer-back    { z-index: 8; }
-#tdb-layer-base    { z-index: 10; }
-#tdb-layer-1       { z-index: 20; }
-#tdb-layer-2       { z-index: 22; }
-#tdb-layer-3       { z-index: 24; }
-#tdb-layer-4       { z-index: 26; }
-#tdb-layer-costume { z-index: 30; }
-#tdb-layer-face    { z-index: 40; clip-path: inset(16% 0 52% 0); }
-#tdb-layer-head    { z-index: 50; clip-path: inset(0 0 58% 0); }
-#tdb-layer-weapon  { z-index: 60; }
-#tdb-layer-effect  { z-index: 70; }
+img.tdb-layer:not([src]), img.tdb-layer[src=""] {
+  display: none !important;
+}
+
+#tdb-layer-base    { z-index: 10; width: 100%; height: 100%; top: 0; left: 0; }
+#tdb-layer-1       { z-index: 20; width: 100%; height: 100%; top: 0; left: 0; }
+#tdb-layer-2       { z-index: 22; width: 100%; height: 100%; top: 0; left: 0; }
+#tdb-layer-3       { z-index: 24; width: 100%; height: 100%; top: 0; left: 0; }
+#tdb-layer-4       { z-index: 26; width: 100%; height: 100%; top: 0; left: 0; }
+#tdb-layer-costume { z-index: 30; width: 100%; height: 100%; top: 0; left: 0; }
+#tdb-layer-weapon  { z-index: 60; width: 100%; height: 100%; top: 0; left: 0; }
+
+/* Pure Item Cutouts (누끼) Slot Coordinates - Keeps Character 100% Intact */
+#tdb-layer-head {
+  z-index: 50;
+  top: 6px;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translateX(-50%);
+  object-fit: contain;
+}
+
+#tdb-layer-face {
+  z-index: 40;
+  top: 28px;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  transform: translateX(-50%);
+  object-fit: contain;
+}
+
+#tdb-layer-back {
+  z-index: 8;
+  top: 24px;
+  left: 50%;
+  width: 56px;
+  height: 56px;
+  transform: translateX(-50%);
+  object-fit: contain;
+}
+
+#tdb-layer-foot {
+  z-index: 5;
+  top: auto;
+  bottom: 4px;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  transform: translateX(-50%);
+  object-fit: contain;
+}
 
 #tdb-layer-effect {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: auto;
-  height: auto;
-  max-width: none;
-  max-height: none;
+  z-index: 70;
+  top: auto;
+  bottom: 8px;
+  right: 4px;
+  left: auto;
+  width: 46px;
+  height: 46px;
+  transform: none;
+  object-fit: contain;
 }
 
 /* Stage Overlays */

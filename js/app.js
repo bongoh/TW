@@ -7673,7 +7673,7 @@ function populateSimulatorRoundFilter() {
   } else {
     filterWrap.innerHTML = 
       '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'all' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'all\', this)">전체</button>' +
-      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'offline' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'offline\', this)">⚡ 오프라인 도트 (120종)</button>' +
+      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'offline' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'offline\', this)">⚡ 100% 오프라인 누끼 도트 (2,795종)</button>' +
       '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'monthly' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'monthly\', this)">월템(月)</button>';
   }
 }
@@ -7719,12 +7719,14 @@ function renderSimulatorStage() {
     }
   }
 
-  // Avatar sprite layers
+  // Avatar sprite layers - Robust error suppression (never display broken image text)
   const slots = tdbSimState.equippedSlots;
   const setLayerImg = (id, item) => {
     const el = document.getElementById(id);
     if (!el) return;
     if (item && item.layerUrl) {
+      el.onerror = () => { el.style.display = 'none'; };
+      el.onload = () => { el.style.display = 'block'; };
       el.src = item.layerUrl;
       el.style.display = 'block';
     } else {
@@ -7746,8 +7748,16 @@ function renderSimulatorStage() {
       setLayerImg('tdb-layer-back', slots.showArmor);
       setLayerImg('tdb-layer-costume', null);
     } else {
-      setLayerImg('tdb-layer-costume', slots.showArmor);
-      setLayerImg('tdb-layer-back', null);
+      // Check if character-specific sakura/hanbok costume exists
+      const charKey = tdbSimState.selectedChar;
+      const sakuraPath = 'assets/avatar/costume_sakura_' + charKey + '.png';
+      if (slots.showArmor.name.includes('사쿠라') || slots.showArmor.name.includes('벚꽃')) {
+        setLayerImg('tdb-layer-costume', { layerUrl: sakuraPath });
+        setLayerImg('tdb-layer-back', null);
+      } else {
+        setLayerImg('tdb-layer-back', slots.showArmor);
+        setLayerImg('tdb-layer-costume', null);
+      }
     }
   } else {
     setLayerImg('tdb-layer-costume', null);
@@ -7961,7 +7971,7 @@ function renderAvatarCategoryGrid(container, countLabel) {
   }
 
   if (countLabel) {
-    countLabel.textContent = '총 ' + items.length + '개 아이템' + (tdbSimState.quickFilter === 'offline' ? ' (100% 오프라인 도트)' : '');
+    countLabel.textContent = '총 ' + items.length + '개 아이템 (100% 오프라인 누끼 도트)';
   }
 
   if (items.length === 0) {
@@ -7979,7 +7989,7 @@ function renderAvatarCategoryGrid(container, countLabel) {
       const isEquipped = (equippedItem && (equippedItem.id === it.id || equippedItem.name === it.name));
       const iconUrl = it.iconUrl || 'assets/avatar/icon_curff.png';
       return '<div class="tdb-item-card ' + (isEquipped ? 'equipped' : '') + '" onclick="toggleSimulatorAvatarItem(\'' + it.id + '\')" title="' + it.name + ' (' + it.round + ') - 클릭하여 착용/해제">' +
-        '<div class="tdb-item-card-icon"><img src="' + iconUrl + '" alt="' + it.name + '" loading="lazy" onerror="this.onerror=null; this.src=\'assets/avatar/icon_curff.png\';"></div>' +
+        '<div class="tdb-item-card-icon"><img src="' + iconUrl + '" alt="" loading="lazy" onerror="this.onerror=null; this.src=\'assets/avatar/icon_curff.png\';"></div>' +
         '<div class="tdb-item-card-info">' +
         '  <span class="tdb-item-card-name">' + it.name + '</span>' +
         '  <div class="tdb-item-card-tag">' +
@@ -8271,22 +8281,39 @@ function downloadSimulatorStandeePNG() {
         const h = (im.naturalHeight || 108) * 3;
         const x = (canvas.width - w) / 2;
         const y = (canvas.height - h) / 2;
-        ctx.save();
         if (slot === 'head') {
-          ctx.beginPath();
-          ctx.rect(x, y, w, h * 0.42);
-          ctx.clip();
+          const iw = 44 * 3;
+          const ih = 44 * 3;
+          const ix = x + (w - iw) / 2;
+          const iy = y + 6 * 3;
+          ctx.drawImage(im, ix, iy, iw, ih);
         } else if (slot === 'face') {
-          ctx.beginPath();
-          ctx.rect(x, y + h * 0.16, w, h * 0.36);
-          ctx.clip();
+          const iw = 40 * 3;
+          const ih = 40 * 3;
+          const ix = x + (w - iw) / 2;
+          const iy = y + 28 * 3;
+          ctx.drawImage(im, ix, iy, iw, ih);
+        } else if (slot === 'back') {
+          const iw = 56 * 3;
+          const ih = 56 * 3;
+          const ix = x + (w - iw) / 2;
+          const iy = y + 24 * 3;
+          ctx.drawImage(im, ix, iy, iw, ih);
         } else if (slot === 'foot') {
-          ctx.beginPath();
-          ctx.rect(x, y + h * 0.68, w, h * 0.32);
-          ctx.clip();
+          const iw = 50 * 3;
+          const ih = 50 * 3;
+          const ix = x + (w - iw) / 2;
+          const iy = y + h - ih - 4 * 3;
+          ctx.drawImage(im, ix, iy, iw, ih);
+        } else if (slot === 'effect') {
+          const iw = 46 * 3;
+          const ih = 46 * 3;
+          const ix = x + w - iw - 4 * 3;
+          const iy = y + h - ih - 8 * 3;
+          ctx.drawImage(im, ix, iy, iw, ih);
+        } else {
+          ctx.drawImage(im, x, y, w, h);
         }
-        ctx.drawImage(im, x, y, w, h);
-        ctx.restore();
       }
     });
     ctx.restore();
