@@ -7558,922 +7558,689 @@ function jumpToSpecupComparator(prefillGearKey, prefillRecKey) {
   }
 }
 
-// ==================== TAB 8: DEDICATED AVATAR SHOWROOM & DRESSROOM ====================
-let showroomSelectedChar = 'nayatrei';
-let showroomCurrentSlotTab = 'showArmor';
-let showroomSearchQuery = '';
-let showroomRoundFilter = '';
-let showroomQuickFilter = '';
-let showroomOutfit = null;
+// ============================================================================
+// TAB 8: TALESDB-STYLE AVATAR SIMULATOR & UNIFORM DYE STUDIO (talesdb.xyz Engine)
+// ============================================================================
 
-let equipViewState = {
-  currentCharKey: 'nayatrei',
-  currentAngleIndex: 0,
-  angles: ["정면 (Isometric Front)", "우측면 (Right 45°)", "배면 (Back View)", "좌측면 (Left 45°)"],
-  selectedItem: null
+var tdbSimState = {
+  selectedChar: 'nayatrei',
+  selectedCategory: 'uniform', // 'uniform' | 'showHead' | 'showArmor' | 'showBack' | 'showFace' | 'showEffect' | 'showFoot' | 'showSubArms'
+  selectedPart: 1, // 1: Coat, 2: Decors, 3: Pants, 4: Shoes
+  uniformDyes: {}, // { [charKey]: { 1: "d", 2: "d", 3: "d", 4: "d" } }
+  searchQuery: '',
+  roundFilter: '',
+  quickFilter: 'all',
+  rotationAngle: 0, // 0: Front, 1: Left (scaleX -1), 2: Back, 3: Right (scaleX 1)
+  zoomLevel: 2.0,
+  motion: 'stand',
+  equippedSlots: {
+    showHead: null,
+    showArmor: null,
+    showBack: null,
+    showFace: null,
+    showEffect: null,
+    showFoot: null,
+    showSubArms: null
+  }
 };
 
 function initShowroom() {
-  if (!showroomOutfit) {
-    const cur = (typeof profiles !== 'undefined' && profiles.find(x => x.id === currentProfileId)) || (typeof profiles !== 'undefined' ? profiles[0] : null);
-    showroomOutfit = JSON.parse(JSON.stringify(cur?.twEquipState || toBeEquipState || TW_DEFAULT_EQUIP_STATE));
-    
-    // Ensure default demo items from screenshot are pre-equipped if slots are empty
-    if (!showroomOutfit.showArmor || showroomOutfit.showArmor.name.includes('미착용')) {
-      showroomOutfit.showArmor = {
-        key: 'showArmor',
-        name: '벚꽃비 의복 - 환 (나야)',
-        dur: '(100/100)',
-        tier: 'avatar',
-        isOn: true,
-        round: '갑옷 확장'
-      };
-    }
-    if (!showroomOutfit.showSubArms || showroomOutfit.showSubArms.name.includes('미착용')) {
-      showroomOutfit.showSubArms = {
-        key: 'showSubArms',
-        name: '라이도 심볼릭 커프',
-        dur: '(100/100)',
-        tier: 'avatar',
-        isOn: true,
-        round: '월템'
-      };
-    }
-  }
-  
-  // Set default inspected item in Equip View
-  if (!equipViewState.selectedItem) {
-    equipViewState.selectedItem = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.itemDetails['av_sakura_naya'] : null;
-  }
+  initTalesDbSimulator();
+}
 
-  // Match showroomSelectedChar to current profile
+function initTalesDbSimulator() {
+  // Sync selected character to current active profile if available
   const curProf = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
   if (curProf && curProf.name) {
     const match = TW_CHARACTER_ROSTER.find(c => curProf.name.includes(c.name) || (curProf.charType && curProf.charType.includes(c.name)));
     if (match) {
-      showroomSelectedChar = match.key;
-      equipViewState.currentCharKey = match.key;
-    } else {
-      showroomSelectedChar = 'nayatrei';
-      equipViewState.currentCharKey = 'nayatrei';
+      tdbSimState.selectedChar = match.key;
     }
-  } else {
-    showroomSelectedChar = 'nayatrei';
-    equipViewState.currentCharKey = 'nayatrei';
   }
-  equipViewState.currentAngleIndex = 0; // Always start Front!
 
-  renderShowroomCharPills();
+  // Ensure dyes state for this character exists
+  if (!tdbSimState.uniformDyes[tdbSimState.selectedChar]) {
+    tdbSimState.uniformDyes[tdbSimState.selectedChar] = { 1: "d", 2: "d", 3: "d", 4: "d" };
+  }
+
+  // Populate round filter options if empty
+  populateSimulatorRoundFilter();
+
+  // Render components
+  updateSimulatorWhoCard();
+  renderSimulatorStage();
+  renderSimulatorGrid();
+  renderSimulatorSlots();
+  updateSimulator5SetBuff();
+}
+
+function updateSimulatorWhoCard() {
+  const whoArt = document.getElementById('tdb-who-art');
+  const whoName = document.getElementById('tdb-who-name');
+  const charInfo = TW_UNIFORM_DYE_DB.characters[tdbSimState.selectedChar] || { folder: 'naya', name: '나야트레이' };
   
-  // Populate round dropdown if empty
-  const roundSel = document.getElementById('showroom-round-select');
-  if (roundSel && roundSel.options.length <= 1 && typeof TW_AVATAR_DB !== 'undefined') {
-    const rounds = TW_AVATAR_DB.getRounds();
-    let opts = '<option value="">전체 회차 (1~83회차)</option>';
-    rounds.forEach(r => {
-      opts += `<option value="${r}">${r}</option>`;
-    });
-    roundSel.innerHTML = opts;
+  if (whoArt) {
+    whoArt.src = 'assets/uniform/' + charInfo.folder + '/' + charInfo.folder + '.png';
+    whoArt.alt = charInfo.name;
   }
-
-  // Direction 1: Default to Dye Mode for instant authentic dot visualization
-  switchShowroomSubMode('dye');
+  if (whoName) {
+    whoName.textContent = charInfo.name;
+  }
 }
 
-function renderShowroomCharPills() {
-  const container = document.getElementById('showroom-char-pills');
-  if (!container) return;
+function populateSimulatorRoundFilter() {
+  const filterWrap = document.getElementById('tdb-quick-filters');
+  if (!filterWrap) return;
 
-  container.innerHTML = TW_CHARACTER_ROSTER.map(c => {
-    const res = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.characterDots[c.key] : null;
-    const hasDot = res && res.hasRealDot;
-    const badge = hasDot 
-      ? '<span style="font-size:0.58rem; background:#0284c7; color:#fff; padding:1px 4px; border-radius:3px; margin-left:3px; font-weight:700;">도트</span>'
-      : '<span style="font-size:0.58rem; background:#334155; color:#94a3b8; padding:1px 3px; border-radius:3px; margin-left:3px;">준비중</span>';
-    return `
-      <button type="button" class="tw-char-pill ${showroomSelectedChar === c.key ? 'active' : ''}" onclick="selectShowroomChar('${c.key}')" title="${c.fullName} (${hasDot ? '인게임 도트 지원' : '도트 에셋 준비중'})">
-        <span>${c.icon}</span>
-        <span>${c.name}</span>
-        ${badge}
-      </button>
-    `;
-  }).join('');
-}
-
-function selectShowroomChar(charKey) {
-  if (charKey === 'naya') charKey = 'nayatrei';
-  if (charKey === 'joshua') charKey = 'josua';
-
-  const charDef = TW_CHARACTER_ROSTER.find(x => x.key === charKey);
-  if (!charDef) return;
-
-  showroomSelectedChar = charKey;
-  equipViewState.currentCharKey = charKey;
-  equipViewState.currentAngleIndex = 0; // Always reset to Front!
-
-  // Check character default item
-  if (typeof TW_AVATAR_RESOURCES !== 'undefined' && TW_AVATAR_RESOURCES.characterDots[charKey]) {
-    const charDot = TW_AVATAR_RESOURCES.characterDots[charKey];
-    if (charDot.defaultItem) {
-      inspectEquipViewItem(charDot.defaultItem);
-    }
-  }
-
-  renderShowroomCharPills();
-  renderEquipView();
-  renderInGameEquipSlots();
-  if (typeof renderDyeStudio === 'function') renderDyeStudio();
-}
-
-// ============================================================================
-// DYEING & PAPER-DOLL AVATAR SYSTEM
-// ============================================================================
-var currentShowroomSubMode = 'dye'; // 'dye' | 'avatar'
-var currentDyeState = {
-  selectedPartKey: 'hair',
-  dyes: {}, // { [charKey]: { [partKey]: hexColor } }
-  stageEffects: {
-    circle: true,
-    title: true
-  }
-};
-var twCachedCharImgs = {};
-
-function switchShowroomSubMode(mode) {
-  currentShowroomSubMode = mode;
-  const btnAv = document.getElementById('tw-btn-mode-avatar');
-  const btnDye = document.getElementById('tw-btn-mode-dye');
-  const viewAv = document.getElementById('showroom-view-avatar');
-  const viewDye = document.getElementById('showroom-view-dye');
-  const stageTitle = document.getElementById('stage-main-title');
-  const stageBadge = document.getElementById('stage-sub-badge');
-
-  if (mode === 'avatar') {
-    if (btnAv) { btnAv.classList.add('btn-primary', 'active'); btnAv.classList.remove('btn-outline'); }
-    if (btnDye) { btnDye.classList.remove('btn-primary', 'active'); btnDye.classList.add('btn-outline'); }
-    if (viewAv) viewAv.style.display = '';
-    if (viewDye) viewDye.style.display = 'none';
-    if (stageTitle) stageTitle.textContent = '아바타 5세트 스탯 시뮬레이터';
-    if (stageBadge) stageBadge.textContent = 'Equip 슬롯 & 외형 뷰어';
+  if (tdbSimState.selectedCategory === 'uniform') {
+    filterWrap.innerHTML = 
+      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'all' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'all\', this)">전체 74색</button>' +
+      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'popular' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'popular\', this)">인기 12대 컬러</button>' +
+      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'rgb' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'rgb\', this)">인게임 RGB 조합표</button>';
   } else {
-    if (btnAv) { btnAv.classList.remove('btn-primary', 'active'); btnAv.classList.add('btn-outline'); }
-    if (btnDye) { btnDye.classList.add('btn-primary', 'active'); btnDye.classList.remove('btn-outline'); }
-    if (viewAv) viewAv.style.display = 'none';
-    if (viewDye) viewDye.style.display = '';
-    if (stageTitle) stageTitle.textContent = '눈사람족 염색 시뮬레이션 스테이지';
-    if (stageBadge) stageBadge.textContent = '18인 실물 도트 뷰어';
-    renderDyeStudio();
-  }
-  renderEquipView();
-}
-
-function renderDyeStudio() {
-  renderDyeParts();
-  renderEltiboDyePalette();
-  updateDyeCostSummary();
-}
-
-function renderDyeParts() {
-  const container = document.getElementById('tw-dye-part-pills');
-  const descEl = document.getElementById('dye-selected-part-desc');
-  if (!container || typeof TW_DYE_DB === 'undefined') return;
-
-  const parts = TW_DYE_DB.getDefaultParts(showroomSelectedChar);
-  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
-
-  if (!parts.some(p => p.key === currentDyeState.selectedPartKey)) {
-    currentDyeState.selectedPartKey = parts[0]?.key || 'hair';
-  }
-
-  const selectedPart = parts.find(p => p.key === currentDyeState.selectedPartKey);
-  if (descEl && selectedPart) {
-    descEl.textContent = selectedPart.desc || selectedPart.name;
-  }
-
-  container.innerHTML = parts.map(p => {
-    const isSel = p.key === currentDyeState.selectedPartKey;
-    const curColor = charDyes[p.key] || p.defaultHex;
-    return `
-      <button type="button" class="tw-dye-part-pill ${isSel ? 'active' : ''}" onclick="selectDyePart('${p.key}')">
-        <span>${p.icon || '🎨'}</span>
-        <span>${p.name}</span>
-        <span class="tw-dye-color-dot" style="background:${curColor};"></span>
-      </button>
-    `;
-  }).join('');
-}
-
-function selectDyePart(partKey) {
-  currentDyeState.selectedPartKey = partKey;
-  renderDyeParts();
-  
-  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
-  const parts = typeof TW_DYE_DB !== 'undefined' ? TW_DYE_DB.getDefaultParts(showroomSelectedChar) : [];
-  const part = parts.find(p => p.key === partKey);
-  const curColor = charDyes[partKey] || part?.defaultHex || '#FF7E00';
-  syncRgbPickerUI(curColor);
-}
-
-function renderEltiboDyePalette() {
-  const container = document.getElementById('tw-dye-palette-grid');
-  if (!container || typeof TW_DYE_DB === 'undefined') return;
-
-  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
-  const activeColor = charDyes[currentDyeState.selectedPartKey] || '';
-
-  container.innerHTML = TW_DYE_DB.potions.map(pot => {
-    const isAct = activeColor.toLowerCase() === pot.hex.toLowerCase();
-    const badgeHtml = pot.badge ? `<span style="font-size:0.58rem; background:#0284c7; color:#fff; padding:0 3px; border-radius:2px; margin-left:auto;">${pot.badge}</span>` : '';
-    return `
-      <button type="button" class="tw-dye-color-btn ${isAct ? 'active' : ''}" onclick="applyPotionDye('${pot.id}')" title="${pot.name} (${pot.price} · ${pot.origin})">
-        <span class="tw-dye-swatch" style="background:${pot.hex};"></span>
-        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${pot.name}</span>
-        ${badgeHtml}
-      </button>
-    `;
-  }).join('');
-}
-
-function applyPotionDye(potionId) {
-  if (typeof TW_DYE_DB === 'undefined') return;
-  const pot = TW_DYE_DB.potions.find(p => p.id === potionId);
-  if (!pot) return;
-
-  if (!currentDyeState.dyes[showroomSelectedChar]) {
-    currentDyeState.dyes[showroomSelectedChar] = {};
-  }
-  currentDyeState.dyes[showroomSelectedChar][currentDyeState.selectedPartKey] = pot.hex;
-
-  renderDyeParts();
-  renderEltiboDyePalette();
-  syncRgbPickerUI(pot.hex);
-  updateDyeCostSummary();
-  renderEquipView();
-}
-
-function onCustomColorPick(hex) {
-  if (!currentDyeState.dyes[showroomSelectedChar]) {
-    currentDyeState.dyes[showroomSelectedChar] = {};
-  }
-  currentDyeState.dyes[showroomSelectedChar][currentDyeState.selectedPartKey] = hex;
-
-  syncRgbPickerUI(hex);
-  renderDyeParts();
-  renderEltiboDyePalette();
-  updateDyeCostSummary();
-  renderEquipView();
-}
-
-function syncRgbPickerUI(hex) {
-  const picker = document.getElementById('dye-color-picker');
-  const rInput = document.getElementById('dye-rgb-r');
-  const gInput = document.getElementById('dye-rgb-g');
-  const bInput = document.getElementById('dye-rgb-b');
-
-  if (picker) picker.value = hex;
-  const rgb = hexToRgb(hex);
-  if (rgb) {
-    if (rInput) rInput.value = rgb.r;
-    if (gInput) gInput.value = rgb.g;
-    if (bInput) bInput.value = rgb.b;
+    const roundsHtml = typeof TW_AVATAR_DB !== 'undefined' 
+      ? TW_AVATAR_DB.getRounds().map(r => '<option value="' + r + '" ' + (tdbSimState.roundFilter === r ? 'selected' : '') + '>' + r + '</option>').join('')
+      : '';
+    filterWrap.innerHTML = 
+      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'all' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'all\', this)">전체</button>' +
+      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'monthly' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'monthly\', this)">월템(月)</button>' +
+      '<button type="button" class="tdb-qf-btn ' + (tdbSimState.quickFilter === 'special' ? 'active' : '') + '" onclick="setSimulatorQuickFilter(\'special\', this)">최신/스페셜</button>' +
+      '<select id="tdb-round-select" class="calc-input tw-select" style="font-size:0.68rem; padding:1px 6px; height:24px; width:130px; margin-left:auto;" onchange="onSimulatorRoundChange(this.value)">' +
+      '<option value="">전체 회차 (1~83)</option>' +
+      roundsHtml +
+      '</select>';
   }
 }
 
-function onRgbNumberInput() {
-  const r = parseInt(document.getElementById('dye-rgb-r')?.value || '0', 10);
-  const g = parseInt(document.getElementById('dye-rgb-g')?.value || '0', 10);
-  const b = parseInt(document.getElementById('dye-rgb-b')?.value || '0', 10);
-  const hex = rgbToHex(Math.min(255, Math.max(0, r)), Math.min(255, Math.max(0, g)), Math.min(255, Math.max(0, b)));
-  
-  const picker = document.getElementById('dye-color-picker');
-  if (picker) picker.value = hex;
-}
+function renderSimulatorStage() {
+  const charInfo = TW_UNIFORM_DYE_DB.characters[tdbSimState.selectedChar] || { folder: 'naya', name: '나야트레이', fullName: '나야트레이' };
+  const folder = charInfo.folder || 'naya';
 
-function applyCustomRgbDye() {
-  const picker = document.getElementById('dye-color-picker');
-  if (picker) onCustomColorPick(picker.value);
-}
-
-function resetAllDyes() {
-  if (currentDyeState.dyes[showroomSelectedChar]) {
-    delete currentDyeState.dyes[showroomSelectedChar];
+  if (!tdbSimState.uniformDyes[tdbSimState.selectedChar]) {
+    tdbSimState.uniformDyes[tdbSimState.selectedChar] = { 1: "d", 2: "d", 3: "d", 4: "d" };
   }
-  renderDyeParts();
-  renderEltiboDyePalette();
-  updateDyeCostSummary();
-  renderEquipView();
-}
+  const dyes = tdbSimState.uniformDyes[tdbSimState.selectedChar];
 
-function updateDyeCostSummary() {
-  const costEl = document.getElementById('dye-total-cost-text');
-  if (!costEl) return;
-  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
-  const count = Object.keys(charDyes).length;
-  const costSeed = count * 15000000;
-  costEl.textContent = count > 0 ? `${costSeed.toLocaleString()} SEED (${count}개 부위 염색)` : '0 SEED (기본 색상)';
-}
+  const layerBase = document.getElementById('tdb-layer-base');
+  const layer1 = document.getElementById('tdb-layer-1');
+  const layer2 = document.getElementById('tdb-layer-2');
+  const layer3 = document.getElementById('tdb-layer-3');
+  const layer4 = document.getElementById('tdb-layer-4');
 
-function hexToRgb(hex) {
-  if (!hex) return null;
-  const c = hex.replace('#', '');
-  if (c.length === 6) {
-    return {
-      r: parseInt(c.substring(0, 2), 16),
-      g: parseInt(c.substring(2, 4), 16),
-      b: parseInt(c.substring(4, 6), 16)
-    };
-  }
-  return null;
-}
+  if (layerBase) layerBase.src = 'assets/uniform/' + folder + '/' + folder + '.png';
+  if (layer1) layer1.src = 'assets/uniform/' + folder + '/1-' + (dyes[1] || 'd') + '.png';
+  if (layer2) layer2.src = 'assets/uniform/' + folder + '/2-' + (dyes[2] || 'd') + '.png';
+  if (layer3) layer3.src = 'assets/uniform/' + folder + '/3-' + (dyes[3] || 'd') + '.png';
+  if (layer4) layer4.src = 'assets/uniform/' + folder + '/4-' + (dyes[4] || 'd') + '.png';
 
-function rgbToHex(r, g, b) {
-  return '#' + [r, g, b].map(x => {
-    const s = x.toString(16);
-    return s.length === 1 ? '0' + s : s;
-  }).join('').toUpperCase();
-}
-
-function downloadCurrentPaperDollPNG() {
-  const stage = document.getElementById('tw-paperdoll-stage');
-  const charImg = document.getElementById('pd-char-img');
-  if (!stage || !charImg) return;
-
-  const exportCanvas = document.createElement('canvas');
-  exportCanvas.width = 160;
-  exportCanvas.height = 210;
-  const ctx = exportCanvas.getContext('2d');
-
-  ctx.save();
-  const isFlipped = (equipViewState.currentAngleIndex === 1 || equipViewState.currentAngleIndex === 3);
-  if (isFlipped) {
-    ctx.translate(exportCanvas.width, 0);
-    ctx.scale(-1, 1);
-  }
-
-  // Draw layers in order: back -> body -> armor -> face -> head -> arms
-  const layerIds = ['pd-layer-back', 'pd-char-img', 'pd-layer-armor', 'pd-layer-face', 'pd-layer-head', 'pd-layer-arms'];
-  layerIds.forEach(id => {
-    const el = document.getElementById(id);
-    if (el && el.style.display !== 'none' && el.complete && el.naturalWidth > 0) {
-      try {
-        ctx.drawImage(el, 20, 15, 120, 160);
-      } catch (e) {}
-    }
-  });
-
-  ctx.restore();
-
-  const dataUrl = exportCanvas.toDataURL('image/png');
-  const a = document.createElement('a');
-  a.href = dataUrl;
-  a.download = `talesweaver_${showroomSelectedChar}_paperdoll.png`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-function renderEquipView() {
-  if (showroomSelectedChar === 'naya') showroomSelectedChar = 'nayatrei';
-  if (showroomSelectedChar === 'joshua') showroomSelectedChar = 'josua';
-
-  const charDef = TW_CHARACTER_ROSTER.find(c => c.key === showroomSelectedChar) || TW_CHARACTER_ROSTER[0];
-  const headerNameEl = document.getElementById('ev-header-char-name');
-  const angleTag = document.getElementById('ev-angle-tag');
-  const charImg = document.getElementById('pd-char-img');
-
-  if (headerNameEl) headerNameEl.textContent = `${charDef.fullName} (${charDef.name})`;
-  if (angleTag) angleTag.textContent = equipViewState.angles[equipViewState.currentAngleIndex];
-
-  // Check if Show Outfit (Costume / Accessories) is equipped
-  const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
-  const isFlipped = (equipViewState.currentAngleIndex === 1 || equipViewState.currentAngleIndex === 3);
-
-  const charRes = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.characterDots[showroomSelectedChar] : null;
-  const hasRealDot = charRes && charRes.hasRealDot;
-  const stage = document.getElementById('tw-paperdoll-stage');
-  let placeholderEl = document.getElementById('pd-stage-placeholder');
-
-  const showArmor = outfit.showArmor;
-  const isArmorOn = showArmor && showArmor.isOn !== false && !showArmor.name.includes('미착용') && !showArmor.name.includes('없음');
-  const charDyes = currentDyeState.dyes[showroomSelectedChar] || {};
-  const activeColor = charDyes[currentDyeState.selectedPartKey];
-
-  if (hasRealDot) {
-    if (placeholderEl) placeholderEl.style.display = 'none';
-    if (charImg) charImg.style.display = 'block';
-
-    let dotSrc = charRes.dotImg;
-
-    // 1. If in Dye mode (눈사람족 염색소)
-    if (currentShowroomSubMode === 'dye') {
-      if (activeColor && typeof TW_DYE_DB !== 'undefined') {
-        const matchedPot = TW_DYE_DB.potions.find(p => p.hex.toLowerCase() === activeColor.toLowerCase());
-        if (matchedPot) {
-          dotSrc = `assets/avatar/${showroomSelectedChar}_dye_${matchedPot.id}.png`;
-        }
-      } else {
-        dotSrc = charRes.dotImg;
-      }
-    } else {
-      // 2. If in Avatar mode (화바타 5세트 스탯 시뮬레이터)
-      const selectedItemRes = typeof TW_AVATAR_RESOURCES !== 'undefined' && equipViewState.selectedItem 
-        ? TW_AVATAR_RESOURCES.getItemResource(equipViewState.selectedItem.name || equipViewState.selectedItem.id) 
-        : null;
-
-      if (selectedItemRes && selectedItemRes.dotSprite) {
-        dotSrc = selectedItemRes.dotSprite;
-      } else {
-        dotSrc = charRes.dotImg;
-      }
-    }
-
-    if (charImg) {
-      charImg.src = dotSrc;
-      charImg.alt = charDef.name;
-      charImg.onerror = function() {
-        this.onerror = null;
-        this.src = charRes.dotImg;
-      };
-    }
-  } else {
-    if (charImg) charImg.style.display = 'none';
-  }
-
-  // Apply rotation classes to character image
-  if (charImg) {
-    charImg.classList.remove('rotated-right', 'rotated-back');
-    if (isFlipped) charImg.classList.add('rotated-right');
-    else if (equipViewState.currentAngleIndex === 2) charImg.classList.add('rotated-back');
-  }
-
-  // Render Tooltip / Status details
-  const item = equipViewState.selectedItem || {
-    name: "벚꽃비 의복 - 환 (나야)",
-    fullName: "벚꽃비 의복 - 환 (나야) - 갑옷(갑옷 확장)",
-    slot: "showArmor",
-    reqChar: "나야트레이"
-  };
-
-  const titleEl = document.getElementById('ev-item-title');
-  const reqCharEl = document.getElementById('ev-item-reqchar');
-  const statusEl = document.getElementById('ev-action-status');
-
-  const activeCount = typeof countActiveAvatarPieces === 'function' ? countActiveAvatarPieces(outfit) : 0;
-  const is5Set = activeCount >= 5;
-
-  if (titleEl) {
-    if (currentShowroomSubMode === 'dye') {
-      const count = Object.keys(charDyes).length;
-      if (count > 0 && activeColor && typeof TW_DYE_DB !== 'undefined') {
-        const matchedPot = TW_DYE_DB.potions.find(p => p.hex.toLowerCase() === activeColor.toLowerCase());
-        titleEl.textContent = `🎨 ${charDef.name} [${matchedPot?.name || '눈사람족'}] 염색 적용 중 (${count}개 부위)`;
-      } else {
-        titleEl.textContent = `✨ ${charDef.name} 기본 외형 (엘티보 눈사람족 수장 염색 가능)`;
-      }
-    } else {
-      titleEl.textContent = item.fullName || `${item.name} - ${TW_AVATAR_DB?.slots[item.slot]?.label || "SHOW 슬롯"}`;
-    }
-  }
-  if (reqCharEl) reqCharEl.textContent = charDef.name;
-
-  if (statusEl) {
-    if (currentShowroomSubMode === 'dye') {
-      statusEl.textContent = "실시간 도트 염색 활성";
-      statusEl.style.color = "#38bdf8";
-    } else {
-      statusEl.textContent = is5Set ? "⭐ 5세트 스탯 버프 활성 (+10 DEX, 이속+3, HP+2000)" : `착용 부위: ${activeCount}/5 (5세트 미달성)`;
-      statusEl.style.color = is5Set ? "#6ee7b7" : "#94a3b8";
-    }
-  }
-}
-
-function rotateEquipView(dir) {
-  equipViewState.currentAngleIndex = (equipViewState.currentAngleIndex + dir + 4) % 4;
-  const angleTag = document.getElementById('ev-angle-tag');
-  if (angleTag) angleTag.textContent = equipViewState.angles[equipViewState.currentAngleIndex];
-  renderEquipView();
-}
-
-function inspectEquipViewItem(nameOrId) {
-  let res = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.getItemResource(nameOrId) : null;
-  if (!res && typeof TW_AVATAR_DB !== 'undefined') {
-    const raw = TW_AVATAR_DB.getById(nameOrId) || TW_AVATAR_DB.items.find(x => x.name === nameOrId);
-    if (raw) {
-      res = {
-        id: raw.id,
-        name: raw.name,
-        fullName: `${raw.name} - ${raw.category || "아바타"}`,
-        slot: raw.slot,
-        category: raw.category,
-        round: raw.round,
-        durability: "100/100",
-        hardness: 100,
-        inscript: "합성 횟수 MAX",
-        reqChar: raw.name.includes("나야") ? "나야트레이" : raw.name.includes("보리스") ? "보리스" : raw.name.includes("루시안") ? "루시안" : "전체 캐릭터",
-        desc: `${raw.round || "화려한 아바타"} 구성 아이템으로, 캐릭터의 멋진 코디 외형을 완성합니다.`,
-        isUntradable: true,
-        iconUrl: null
-      };
-    }
-  }
-
-  if (res) {
-    equipViewState.selectedItem = res;
-    renderEquipView();
-  }
-}
-
-function previewCurrentEvItem() {
-  const dotImg = document.getElementById('ev-char-dot-img');
-  if (dotImg) {
-    dotImg.style.transform = 'scale(1.1)';
-    setTimeout(() => {
-      dotImg.style.transform = '';
-    }, 200);
-  }
-}
-
-function equipCurrentEvItem() {
-  if (!equipViewState.selectedItem) return;
-  tryOnAvatarItem(equipViewState.selectedItem.id || equipViewState.selectedItem.name, equipViewState.selectedItem.slot);
-}
-
-function renderInGameEquipSlots() {
-  const container = document.getElementById('tw-eq-slots-body');
-  if (!container) return;
-
-  const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
-
-  const slotPairs = [
-    {
-      realLabel: "REAL HEAD",
-      realName: "10강 어비스 헬름 (국민작 +15)",
-      showKey: "showHead",
-      showLabel: "SHOW HEAD",
-      icon: "👑"
-    },
-    {
-      realLabel: "REAL ARMOR",
-      realName: "+12 예리한 아노마... (78/84)",
-      showKey: "showArmor",
-      showLabel: "SHOW ARMOR",
-      icon: "👗",
-      customIcon: "assets/avatar/icon_sakura_robe.png"
-    },
-    {
-      realLabel: "REAL ARMS",
-      realName: "10강 어비스 무기 (국민작 +15)",
-      showKey: "showSubArms",
-      showLabel: "SHOW SUB ARMS",
-      icon: "🗡️",
-      customIcon: "assets/avatar/icon_curff.png"
-    },
-    {
-      realLabel: "REAL FACE",
-      realName: "어비스 아뮬렛 (+10마방)",
-      showKey: "showFace",
-      showLabel: "SHOW FACE",
-      icon: "👓"
-    },
-    {
-      realLabel: "REAL BACK",
-      realName: "10강 어비스 윙 (국민작 +15)",
-      showKey: "showBack",
-      showLabel: "SHOW BACK",
-      icon: "🪽"
-    },
-    {
-      realLabel: "REAL FOOT",
-      realName: "10강 어비스 부츠 (국민작 +15)",
-      showKey: "showFoot",
-      showLabel: "SHOW FOOT",
-      icon: "👣"
-    },
-    {
-      realLabel: "REAL EFFECT",
-      realName: "60마방 룬 마법진 효과",
-      showKey: "showEffect",
-      showLabel: "SHOW EFFECT",
-      icon: "✨"
-    },
-    {
-      realLabel: "RELIC (RIGHT)",
-      realName: "태양의 펜던트(+10) (100/100)",
-      showKey: "showRelic",
-      showLabel: "RELIC (LEFT)",
-      icon: "💎",
-      realName2: "태양의 브레이슬릿... (100/100)"
-    }
-  ];
-
-  let html = '';
-  slotPairs.forEach(p => {
-    const showItem = outfit[p.showKey];
-    const isShowEquipped = showItem && showItem.name && showItem.isOn !== false && !showItem.name.includes('미착용') && !showItem.name.includes('없음');
-    const showName = isShowEquipped ? `${showItem.name} ${showItem.dur || "(100/100)"}` : (p.realName2 || "외형 미착용");
+  // Apply Standee scale & rotation
+  const standeeWrap = document.getElementById('tdb-standee-wrap');
+  if (standeeWrap) {
+    const isFlipped = (tdbSimState.rotationAngle === 1);
+    const isBack = (tdbSimState.rotationAngle === 2);
+    const scaleX = isFlipped ? -tdbSimState.zoomLevel : tdbSimState.zoomLevel;
+    const scaleY = tdbSimState.zoomLevel;
     
-    // Icon resolution
-    let iconSrc = null;
-    if (isShowEquipped) {
-      if (showItem.name.includes("벚꽃비 의복") || showItem.name.includes("사쿠라")) {
-        iconSrc = "assets/avatar/icon_sakura_robe.png";
-      } else if (showItem.name.includes("커프") || showItem.name.includes("라이도")) {
-        iconSrc = "assets/avatar/icon_curff.png";
-      } else if (p.customIcon) {
-        iconSrc = p.customIcon;
-      }
-    }
-
-    const iconHtml = iconSrc 
-      ? `<img src="${iconSrc}" class="tw-eq-icon-img" alt="아이콘">` 
-      : `<span style="font-size:0.9rem;">${p.icon}</span>`;
-
-    html += `
-      <div class="tw-eq-slot-row">
-        <!-- Real Slot Icon -->
-        <div class="tw-eq-icon-slot">
-          <span style="font-size:0.75rem; color:#94a3b8;">🛡️</span>
-        </div>
-        <!-- Real Slot Text -->
-        <div class="tw-eq-slot-info">
-          <div class="tw-eq-slot-lbl">${p.realLabel} <span class="tw-eq-on-badge">ON</span></div>
-          <div class="tw-eq-slot-item" title="${p.realName}">${p.realName}</div>
-        </div>
-
-        <!-- Show Slot Icon -->
-        <div class="tw-eq-icon-slot" onclick="inspectEquipViewItem('${isShowEquipped ? showItem.name : ""}')" style="cursor:pointer;" title="${p.showLabel} 클릭하여 Equip View 확인">
-          ${iconHtml}
-        </div>
-        <!-- Show Slot Text -->
-        <div class="tw-eq-slot-info">
-          <div class="tw-eq-slot-lbl">
-            <span>${p.showLabel}</span>
-            <span class="tw-eq-on-badge ${isShowEquipped ? '' : 'off'}" onclick="toggleShowSlotOn('${p.showKey}')">${isShowEquipped ? 'ON' : 'OFF'}</span>
-          </div>
-          <div class="tw-eq-slot-item ${isShowEquipped ? 'show-equipped' : ''}" title="${showName}" onclick="inspectEquipViewItem('${isShowEquipped ? showItem.name : ""}')" style="cursor:pointer;">
-            ${showName}
-          </div>
-        </div>
-      </div>
-    `;
-  });
-
-  container.innerHTML = html;
-
-  // Update 5-Set Effect & Combat Contribution Box
-  const activeCount = countActiveAvatarPieces(outfit);
-  const is5Set = activeCount >= 5;
-
-  const badge5Set = document.getElementById('showroom-5set-badge');
-  const pieceCountText = document.getElementById('showroom-piece-count-text');
-  const coeffEl = document.getElementById('showroom-stat-coeff');
-  const dexEl = document.getElementById('showroom-stat-dex');
-  const speedEl = document.getElementById('showroom-stat-speed');
-
-  if (badge5Set) {
-    badge5Set.className = `tw-5set-indicator ${is5Set ? 'active' : 'inactive'}`;
-    badge5Set.textContent = is5Set ? '⭐ 아바타 5세트 ON (+10스탯)' : `아바타 세트: ${activeCount}/5 (미달성)`;
+    standeeWrap.style.transform = 'translate(-50%, -50%) scale(' + scaleX + ', ' + scaleY + ')';
+    standeeWrap.style.filter = isBack 
+      ? 'brightness(0.85) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.85))'
+      : 'drop-shadow(0 6px 14px rgba(0, 0, 0, 0.8))';
   }
 
-  if (pieceCountText) {
-    pieceCountText.textContent = `착용 부위: ${activeCount} / 6`;
-    pieceCountText.style.color = is5Set ? '#6ee7b7' : '#94a3b8';
-  }
+  // Update badges
+  const angleTag = document.getElementById('tdb-angle-badge');
+  const charFullTag = document.getElementById('tdb-char-full-badge');
+  const zoomLabel = document.getElementById('tdb-zoom-label');
 
-  if (coeffEl) coeffEl.textContent = is5Set ? '+205 계수 (공식 x20.5)' : '+0 계수';
-  if (dexEl) dexEl.textContent = is5Set ? '+10 DEX' : '+0 DEX';
-  if (speedEl) speedEl.textContent = is5Set ? '이속 +3 / HP +2,000' : '효과 미적용';
+  const angleNames = ["정면 (Isometric Front)", "좌측면 (Left)", "배면 (Back View)", "우측면 (Right)"];
+  if (angleTag) angleTag.textContent = angleNames[tdbSimState.rotationAngle];
+  if (charFullTag) charFullTag.textContent = (charInfo.fullName || charInfo.name) + ' (' + charInfo.name + ')';
+  if (zoomLabel) zoomLabel.textContent = tdbSimState.zoomLevel.toFixed(1) + 'x';
 }
 
-function toggleShowSlotOn(slotKey) {
-  if (!showroomOutfit) return;
-  if (showroomOutfit[slotKey]) {
-    showroomOutfit[slotKey].isOn = !showroomOutfit[slotKey].isOn;
-    renderInGameEquipSlots();
-    renderEquipView();
-  }
-}
+function switchSimulatorCategory(catKey, btnEl) {
+  tdbSimState.selectedCategory = catKey;
+  tdbSimState.searchQuery = '';
+  tdbSimState.roundFilter = '';
+  tdbSimState.quickFilter = 'all';
 
-function setShowroomSlotTab(slotKey, btnEl) {
-  showroomCurrentSlotTab = slotKey;
-  const tabs = document.querySelectorAll('.tw-wtab-btn');
-  tabs.forEach(t => t.classList.remove('active'));
-  if (btnEl) {
-    btnEl.classList.add('active');
-  } else {
-    const slotIdx = ['showHead', 'showArmor', 'showBack', 'showFace', 'showEffect', 'showFoot', 'showArms'].indexOf(slotKey);
-    if (slotIdx >= 0 && tabs[slotIdx]) tabs[slotIdx].classList.add('active');
-  }
-  renderShowroomWardrobeItems();
-}
+  const searchInput = document.getElementById('tdb-search-input');
+  if (searchInput) searchInput.value = '';
 
-function onShowroomSearchInput() {
-  const input = document.getElementById('showroom-search-input');
-  showroomSearchQuery = input ? input.value.trim() : '';
-  renderShowroomWardrobeItems();
-}
-
-function onShowroomRoundChange(val) {
-  showroomRoundFilter = val;
-  renderShowroomWardrobeItems();
-}
-
-function setShowroomQuickFilter(type, btnEl) {
-  showroomQuickFilter = type;
-  ['btn-sf-all', 'btn-sf-monthly', 'btn-sf-special'].forEach(id => {
-    const b = document.getElementById(id);
-    if (b) b.classList.remove('active');
-  });
+  document.querySelectorAll('.tdb-cat-btn').forEach(b => b.classList.remove('active'));
   if (btnEl) btnEl.classList.add('active');
-  renderShowroomWardrobeItems();
+
+  populateSimulatorRoundFilter();
+  renderSimulatorGrid();
 }
 
-function renderShowroomWardrobeItems() {
-  const grid = document.getElementById('showroom-wardrobe-grid');
-  const counter = document.getElementById('showroom-item-counter');
-  if (!grid || typeof TW_AVATAR_DB === 'undefined') return;
+function renderSimulatorGrid() {
+  const container = document.getElementById('tdb-content-grid');
+  const countLabel = document.getElementById('tdb-item-count');
+  if (!container) return;
 
-  const outfit = showroomOutfit || toBeEquipState || TW_DEFAULT_EQUIP_STATE;
-  const currentEquippedName = outfit[showroomCurrentSlotTab] ? outfit[showroomCurrentSlotTab].name : '';
+  if (tdbSimState.selectedCategory === 'uniform') {
+    renderUniformDyeGrid(container, countLabel);
+  } else {
+    renderAvatarCategoryGrid(container, countLabel);
+  }
+}
 
-  let items = TW_AVATAR_DB.search(showroomSearchQuery, showroomCurrentSlotTab, showroomRoundFilter);
+function renderUniformDyeGrid(container, countLabel) {
+  const charInfo = TW_UNIFORM_DYE_DB.characters[tdbSimState.selectedChar] || { parts: ["코트", "코트장식", "바지", "신발"] };
+  const parts = charInfo.parts;
+  const currentDyes = tdbSimState.uniformDyes[tdbSimState.selectedChar] || { 1: "d", 2: "d", 3: "d", 4: "d" };
+  const activeColorCode = currentDyes[tdbSimState.selectedPart] || 'd';
+  const activeColorObj = TW_UNIFORM_DYE_DB.colors.find(c => c.code === activeColorCode) || { name: '기본제복', hex: '#4B5563' };
 
-  if (showroomQuickFilter === 'monthly') {
-    items = items.filter(it => it.isMonthly || (it.round && it.round.includes('월')));
-  } else if (showroomQuickFilter === 'special') {
-    items = items.filter(it => it.isSpecial || (it.round && (it.round.includes('스페셜') || it.round.includes('80') || it.round.includes('81') || it.round.includes('82') || it.round.includes('83'))));
+  if (countLabel) {
+    countLabel.textContent = '공식 74종 컬러 • 현재 파트: ' + parts[tdbSimState.selectedPart - 1];
   }
 
-  if (counter) counter.textContent = `총 ${items.length.toLocaleString()}개 아이템`;
+  // Filter colors by search query
+  const query = tdbSimState.searchQuery.toLowerCase();
+  let filteredColors = TW_UNIFORM_DYE_DB.colors;
+  if (query) {
+    filteredColors = filteredColors.filter(c => c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query));
+  }
+
+  // If Quick filter is 'popular'
+  if (tdbSimState.quickFilter === 'popular') {
+    filteredColors = TW_UNIFORM_DYE_DB.popularColors;
+  }
+
+  const showRgbTable = (tdbSimState.quickFilter === 'rgb');
+
+  let html = '<div class="tdb-dye-container">' +
+    '<!-- 1. Part Selector Pills -->' +
+    '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">' +
+    '  <span style="font-size:0.75rem; font-weight:800; color:#cbd5e1;">🎯 염색 부위(파트) 선택:</span>' +
+    '  <span style="font-size:0.75rem; color:#38bdf8; font-weight:700;">현재 색상: <b style="color:#fde68a;">' + activeColorObj.name + '</b></span>' +
+    '</div>' +
+    '<div class="tdb-dye-part-row">' +
+    [1, 2, 3, 4].map(partNum => {
+      const partName = parts[partNum - 1] || ('파트 ' + partNum);
+      const pCode = currentDyes[partNum] || 'd';
+      const pCol = TW_UNIFORM_DYE_DB.colors.find(c => c.code === pCode) || { name: '기본', hex: '#4B5563' };
+      const isActive = (tdbSimState.selectedPart === partNum);
+      return '<button type="button" class="tdb-part-pill ' + (isActive ? 'active' : '') + '" onclick="selectSimulatorUniformPart(' + partNum + ')">' +
+        '<span class="tdb-swatch-box" style="background:' + pCol.hex + '; width:16px; height:16px;"></span>' +
+        '<span>' + partNum + '. ' + partName + '</span>' +
+        '<span style="font-size:0.62rem; opacity:0.85; margin-left:2px;">(' + pCol.name + ')</span>' +
+        '</button>';
+    }).join('') +
+    '</div>';
+
+  if (showRgbTable) {
+    // Render RGB Preset Table
+    html += '<div style="background:#111827; border:1px solid #1f2937; border-radius:6px; padding:0.75rem;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
+      '  <span style="font-size:0.8rem; font-weight:800; color:#fde68a;">📋 기본옷·한복·교복용 커뮤니티 검증 RGB 수치 (1-클릭 복사)</span>' +
+      '  <span class="badge-pill gold" style="font-size:0.65rem;">스포이드 기능</span>' +
+      '</div>' +
+      '<p style="margin:0 0 0.6rem 0; font-size:0.72rem; color:#94a3b8; line-height:1.45;">' +
+      '  인게임 만능 염색약 창에서 [직접 입력] 버튼을 누른 뒤 아래 RGB 수치를 입력해 미리보기를 확인하세요. (카드를 클릭하면 바로 복사됩니다)' +
+      '</p>' +
+      '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(135px, 1fr)); gap:6px;">' +
+      TW_UNIFORM_DYE_DB.communityRgbPresets.map(preset => 
+        '<div class="tdb-swatch-card" onclick="copyRgbPreset(' + preset.r + ', ' + preset.g + ', ' + preset.b + ', \'' + preset.name + '\')" title="클릭하여 RGB (' + preset.r + ', ' + preset.g + ', ' + preset.b + ') 복사">' +
+        '  <div class="tdb-swatch-box" style="background:' + preset.hex + ';"></div>' +
+        '  <div style="display:flex; flex-direction:column; min-width:0;">' +
+        '    <span class="tdb-swatch-title">' + preset.name + '</span>' +
+        '    <span class="tdb-swatch-sub">' + preset.r + ', ' + preset.g + ', ' + preset.b + '</span>' +
+        '  </div>' +
+        '</div>'
+      ).join('') +
+      '</div></div>';
+  } else {
+    // Render 74-Color Swatch Grid
+    html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.25rem;">' +
+      '<span style="font-size:0.75rem; font-weight:800; color:#cbd5e1;">🎨 ' + (tdbSimState.quickFilter === 'popular' ? '인기 12대 제복 컬러' : '전체 74종 공식 제복 컬러') + ' (클릭 시 실시간 착용):</span>' +
+      '<button type="button" class="btn-sm btn-outline" onclick="resetSimulatorUniformPartColor()" style="font-size:0.65rem; padding:1px 6px;">기본색 복원</button>' +
+      '</div>' +
+      '<div class="tdb-swatch-grid">' +
+      filteredColors.map(c => {
+        const isSelected = (activeColorCode === c.code);
+        return '<div class="tdb-swatch-card ' + (isSelected ? 'active' : '') + '" onclick="applySimulatorUniformColor(\'' + c.code + '\')">' +
+          '<div class="tdb-swatch-box" style="background:' + c.hex + ';"></div>' +
+          '<div style="display:flex; flex-direction:column; min-width:0;">' +
+          '<span class="tdb-swatch-title">' + c.name + '</span>' +
+          '<span class="tdb-swatch-sub">' + c.hex + '</span>' +
+          '</div>' +
+          '</div>';
+      }).join('') +
+      '</div>';
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function selectSimulatorUniformPart(partNum) {
+  tdbSimState.selectedPart = partNum;
+  renderSimulatorGrid();
+}
+
+function applySimulatorUniformColor(colorCode) {
+  if (!tdbSimState.uniformDyes[tdbSimState.selectedChar]) {
+    tdbSimState.uniformDyes[tdbSimState.selectedChar] = { 1: "d", 2: "d", 3: "d", 4: "d" };
+  }
+  tdbSimState.uniformDyes[tdbSimState.selectedChar][tdbSimState.selectedPart] = colorCode;
+  
+  renderSimulatorStage();
+  renderSimulatorGrid();
+  renderSimulatorSlots();
+}
+
+function resetSimulatorUniformPartColor() {
+  applySimulatorUniformColor('d');
+}
+
+function copyRgbPreset(r, g, b, name) {
+  const code = r + ', ' + g + ', ' + b;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      showSimulatorToast('📋 \'' + name + '\' (' + code + ') RGB 코드가 클립보드에 복사되었습니다!\n인게임 만능 염색약 창에 입력하세요.');
+    }).catch(() => {
+      fallbackCopyText(code, name);
+    });
+  } else {
+    fallbackCopyText(code, name);
+  }
+}
+
+function fallbackCopyText(text, name) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  showSimulatorToast('📋 \'' + name + '\' (' + text + ') RGB 코드가 복사되었습니다!');
+}
+
+function renderAvatarCategoryGrid(container, countLabel) {
+  if (typeof TW_AVATAR_DB === 'undefined') return;
+
+  const slotKey = tdbSimState.selectedCategory;
+  let items = TW_AVATAR_DB.items.filter(it => it.slot === slotKey);
+
+  // Apply round filter
+  if (tdbSimState.roundFilter) {
+    items = items.filter(it => it.round === tdbSimState.roundFilter);
+  }
+
+  // Apply quick filter
+  if (tdbSimState.quickFilter === 'monthly') {
+    items = items.filter(it => it.isMonthly);
+  } else if (tdbSimState.quickFilter === 'special') {
+    items = items.filter(it => it.round.includes('80') || it.round.includes('81') || it.round.includes('82') || it.round.includes('83') || it.isMonthly);
+  }
+
+  // Apply search query
+  const query = tdbSimState.searchQuery.toLowerCase();
+  if (query) {
+    items = items.filter(it => it.name.toLowerCase().includes(query) || (it.tags && it.tags.some(t => t.toLowerCase().includes(query))));
+  }
+
+  if (countLabel) {
+    countLabel.textContent = '총 ' + items.length + '개 아이템';
+  }
 
   if (items.length === 0) {
-    grid.innerHTML = `
-      <div style="grid-column: 1 / -1; padding: 2.5rem; text-align: center; color: #94a3b8; font-size: 0.88rem;">
-        🔍 검색 조건에 일치하는 아바타 아이템이 없습니다.<br>
-        <span style="font-size:0.75rem; color:#64748b;">검색어나 회차 필터를 변경해보세요.</span>
-      </div>
-    `;
+    container.innerHTML = '<div style="text-align:center; padding:3rem 1rem; color:#94a3b8;">' +
+      '<span style="font-size:2rem; display:block; margin-bottom:0.5rem;">🔍</span>' +
+      '<span>검색 조건에 맞는 아바타 아이템이 없습니다.</span>' +
+      '</div>';
     return;
   }
 
-  const limit = 120;
-  const displayItems = items.slice(0, limit);
+  const equippedItem = tdbSimState.equippedSlots[slotKey];
 
-  let html = `
-    <div class="tw-wardrobe-item-card" style="border-style:dashed; border-color:#475569;" onclick="unequipShowroomSlot('${showroomCurrentSlotTab}')">
-      <div class="tw-wardrobe-card-info">
-        <div class="tw-wardrobe-card-name" style="color:#94a3b8;">🚫 외형 미착용 (이 부위 벗기)</div>
-        <div class="tw-wardrobe-card-meta">
-          <span class="tw-avatar-round-tag">외형 해제</span>
-        </div>
-      </div>
-      <button type="button" class="btn-sm btn-outline" style="font-size:0.68rem; padding:2px 8px;">해제</button>
-    </div>
-  `;
+  const html = '<div class="tdb-avatar-grid">' +
+    items.map(it => {
+      const isEquipped = (equippedItem && (equippedItem.id === it.id || equippedItem.name === it.name));
+      const res = typeof TW_AVATAR_RESOURCES !== 'undefined' ? TW_AVATAR_RESOURCES.getItemResource(it.name || it.id) : null;
+      const iconHtml = res && res.iconUrl 
+        ? '<img src="' + res.iconUrl + '" alt="' + it.name + '">'
+        : '<span>' + (TW_AVATAR_DB.slots[it.slot]?.icon || '👗') + '</span>';
+      return '<div class="tdb-item-card ' + (isEquipped ? 'equipped' : '') + '" onclick="toggleSimulatorAvatarItem(\'' + it.id + '\')" title="' + it.name + ' (' + it.round + ') - 클릭하여 착용/해제">' +
+        '<div class="tdb-item-card-icon">' + iconHtml + '</div>' +
+        '<div class="tdb-item-card-info">' +
+        '  <span class="tdb-item-card-name">' + it.name + '</span>' +
+        '  <div class="tdb-item-card-tag">' +
+        '    <span class="badge-pill" style="font-size:0.6rem; padding:0 3px;">' + it.round + '</span>' +
+        '    ' + (it.isMonthly ? '<span class="badge-pill gold" style="font-size:0.58rem; padding:0 2px;">월템</span>' : '') +
+        '  </div>' +
+        '</div>' +
+        (isEquipped ? '<span class="tdb-item-card-check">착용중</span>' : '') +
+        '</div>';
+    }).join('') +
+    '</div>';
 
-  displayItems.forEach(item => {
-    const isEquipped = currentEquippedName === item.name;
-    const monthlyTag = item.isMonthly ? '<span class="tw-avatar-monthly-tag">月</span>' : '';
-    const roundTag = item.round ? `<span class="tw-avatar-round-tag">${item.round}</span>` : '';
-    const origSlotTag = item.originalSlot ? `<span class="tw-avatar-round-tag" style="color:#38bdf8;">${item.originalSlot}</span>` : '';
-
-    html += `
-      <div class="tw-wardrobe-item-card ${isEquipped ? 'active' : ''}" onclick="tryOnAvatarItem('${item.id.replace(/'/g, "\\'")}', '${showroomCurrentSlotTab}')">
-        <div class="tw-wardrobe-card-info">
-          <div class="tw-wardrobe-card-name" title="${item.name}">${isEquipped ? '✨ ' : ''}${item.name}</div>
-          <div class="tw-wardrobe-card-meta">
-            ${roundTag}
-            ${monthlyTag}
-            ${origSlotTag}
-          </div>
-        </div>
-        <div style="display:flex; gap:4px; align-items:center;">
-          <button type="button" class="btn-sm btn-outline" style="font-size:0.68rem; padding:2px 6px; color:#38bdf8;" onclick="event.stopPropagation(); inspectEquipViewItem('${item.id.replace(/'/g, "\\'")}')" title="Equip View에서 상세 확인">
-            보기
-          </button>
-          <button type="button" class="btn-sm ${isEquipped ? 'btn-primary' : 'btn-outline'}" style="font-size:0.68rem; padding:2px 8px;">
-            ${isEquipped ? '착용중' : '입어보기'}
-          </button>
-        </div>
-      </div>
-    `;
-  });
-
-  if (items.length > limit) {
-    html += `
-      <div style="grid-column: 1 / -1; padding: 0.75rem; text-align: center; color: #64748b; font-size: 0.75rem; background: #080c16; border-radius: 6px;">
-        외 ${items.length - limit}개의 아이템이 더 있습니다. 검색창을 이용해 빠르게 찾아보세요!
-      </div>
-    `;
-  }
-
-  grid.innerHTML = html;
+  container.innerHTML = html;
 }
 
-function tryOnAvatarItem(avatarId, slotKey) {
-  if (!showroomOutfit) {
-    showroomOutfit = JSON.parse(JSON.stringify(toBeEquipState || TW_DEFAULT_EQUIP_STATE));
+function toggleSimulatorAvatarItem(itemId) {
+  if (typeof TW_AVATAR_DB === 'undefined') return;
+  const item = TW_AVATAR_DB.getById(itemId);
+  if (!item) return;
+
+  const current = tdbSimState.equippedSlots[item.slot];
+  if (current && (current.id === item.id || current.name === item.name)) {
+    // Unequip
+    tdbSimState.equippedSlots[item.slot] = null;
+  } else {
+    // Equip
+    tdbSimState.equippedSlots[item.slot] = item;
   }
-  const avatar = typeof TW_AVATAR_DB !== 'undefined' ? (TW_AVATAR_DB.getById(avatarId) || TW_AVATAR_DB.items.find(x => x.name === avatarId)) : null;
-  if (!avatar) return;
 
-  showroomOutfit[slotKey] = {
-    key: slotKey,
-    name: avatar.name,
-    dur: "(100/100)",
-    tier: "avatar",
-    isOn: true,
-    round: avatar.round,
-    isMonthly: avatar.isMonthly
-  };
-
-  toBeEquipState[slotKey] = JSON.parse(JSON.stringify(showroomOutfit[slotKey]));
-
-  inspectEquipViewItem(avatar.name);
-  renderEquipView();
-  renderInGameEquipSlots();
-  renderShowroomWardrobeItems();
-
-  if (document.getElementById('tw-equip-window-tobe')) {
-    renderInGameEquipWindow('tobe', toBeEquipState, true);
-    if (typeof updateDualEquipWindowDiff === 'function') updateDualEquipWindowDiff();
-  }
+  renderSimulatorGrid();
+  renderSimulatorSlots();
+  updateSimulator5SetBuff();
 }
 
-function unequipShowroomSlot(slotKey) {
-  if (!showroomOutfit) {
-    showroomOutfit = JSON.parse(JSON.stringify(toBeEquipState || TW_DEFAULT_EQUIP_STATE));
-  }
-  showroomOutfit[slotKey] = {
-    key: slotKey,
-    name: "외형 미착용",
-    dur: "",
-    tier: "avatar",
-    isOn: false
-  };
+function renderSimulatorSlots() {
+  const container = document.getElementById('tdb-slots-grid');
+  if (!container) return;
 
-  toBeEquipState[slotKey] = JSON.parse(JSON.stringify(showroomOutfit[slotKey]));
+  const slotsList = [
+    { key: 'showHead', name: '투구', icon: '👑' },
+    { key: 'showFace', name: '얼굴', icon: '👓' },
+    { key: 'showArmor', name: '몸/의상', icon: '👗' },
+    { key: 'showBack', name: '등/날개', icon: '🪽' },
+    { key: 'showFoot', name: '발자국', icon: '👣' },
+    { key: 'showEffect', name: '효과', icon: '🌀' },
+    { key: 'showSubArms', name: '무기', icon: '🗡️' },
+    { key: 'uniform', name: '제복', icon: '🎨' }
+  ];
 
-  renderEquipView();
-  renderInGameEquipSlots();
-  renderShowroomWardrobeItems();
-
-  if (document.getElementById('tw-equip-window-tobe')) {
-    renderInGameEquipWindow('tobe', toBeEquipState, true);
-    if (typeof updateDualEquipWindowDiff === 'function') updateDualEquipWindowDiff();
-  }
-}
-
-function saveShowroomToProfile() {
-  if (!showroomOutfit) return;
-  const showSlots = ['showHead', 'showArmor', 'showFace', 'showBack', 'showFoot', 'showEffect', 'showArms', 'showSubArms'];
-  
-  showSlots.forEach(s => {
-    if (showroomOutfit[s]) {
-      toBeEquipState[s] = JSON.parse(JSON.stringify(showroomOutfit[s]));
-      asIsEquipState[s] = JSON.parse(JSON.stringify(showroomOutfit[s]));
+  const html = slotsList.map(s => {
+    if (s.key === 'uniform') {
+      const dyes = tdbSimState.uniformDyes[tdbSimState.selectedChar] || { 1: "d", 2: "d", 3: "d", 4: "d" };
+      const c1 = TW_UNIFORM_DYE_DB.colors.find(c => c.code === dyes[1])?.name || '기본';
+      const isCustomDye = Object.values(dyes).some(v => v !== 'd');
+      return '<div class="tdb-slot-card has-item" onclick="switchSimulatorCategory(\'uniform\', document.querySelector(\'.tdb-cat-btn[data-cat=\\\'uniform\\\']\'))" title="제복 4파트 염색소 열기">' +
+        '<span class="tdb-slot-lbl">' + s.icon + ' ' + s.name + '</span>' +
+        '<span class="tdb-slot-name" style="color:#fde68a;">' + (isCustomDye ? (c1 + ' 등 4파트') : '기본 제복') + '</span>' +
+        '<span class="tdb-slot-del" onclick="event.stopPropagation(); resetAllUniformDyes()" title="제복 기본색 복원">✕</span>' +
+        '</div>';
     }
+
+    const item = tdbSimState.equippedSlots[s.key];
+    if (item) {
+      return '<div class="tdb-slot-card has-item" ondblclick="unequipSimulatorSlot(\'' + s.key + '\')" title="' + item.name + ' (' + item.round + ') - 더블클릭 또는 ✕로 탈의">' +
+        '<span class="tdb-slot-lbl">' + s.icon + ' ' + s.name + '</span>' +
+        '<span class="tdb-slot-name" style="color:#38bdf8;">' + item.name + '</span>' +
+        '<span class="tdb-slot-del" onclick="event.stopPropagation(); unequipSimulatorSlot(\'' + s.key + '\')" title="탈의">✕</span>' +
+        '</div>';
+    } else {
+      return '<div class="tdb-slot-card" onclick="switchSimulatorCategory(\'' + s.key + '\', document.querySelector(\'.tdb-cat-btn[data-cat=\\\'${s.key}\\\'\'))" title="클릭하여 ' + s.name + ' 아이템 찾기">' +
+        '<span class="tdb-slot-lbl">' + s.icon + ' ' + s.name + '</span>' +
+        '<span class="tdb-slot-name" style="color:#64748b;">(미착용)</span>' +
+        '</div>';
+    }
+  }).join('');
+
+  container.innerHTML = html;
+}
+
+function unequipSimulatorSlot(slotKey) {
+  tdbSimState.equippedSlots[slotKey] = null;
+  renderSimulatorSlots();
+  renderSimulatorGrid();
+  updateSimulator5SetBuff();
+}
+
+function resetAllUniformDyes() {
+  tdbSimState.uniformDyes[tdbSimState.selectedChar] = { 1: "d", 2: "d", 3: "d", 4: "d" };
+  renderSimulatorStage();
+  renderSimulatorSlots();
+  if (tdbSimState.selectedCategory === 'uniform') renderSimulatorGrid();
+}
+
+function resetAllSimulatorEquip() {
+  resetAllUniformDyes();
+  for (let k in tdbSimState.equippedSlots) {
+    tdbSimState.equippedSlots[k] = null;
+  }
+  tdbSimState.rotationAngle = 0;
+  tdbSimState.zoomLevel = 2.0;
+
+  renderSimulatorStage();
+  renderSimulatorSlots();
+  renderSimulatorGrid();
+  updateSimulator5SetBuff();
+  showSimulatorToast("🔄 외형 및 아바타 착용이 기본값으로 초기화되었습니다.");
+}
+
+function updateSimulator5SetBuff() {
+  let count = 0;
+  const avatarSlots = ['showHead', 'showArmor', 'showBack', 'showFace', 'showFoot', 'showEffect', 'showSubArms'];
+  avatarSlots.forEach(k => {
+    if (tdbSimState.equippedSlots[k]) count++;
   });
 
-  const p = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
-  if (p) {
-    if (!p.twEquipState) p.twEquipState = JSON.parse(JSON.stringify(asIsEquipState));
-    showSlots.forEach(s => {
-      if (showroomOutfit[s]) {
-        p.twEquipState[s] = JSON.parse(JSON.stringify(showroomOutfit[s]));
+  const is5Set = (count >= 5);
+  const badgeEl = document.getElementById('tdb-5set-title');
+  const countEl = document.getElementById('tdb-piece-counter');
+  const cardEl = document.getElementById('tdb-buff-card');
+
+  if (countEl) {
+    countEl.textContent = '착용 부위: ' + count + ' / 5';
+    countEl.style.color = is5Set ? '#6ee7b7' : '#38bdf8';
+  }
+
+  if (badgeEl) {
+    badgeEl.textContent = is5Set ? '⭐ 화려한 아바타 5세트 스탯 버프 ON' : '아바타 5세트 스탯 버프 OFF (5부위 필요)';
+    badgeEl.className = is5Set ? 'tw-5set-indicator active' : 'tw-5set-indicator';
+  }
+
+  if (cardEl) {
+    cardEl.style.borderColor = is5Set ? '#0284c7' : '#1f2937';
+    cardEl.style.boxShadow = is5Set ? '0 0 12px rgba(56, 189, 248, 0.25)' : 'none';
+  }
+}
+
+// ============================================================================
+// Controls: Character Picker Modal, Rotation, Zoom, Motion, Export
+// ============================================================================
+
+function openCharacterPickerModal() {
+  const modal = document.getElementById('tdb-char-modal');
+  const grid = document.getElementById('tdb-char-picker-grid');
+  if (!modal || !grid) return;
+
+  grid.innerHTML = TW_CHARACTER_ROSTER.map(c => {
+    const charInfo = TW_UNIFORM_DYE_DB.characters[c.key] || { folder: 'naya' };
+    const folder = charInfo.folder;
+    const isSelected = (tdbSimState.selectedChar === c.key);
+    return '<div class="tdb-char-picker-card ' + (isSelected ? 'active' : '') + '" onclick="selectSimulatorChar(\'' + c.key + '\')" title="' + c.fullName + '">' +
+      '<img src="assets/uniform/' + folder + '/' + folder + '.png" alt="' + c.name + '">' +
+      '<div style="display:flex; flex-direction:column; min-width:0;">' +
+      '  <span class="tdb-char-picker-name">' + c.name + '</span>' +
+      '  <span style="font-size:0.62rem; color:#94a3b8;">' + c.type.split('/')[0] + '</span>' +
+      '</div>' +
+      '</div>';
+  }).join('');
+
+  modal.classList.add('active');
+}
+
+function closeCharacterPickerModal() {
+  const modal = document.getElementById('tdb-char-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+function selectSimulatorChar(charKey) {
+  tdbSimState.selectedChar = charKey;
+  closeCharacterPickerModal();
+
+  updateSimulatorWhoCard();
+  renderSimulatorStage();
+  renderSimulatorSlots();
+  if (tdbSimState.selectedCategory === 'uniform') {
+    renderSimulatorGrid();
+  }
+}
+
+function rotateSimulatorChar(dir) {
+  tdbSimState.rotationAngle = (tdbSimState.rotationAngle + dir + 4) % 4;
+  renderSimulatorStage();
+}
+
+function adjustSimulatorZoom(delta) {
+  tdbSimState.zoomLevel = Math.max(1.0, Math.min(3.5, Math.round((tdbSimState.zoomLevel + delta) * 10) / 10));
+  renderSimulatorStage();
+}
+
+function resetSimulatorZoom() {
+  tdbSimState.zoomLevel = 2.0;
+  renderSimulatorStage();
+}
+
+function setSimulatorMotion(motion, btnEl) {
+  tdbSimState.motion = motion;
+  document.querySelectorAll('.tdb-motion-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  const standeeWrap = document.getElementById('tdb-standee-wrap');
+  if (!standeeWrap) return;
+
+  standeeWrap.classList.remove('tdb-motion-walk', 'tdb-motion-attack');
+  if (motion === 'walk') standeeWrap.classList.add('tdb-motion-walk');
+  else if (motion === 'attack') standeeWrap.classList.add('tdb-motion-attack');
+}
+
+function onSimulatorSearchInput() {
+  const input = document.getElementById('tdb-search-input');
+  tdbSimState.searchQuery = input ? input.value.trim() : '';
+  renderSimulatorGrid();
+}
+
+function onSimulatorRoundChange(val) {
+  tdbSimState.roundFilter = val;
+  renderSimulatorGrid();
+}
+
+function setSimulatorQuickFilter(type, btnEl) {
+  tdbSimState.quickFilter = type;
+  document.querySelectorAll('.tdb-qf-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  renderSimulatorGrid();
+}
+
+function downloadSimulatorStandeePNG() {
+  const charInfo = TW_UNIFORM_DYE_DB.characters[tdbSimState.selectedChar] || { folder: 'naya', name: '나야트레이' };
+  const folder = charInfo.folder;
+  const dyes = tdbSimState.uniformDyes[tdbSimState.selectedChar] || { 1: "d", 2: "d", 3: "d", 4: "d" };
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 324;
+  canvas.height = 324;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  const urls = [
+    'assets/uniform/' + folder + '/' + folder + '.png',
+    'assets/uniform/' + folder + '/1-' + (dyes[1] || 'd') + '.png',
+    'assets/uniform/' + folder + '/2-' + (dyes[2] || 'd') + '.png',
+    'assets/uniform/' + folder + '/3-' + (dyes[3] || 'd') + '.png',
+    'assets/uniform/' + folder + '/4-' + (dyes[4] || 'd') + '.png'
+  ];
+
+  let loaded = 0;
+  const imgs = [];
+  urls.forEach((u, i) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      loaded++;
+      imgs[i] = img;
+      if (loaded === urls.length) {
+        if (tdbSimState.rotationAngle === 1) {
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+        }
+        imgs.forEach(im => {
+          if (im) ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
+        });
+        const link = document.createElement('a');
+        link.download = 'talesweaver_' + charInfo.name + '_dye_standee.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showSimulatorToast('📸 \'' + charInfo.name + '\' 투명 누끼 도트 PNG가 다운로드되었습니다.');
       }
-    });
+    };
+    img.onerror = () => {
+      loaded++;
+      if (loaded === urls.length && imgs[0]) {
+        ctx.drawImage(imgs[0], 0, 0, canvas.width, canvas.height);
+        const link = document.createElement('a');
+        link.download = 'talesweaver_' + charInfo.name + '_standee.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }
+    };
+    img.src = u;
+  });
+}
+
+function saveSimulatorToProfile() {
+  const p = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
+  if (!p) {
+    showSimulatorToast("⚠️ 프로필을 찾을 수 없습니다.");
+    return;
+  }
+
+  if (!p.twEquipState) p.twEquipState = JSON.parse(JSON.stringify(TW_DEFAULT_EQUIP_STATE));
+
+  // Sync avatar items into profile
+  for (let slot in tdbSimState.equippedSlots) {
+    const item = tdbSimState.equippedSlots[slot];
+    if (item) {
+      p.twEquipState[slot] = {
+        key: slot,
+        name: item.name,
+        dur: '(100/100)',
+        tier: 'avatar',
+        isOn: true,
+        round: item.round
+      };
+    }
+  }
+
+  // Calculate metrics and update profile coeff
+  if (typeof calculateEquipStateMetrics === 'function') {
     const m = calculateEquipStateMetrics(p.twEquipState);
     p.totalCoeff = m.totalCoeff;
     p.totalDex = m.totalDex;
-    try {
-      localStorage.setItem('tw_companion_profiles_v3', JSON.stringify(profiles));
-    } catch(e) {}
   }
 
-  renderInGameEquipWindow('asis', asIsEquipState, false);
-  renderInGameEquipWindow('tobe', toBeEquipState, true);
-  if (typeof updateDualEquipWindowDiff === 'function') updateDualEquipWindowDiff();
-  renderEquipView();
-  renderInGameEquipSlots();
+  try {
+    localStorage.setItem('tw_companion_profiles_v3', JSON.stringify(profiles));
+  } catch(e) {}
 
-  alert(`🎉 '${p ? p.name : "캐릭터"}' 프로필에 아바타 세팅이 확정 저장되었습니다!\n6번 탭 [계수·전투 시험장]과 캐릭터 프로필에 공식 5세트 효과가 실시간 반영되었습니다.`);
+  showSimulatorToast('🎉 \'' + p.name + '\' 모험가님 프로필에 현재 아바타/제복 코디가 확정 저장되었습니다!\n6번 탭 [계수·전투 시험장]과 캐릭터 프로필에 공식 5세트 효과가 실시간 반영되었습니다.');
 }
 
-function resetShowroomOutfit() {
-  const p = typeof profiles !== 'undefined' ? profiles.find(x => x.id === currentProfileId) : null;
-  showroomOutfit = JSON.parse(JSON.stringify(p?.twEquipState || asIsEquipState || TW_DEFAULT_EQUIP_STATE));
-  toBeEquipState = JSON.parse(JSON.stringify(showroomOutfit));
-
-  renderEquipView();
-  renderInGameEquipSlots();
-  renderShowroomWardrobeItems();
-
-  if (document.getElementById('tw-equip-window-tobe')) {
-    renderInGameEquipWindow('tobe', toBeEquipState, true);
-    if (typeof updateDualEquipWindowDiff === 'function') updateDualEquipWindowDiff();
+function showSimulatorToast(msg) {
+  let toast = document.getElementById('tdb-sim-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'tdb-sim-toast';
+    toast.style.cssText = 'position:fixed; bottom:25px; left:50%; transform:translateX(-50%); background:#0f172a; border:1px solid #38bdf8; color:#f8fafc; padding:10px 18px; border-radius:8px; font-size:0.82rem; font-weight:700; z-index:99999; box-shadow:0 8px 24px rgba(0,0,0,0.6); pointer-events:none; transition:opacity 0.25s ease; opacity:0; max-width:90%; text-align:center; line-height:1.45;';
+    document.body.appendChild(toast);
   }
+  toast.innerText = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => {
+    toast.style.opacity = '0';
+  }, 3200);
 }
+
+
 
 
 

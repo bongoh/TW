@@ -43,7 +43,7 @@
     <button class="tab-btn" data-tab="tab-craft" onclick="switchTab('tab-craft', this)">🔨 5. 제련 · 조합 · 공방</button>
     <button class="tab-btn" data-tab="tab-coeff" onclick="switchTab('tab-coeff', this)">🧮 6. 계수 · 전투 시험장</button>
     <button class="tab-btn" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">💰 7. 시드 · 재료 계산기</button>
-    <button class="tab-btn" data-tab="tab-dressroom" onclick="switchTab('tab-dressroom', this)">👗 8. 아바타 & 염색소</button>
+    <button class="tab-btn" data-tab="tab-dressroom" onclick="switchTab('tab-dressroom', this)">👗 8. 아바타 & 제복 시뮬레이터</button>
   </nav>
 
   <!-- ==================== TAB 0: BEGINNER BURNING GROWTH GUIDE ==================== -->
@@ -5967,262 +5967,211 @@
     </section>
   </div>
 
-  <!-- ==================== TAB 8: AVATAR DRESSROOM & FULL-BODY SHOWROOM ==================== -->
+  <!-- ==================== TAB 8: TALESDB-STYLE AVATAR SIMULATOR & UNIFORM DYE STUDIO ==================== -->
   <div id="tab-dressroom" class="tab-panel">
     <section>
-      <!-- Showroom Header -->
-      <div class="calc-header-card" style="margin-bottom: 1.25rem;">
+      <!-- Simulator Header Card -->
+      <div class="calc-header-card" style="margin-bottom: 1rem;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
           <div>
-            <h2 style="margin:0 0 0.35rem 0; font-size:1.4rem; color:#fde68a; display:flex; align-items:center; gap:0.5rem;">
-              <span>👗 8. 아바타 5세트 스탯 버프 시뮬레이터 & 🎨 엘티보 눈사람족 염색소</span>
-              <span class="badge-pill gold" style="font-size:0.75rem;">2,098종 DB & 실시간 염색</span>
+            <h2 style="margin:0 0 0.35rem 0; font-size:1.35rem; color:#fde68a; display:flex; align-items:center; gap:0.5rem;">
+              <span>👗 8. 아바타 & 제복 시뮬레이터 (TalesDB 스타일)</span>
+              <span class="badge-pill gold" style="font-size:0.75rem;">74종 제복 컬러 & 2,098종 화바타 DB</span>
             </h2>
             <p style="margin:0; font-size:0.83rem; color:#94a3b8; line-height:1.5;">
-              호랑구님의 1~83회차 아바타 2,098종 전수 DB 및 5세트 스탯 버프 시뮬레이터 · 엘티보 눈사람족 18인 전 캐릭터 실시간 도트 염색소
+              테일즈DB(talesdb.xyz) 스타일의 좌우 2열 레이아웃 · 18인 전 캐릭터 5레이어 제복 실시간 4파트 염색소 · 화려한 아바타 5세트 스탯 버프 시뮬레이터
             </p>
           </div>
           <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-            <button type="button" class="btn-sm btn-primary-soft" onclick="saveShowroomToProfile()" style="font-size:0.84rem; padding:0.5rem 1rem;">
-              💾 이 코디를 내 캐릭터 프로필에 확정 착용
+            <button type="button" class="btn-sm btn-primary-soft" onclick="saveSimulatorToProfile()" style="font-size:0.82rem; padding:0.45rem 0.9rem;">
+              💾 내 캐릭터 프로필에 확정 착용
             </button>
-            <button type="button" class="btn-sm btn-outline" onclick="resetShowroomOutfit()" style="font-size:0.84rem; padding:0.5rem 0.8rem;">
+            <button type="button" class="btn-sm btn-outline" onclick="resetAllSimulatorEquip()" style="font-size:0.82rem; padding:0.45rem 0.8rem;">
               🔄 외형 초기화
             </button>
           </div>
         </div>
-
-        <!-- Character Selector Bar (18 Playable Characters) -->
-        <div class="tw-showroom-char-bar" style="margin-top:1rem; padding-top:0.85rem; border-top:1px solid #28334f; display:flex; align-items:center; gap:0.6rem; overflow-x:auto;">
-          <span style="font-size:0.8rem; font-weight:800; color:#cbd5e1; white-space:nowrap;">👤 캐릭터 선택:</span>
-          <div id="showroom-char-pills" style="display:flex; gap:0.35rem; align-items:center; flex-wrap:nowrap;">
-            <!-- Populated by renderShowroomCharPills() -->
-          </div>
-        </div>
-
-        <!-- Showroom Sub-Mode Switcher: Dyeing Studio vs Avatar Fitting -->
-        <div class="tw-showroom-mode-tabs" style="margin-top:0.85rem; padding-top:0.75rem; border-top:1px solid #28334f; display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
-          <span style="font-size:0.8rem; font-weight:800; color:#cbd5e1;">🎯 코디 분류:</span>
-          <button type="button" id="tw-btn-mode-dye" class="btn-sm btn-primary active" onclick="switchShowroomSubMode('dye')" style="font-size:0.8rem; padding:0.4rem 0.9rem;">
-            🎨 1. 엘티보 눈사람족 헤어/의상 염색소 (1,500만 SEED 실시간 염색)
-          </button>
-          <button type="button" id="tw-btn-mode-avatar" class="btn-sm btn-outline" onclick="switchShowroomSubMode('avatar')" style="font-size:0.8rem; padding:0.4rem 0.9rem;">
-            👗 2. 화바타 5세트 스탯 시뮬레이터 & 2,098종 DB
-          </button>
-        </div>
       </div>
 
-      <!-- In-Game Authentic Dual Showcase: Paper-Doll Stage (Left) & [Equip/Dye] Window (Right) -->
-      <div class="tw-ingame-showcase-grid">
-        <!-- 1. Authentic Paper-Doll Transparent Stage Card -->
-        <div class="tw-paperdoll-card">
-          <div class="tw-paperdoll-header">
-            <div style="display:flex; align-items:center; gap:0.5rem;">
-              <span style="color:#38bdf8; font-size:1.1rem;">✨</span>
-              <span class="tw-paperdoll-title" id="stage-main-title">눈사람족 염색 시뮬레이션 스테이지</span>
-              <span class="badge-pill cyan" id="stage-sub-badge" style="font-size:0.68rem;">18인 실물 도트 뷰어</span>
+      <!-- Main 2-Column TalesDB-Style Layout -->
+      <div class="tdb-sim-container">
+        <!-- 1. LEFT COLUMN: WHO BAR, CATEGORIES, SEARCH, ITEM/DYE GRID -->
+        <div class="tdb-left">
+          <!-- WHO BAR: Character Selector Card + Category Selector Pills -->
+          <div class="tdb-who-bar">
+            <!-- Clickable Character Card -->
+            <div id="tdb-who-card" class="tdb-who-card" onclick="openCharacterPickerModal()" title="클릭하여 캐릭터를 변경합니다">
+              <img id="tdb-who-art" class="tdb-who-art" src="assets/uniform/naya/naya.png" alt="캐릭터">
+              <div class="tdb-who-info">
+                <span class="tdb-who-sub">캐릭터 변경</span>
+                <span id="tdb-who-name" class="tdb-who-name">나야트레이</span>
+              </div>
+              <span class="tdb-who-badge">변경 ▾</span>
             </div>
-            <span id="ev-header-char-name" style="font-size:0.75rem; color:#94a3b8;">나야트레이 (Nayatrei)</span>
+
+            <!-- Category Selector Pills -->
+            <div class="tdb-cats-wrap">
+              <div id="tdb-cats" class="tdb-cats">
+                <button type="button" class="tdb-cat-btn active" data-cat="uniform" onclick="switchSimulatorCategory('uniform', this)">
+                  🎨 제복/염색 (74색)
+                </button>
+                <button type="button" class="tdb-cat-btn" data-cat="showHead" onclick="switchSimulatorCategory('showHead', this)">
+                  👑 투구 (715)
+                </button>
+                <button type="button" class="tdb-cat-btn" data-cat="showArmor" onclick="switchSimulatorCategory('showArmor', this)">
+                  👗 몸/의상 (304)
+                </button>
+                <button type="button" class="tdb-cat-btn" data-cat="showBack" onclick="switchSimulatorCategory('showBack', this)">
+                  🪽 등/날개 (132)
+                </button>
+                <button type="button" class="tdb-cat-btn" data-cat="showFace" onclick="switchSimulatorCategory('showFace', this)">
+                  👓 얼굴 (101)
+                </button>
+                <button type="button" class="tdb-cat-btn" data-cat="showEffect" onclick="switchSimulatorCategory('showEffect', this)">
+                  🌀 효과 (426)
+                </button>
+                <button type="button" class="tdb-cat-btn" data-cat="showFoot" onclick="switchSimulatorCategory('showFoot', this)">
+                  👣 발자국 (416)
+                </button>
+                <button type="button" class="tdb-cat-btn" data-cat="showSubArms" onclick="switchSimulatorCategory('showSubArms', this)">
+                  🗡️ 무기 (4)
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div class="tw-paperdoll-stage-body">
-            <!-- Stage Viewport (Centered Standee with Glowing Pedestal) -->
-            <div class="tw-paperdoll-stage-wrap">
-              <button type="button" class="tw-ev-arrow-btn" onclick="rotateEquipView(-1)" title="좌측 회전 (<)">
-                <img src="assets/avatar/btn_arrow_left.png" alt="<">
-              </button>
+          <!-- Filter & Search Toolbar -->
+          <div class="tdb-filter-strip">
+            <div class="tdb-search-row">
+              <input type="search" id="tdb-search-input" class="calc-input tdb-search-input" placeholder="🔍 아이템 이름 또는 검색어 입력 (예: 벚꽃비, 토끼귀, 리본...)" oninput="onSimulatorSearchInput()">
+              <span id="tdb-item-count" class="tdb-count-label">공식 74종 컬러</span>
+            </div>
+            <div id="tdb-quick-filters" class="tdb-quick-filters">
+              <!-- Dynamically populated (e.g. 전체, 월템, 회차 등) -->
+            </div>
+          </div>
 
-              <div class="tw-paperdoll-stage" id="tw-paperdoll-stage">
-                <!-- Glowing Floor Pedestal Shadow -->
-                <div class="pd-pedestal-shadow"></div>
+          <!-- Main Grid Viewport (Scrollable) -->
+          <div id="tdb-content-grid" class="tdb-content-grid">
+            <!-- Dynamically rendered by renderSimulatorGrid() -->
+          </div>
+        </div>
 
-                <!-- Main Character Body & Dye Sprite (Z: 20) -->
-                <img id="pd-char-img" class="pd-layer pd-char-img" src="assets/avatar/nayatrei_transparent.png" alt="캐릭터 도트 외형">
+        <!-- 2. RIGHT COLUMN: STAGE VIEWPORT, SLOTS, BUFFS, EXPORT -->
+        <div class="tdb-right">
+          <!-- Stage Card -->
+          <div class="tdb-stage-card">
+            <div class="tdb-stage-viewport" id="tdb-stage-viewport">
+              <!-- Glowing Pedestal Base -->
+              <div class="tdb-pedestal-light"></div>
+
+              <!-- Character Standee 5-Layer Stack -->
+              <div id="tdb-standee-wrap" class="tdb-standee-wrap">
+                <!-- Base body (Skin, face, eyes, hair) - 100% untouched -->
+                <img id="tdb-layer-base" class="tdb-layer" src="assets/uniform/naya/naya.png" alt="베이스 체형">
+                <!-- Part 1: Coat / Upper Armor -->
+                <img id="tdb-layer-1" class="tdb-layer" src="assets/uniform/naya/1-d.png" alt="파트 1">
+                <!-- Part 2: Trim / Decors -->
+                <img id="tdb-layer-2" class="tdb-layer" src="assets/uniform/naya/2-d.png" alt="파트 2">
+                <!-- Part 3: Pants / Skirt -->
+                <img id="tdb-layer-3" class="tdb-layer" src="assets/uniform/naya/3-d.png" alt="파트 3">
+                <!-- Part 4: Boots / Belt -->
+                <img id="tdb-layer-4" class="tdb-layer" src="assets/uniform/naya/4-d.png" alt="파트 4">
               </div>
 
-              <button type="button" class="tw-ev-arrow-btn" onclick="rotateEquipView(1)" title="우측 회전 (>)">
-                <img src="assets/avatar/btn_arrow_right.png" alt=">">
-              </button>
-            </div>
-
-            <!-- Stage Control Toolbar -->
-            <div class="tw-paperdoll-controls">
-              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:0.4rem;">
-                <span id="ev-angle-tag" class="tw-ev-angle-tag">정면 (Front)</span>
-                <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap;">
-                  <button type="button" class="btn-sm btn-outline" onclick="resetAllDyes()" style="font-size:0.68rem; padding:2px 8px;">
-                    🔄 원래 색상 복원
-                  </button>
-                  <button type="button" class="btn-sm btn-primary-soft" onclick="downloadCurrentPaperDollPNG()" style="font-size:0.68rem; padding:2px 8px; font-weight:800;" title="현재 세팅된 투명 누끼 도트 이미지를 PNG로 저장">
-                    📸 투명 PNG 저장
-                  </button>
+              <!-- Overlay Left: Motion controls -->
+              <div class="tdb-ov tdb-ov-left">
+                <span class="tdb-ov-title">동작</span>
+                <div class="tdb-motion-col">
+                  <button type="button" class="tdb-motion-btn active" data-motion="stand" onclick="setSimulatorMotion('stand', this)">기본 대기</button>
+                  <button type="button" class="tdb-motion-btn" data-motion="walk" onclick="setSimulatorMotion('walk', this)">걷기 모션</button>
+                  <button type="button" class="tdb-motion-btn" data-motion="attack" onclick="setSimulatorMotion('attack', this)">공격 모션</button>
                 </div>
               </div>
-            </div>
 
-            <!-- Inspect Tooltip / Status Strip -->
-            <div class="tw-paperdoll-detail-strip">
-              <div id="ev-item-title" class="tw-ev-title" style="font-size:0.86rem; border:none; padding:0;">나야트레이 기본 스탠디</div>
-              <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; color:#94a3b8; margin-top:3px;">
-                <span id="ev-item-reqchar" class="tw-ev-yellow">나야트레이</span>
-                <span id="ev-action-status" style="color:#6ee7b7; font-weight:700;">실시간 도트 렌더링 활성</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2-A. Authentic Equip In-Game Window (REAL / SHOW) - Avatar Mode -->
-        <div id="showroom-view-avatar" class="showroom-view-panel tw-eq-window" style="display:none;">
-          <div class="tw-eq-header">
-            <span class="tw-eq-title">Equip</span>
-            <div class="tw-eq-ctrls">
-              <span>➕</span>
-              <span>▲</span>
-              <span>✕</span>
-            </div>
-          </div>
-
-          <!-- Slots Container (Dynamically rendered by renderInGameEquipSlots) -->
-          <div class="tw-eq-slots-body" id="tw-eq-slots-body">
-            <!-- Dynamic Real & Show slots -->
-          </div>
-
-          <!-- 5-Set Effect & Profile Sync Footer -->
-          <div class="tw-eq-footer-box">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span id="showroom-5set-badge" class="tw-5set-indicator active" style="font-size:0.72rem; padding:2px 8px;">
-                ⭐ 아바타 5세트 ON (+10스탯)
-              </span>
-              <span id="showroom-piece-count-text" style="font-size:0.75rem; color:#38bdf8; font-weight:800;">
-                착용 부위: 5 / 6
-              </span>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#cbd5e1; background:#141727; padding:4px 8px; border-radius:4px;">
-              <span>공식 계수: <b id="showroom-stat-coeff" style="color:#fde68a;">+205 계수</b></span>
-              <span>스탯: <b id="showroom-stat-dex" style="color:#38bdf8;">+10 DEX</b></span>
-              <span>이속: <b id="showroom-stat-speed" style="color:#6ee7b7;">+3 / HP+2000</b></span>
-            </div>
-            <button type="button" class="btn-sm btn-primary-soft" onclick="saveShowroomToProfile()" style="width:100%; justify-content:center; padding:0.5rem; font-size:0.8rem; font-weight:800;">
-              💾 이 코디를 내 캐릭터 프로필에 확정 착용
-            </button>
-          </div>
-        </div>
-
-        <!-- 2-B. Authentic Dyeing Salon Window (눈사람족 수장 염색소) - Dye Mode -->
-        <div id="showroom-view-dye" class="showroom-view-panel tw-dye-window">
-          <div class="tw-dye-header">
-            <div style="display:flex; align-items:center; gap:0.5rem;">
-              <span>🎨</span>
-              <span class="tw-dye-title">눈사람족 헤어 & 의상 염색소</span>
-              <span class="badge-pill gold" style="font-size:0.68rem;">엘티보 1,500만 SEED</span>
-            </div>
-            <button type="button" class="btn-sm btn-outline" onclick="resetAllDyes()" style="font-size:0.68rem; padding:2px 6px;">
-              🔄 원래 색상 복원
-            </button>
-          </div>
-
-          <div class="tw-dye-body">
-            <!-- Step 1: 캐릭터 염색 파트 선택 -->
-            <div class="tw-dye-section">
-              <div class="tw-dye-section-title">
-                <span>1️⃣ 염색 부위(파트) 선택:</span>
-                <span id="dye-selected-part-desc" style="font-size:0.72rem; color:#94a3b8; font-weight:normal;"></span>
-              </div>
-              <div id="tw-dye-part-pills" class="tw-dye-part-pills">
-                <!-- Dynamically rendered by renderDyeParts() -->
-              </div>
-            </div>
-
-            <!-- Step 2: 엘티보 눈사람족 수장 염색약 (1,500만 SEED) -->
-            <div class="tw-dye-section">
-              <div class="tw-dye-section-title">
-                <span>2️⃣ 엘티보 눈사람족 수장 염색약 (1,500만 SEED 1일권):</span>
-                <span class="badge-pill cyan" style="font-size:0.65rem;">시드 염색약</span>
-              </div>
-              <div id="tw-dye-palette-grid" class="tw-dye-palette-grid">
-                <!-- Rendered by renderEltiboDyePalette() -->
-              </div>
-            </div>
-
-            <!-- Step 3: 만능 염색약 / 뷰티샵 (RGB 커스텀 피커) -->
-            <div class="tw-dye-section">
-              <div class="tw-dye-section-title">
-                <span>3️⃣ 만능 염색약 · RGB 컬러 직접 지정:</span>
-                <span class="badge-pill purple" style="font-size:0.65rem;">RGB 커스텀</span>
-              </div>
-              <div class="tw-dye-rgb-controls">
-                <input type="color" id="dye-color-picker" class="tw-dye-color-input" value="#FF7E00" onchange="onCustomColorPick(this.value)">
-                <div class="tw-dye-rgb-inputs">
-                  <div class="tw-dye-rgb-field">
-                    <span>R:</span>
-                    <input type="number" id="dye-rgb-r" min="0" max="255" value="255" oninput="onRgbNumberInput()">
-                  </div>
-                  <div class="tw-dye-rgb-field">
-                    <span>G:</span>
-                    <input type="number" id="dye-rgb-g" min="0" max="255" value="126" oninput="onRgbNumberInput()">
-                  </div>
-                  <div class="tw-dye-rgb-field">
-                    <span>B:</span>
-                    <input type="number" id="dye-rgb-b" min="0" max="255" value="0" oninput="onRgbNumberInput()">
-                  </div>
-                  <button type="button" class="btn-sm btn-primary-soft" onclick="applyCustomRgbDye()" style="font-size:0.72rem; padding:4px 10px;">
-                    적용
-                  </button>
+              <!-- Overlay Right: Zoom controls -->
+              <div class="tdb-ov tdb-ov-right">
+                <span class="tdb-ov-title">확대</span>
+                <div class="tdb-zoom-row">
+                  <button type="button" class="tdb-btn-circle" onclick="adjustSimulatorZoom(-0.25)" title="축소 (−)">−</button>
+                  <button type="button" class="tdb-btn-circle lbl" id="tdb-zoom-label" onclick="resetSimulatorZoom()" title="기본 배율 복원">2.0x</button>
+                  <button type="button" class="tdb-btn-circle" onclick="adjustSimulatorZoom(0.25)" title="확대 (+)">+</button>
                 </div>
               </div>
+
+              <!-- Direction Rotation Arrows -->
+              <button type="button" class="tdb-arrow ar-left" onclick="rotateSimulatorChar(-1)" title="좌측으로 회전 (◀)">◀</button>
+              <button type="button" class="tdb-arrow ar-right" onclick="rotateSimulatorChar(1)" title="우측으로 회전 (▶)">▶</button>
             </div>
 
-            <!-- Step 4: 염색 견적 및 비용 계산 -->
-            <div class="tw-dye-footer-card">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.78rem; color:#cbd5e1; font-weight:700;">💰 총 예상 염색 비용:</span>
-                <span id="dye-total-cost-text" style="font-size:0.86rem; color:#fde68a; font-weight:800;">0 SEED</span>
+            <!-- Stage Footer Strip -->
+            <div class="tdb-stage-footer">
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <span id="tdb-angle-badge" class="badge-pill cyan" style="font-size:0.75rem;">정면 (Isometric Front)</span>
+                <span id="tdb-char-full-badge" style="font-size:0.78rem; color:#cbd5e1; font-weight:700;">나야트레이 (Nayatrei)</span>
               </div>
-              <div style="font-size:0.72rem; color:#94a3b8; line-height:1.4;">
-                엘티보 마을 워프 근처의 '눈사람족 수장'에게서 구매 가능한 1일권 염색약 기준(개당 1,500만 SEED)이며, 만능 염색약은 RGB 직접 입력이 가능합니다.
-              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- 3. Wardrobe Browser Card (2,098-Item DB) -->
-      <div class="tw-wardrobe-card">
-        <!-- 7-Slot Category Filter Tabs -->
-        <div class="tw-wardrobe-tabs" id="showroom-wardrobe-slot-tabs">
-          <button class="tw-wtab-btn active" onclick="setShowroomSlotTab('showHead', this)">👑 투구 (715)</button>
-          <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showArmor', this)">👗 의상 (304)</button>
-          <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showBack', this)">🪽 날개 (132)</button>
-          <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showFace', this)">👓 얼굴 (101)</button>
-          <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showEffect', this)">✨ 효과 (426)</button>
-          <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showFoot', this)">👣 발자국 (416)</button>
-          <button class="tw-wtab-btn" onclick="setShowroomSlotTab('showArms', this)">🗡️ 무기 (4)</button>
-        </div>
-
-        <!-- Search & Round Filter Bar -->
-        <div class="tw-wardrobe-filter-bar">
-          <div class="tw-wardrobe-search-row">
-            <input type="text" id="showroom-search-input" class="calc-input" placeholder="🔍 아이템 이름 또는 키워드 검색 (예: 벚꽃비, 수영복, 리본, 날개...)" oninput="onShowroomSearchInput()" style="flex:1;">
-            <select id="showroom-round-select" class="calc-input tw-select" style="width:160px;" onchange="onShowroomRoundChange(this.value)">
-              <option value="">전체 회차 (1~83회차)</option>
-            </select>
-          </div>
-          <div class="tw-wardrobe-quick-row">
-            <div style="display:flex; gap:0.4rem; align-items:center;">
-              <button type="button" class="btn-sm btn-outline active" id="btn-sf-all" onclick="setShowroomQuickFilter('', this)">전체</button>
-              <button type="button" class="btn-sm btn-outline" id="btn-sf-monthly" onclick="setShowroomQuickFilter('monthly', this)">월템(月)</button>
-              <button type="button" class="btn-sm btn-outline" id="btn-sf-special" onclick="setShowroomQuickFilter('special', this)">최신/스페셜</button>
+          <!-- Equipped Slots Strip (TalesDB Style) -->
+          <div class="tdb-slots-card">
+            <div class="tdb-slots-header">
+              <span style="font-size:0.78rem; font-weight:800; color:#e2e8f0;">🎒 착용 슬롯 (더블클릭 또는 ✕로 탈의)</span>
+              <button type="button" class="btn-sm btn-outline" onclick="resetAllSimulatorEquip()" style="font-size:0.68rem; padding:2px 6px;">🔄 전체 탈의</button>
             </div>
-            <span id="showroom-item-counter" style="font-size:0.75rem; color:#38bdf8; font-weight:700;">총 715개 아이템</span>
+            <div id="tdb-slots-grid" class="tdb-slots-grid">
+              <!-- Dynamically populated: 8 slots -->
+            </div>
           </div>
-        </div>
 
-        <!-- Wardrobe Items Grid -->
-        <div class="tw-wardrobe-grid-container" id="showroom-wardrobe-grid">
-          <!-- Rendered by renderShowroomWardrobeItems() -->
+          <!-- 5-Set Stat Buff Card -->
+          <div class="tdb-buff-card" id="tdb-buff-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span id="tdb-5set-title" class="tw-5set-indicator active" style="font-size:0.75rem; padding:2px 8px;">
+                ⭐ 화려한 아바타 5세트 스탯 버프 ON
+              </span>
+              <span id="tdb-piece-counter" style="font-size:0.78rem; color:#38bdf8; font-weight:800;">
+                착용 부위: 5 / 5
+              </span>
+            </div>
+            <div class="tdb-buff-stats-strip">
+              <span>모든 스탯 <b style="color:#38bdf8;">+10</b></span>
+              <span>이동속도 <b style="color:#6ee7b7;">+3</b></span>
+              <span>HP <b style="color:#fde68a;">+2,000</b></span>
+              <span>공식 계수 <b style="color:#e879f9;">+205%</b></span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="tdb-action-row">
+            <button type="button" class="btn-sm btn-primary-soft" onclick="downloadSimulatorStandeePNG()" style="flex:1; justify-content:center; padding:0.6rem; font-size:0.82rem; font-weight:800;">
+              📸 투명 PNG 저장
+            </button>
+            <button type="button" class="btn-sm btn-primary" onclick="saveSimulatorToProfile()" style="flex:1.2; justify-content:center; padding:0.6rem; font-size:0.82rem; font-weight:800;">
+              💾 내 프로필에 확정 착용
+            </button>
+          </div>
         </div>
       </div>
     </section>
+  </div>
+
+  <!-- Character Picker Modal (18 Characters) -->
+  <div id="tdb-char-modal" class="modal-backdrop" onclick="if(event.target === this) closeCharacterPickerModal()">
+    <div class="modal-card" style="max-width:680px; width:92%;">
+      <div class="modal-header">
+        <h3 style="margin:0; font-size:1.1rem; color:#fde68a; display:flex; align-items:center; gap:0.4rem;">
+          <span>👤 캐릭터 선택</span>
+          <span class="badge-pill gold" style="font-size:0.7rem;">18인 플레이어블</span>
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeCharacterPickerModal()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1rem;">
+        <div id="tdb-char-picker-grid" class="tdb-char-picker-grid">
+          <!-- 18 playable character cards -->
+        </div>
+      </div>
+    </div>
   </div>
 
   <footer>
