@@ -5976,178 +5976,31 @@
           <div>
             <h2 style="margin:0 0 0.35rem 0; font-size:1.35rem; color:#fde68a; display:flex; align-items:center; gap:0.5rem;">
               <span>👗 8. 아바타 & 제복 통합 시뮬레이터</span>
-              <span class="badge-pill gold" style="font-size:0.75rem;">자체 오프라인 레이어 엔진 · 2,790종 DB · 74색 제복 염색</span>
+              <span class="badge-pill gold" style="font-size:0.75rem;">공식 8방향 캔버스 엔진 · 19인 전 캐릭터 · 2,790종 DB · 제복/헤어 염색</span>
             </h2>
             <p style="margin:0; font-size:0.83rem; color:#94a3b8; line-height:1.5;">
-              외부 서버 부하 0% 완전 자체 구현 · 테일즈DB 공식 19인 전 플레이어블 캐릭터 고해상도 베이스와 2,790종 오프라인 누끼 레이어 실시간 착용 · 5세트 스탯 효과 완벽 계산
+              외부 서버 부하 0% 완전 로컬 구동 · 테일즈위버 19인 전 플레이어블 캐릭터 공식 도트 바디와 8방향 모션 회전 · 2,790종 아바타 장착 및 제복·헤어 컬러 염색 지원
             </p>
           </div>
           <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
-            <button type="button" class="btn-sm btn-primary-soft" onclick="downloadSimulatorStandeePNG()" style="font-size:0.75rem; padding:0.35rem 0.75rem;">
-              📸 투명 PNG 저장
+            <button type="button" class="btn-sm btn-primary-soft" onclick="downloadCurrentLookPNG()" style="font-size:0.75rem; padding:0.35rem 0.75rem;">
+              📸 스냅샷 PNG 저장
             </button>
             <button type="button" class="btn-sm btn-primary" onclick="saveSimulatorToProfile()" style="font-size:0.75rem; padding:0.35rem 0.85rem;">
               💾 프로필 확정 저장
             </button>
-            <button type="button" class="btn-sm btn-outline" onclick="resetAllSimulatorEquip()" style="font-size:0.75rem; padding:0.35rem 0.65rem;">
+            <button type="button" class="btn-sm btn-outline" onclick="resetAvatarSim()" style="font-size:0.75rem; padding:0.35rem 0.65rem;">
               🔄 전체 초기화
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Unified Native Avatar & Uniform Simulator -->
-      <div class="tdb-sim-container">
-        <!-- 1. LEFT COLUMN: WHO BAR, CATEGORIES, SEARCH, ITEM/DYE GRID -->
-        <div class="tdb-left">
-          <div class="tdb-who-bar">
-            <div id="tdb-who-card" class="tdb-who-card" onclick="openCharacterPickerModal()" title="클릭하여 캐릭터를 변경합니다">
-              <img id="tdb-who-art" class="tdb-who-art" src="assets/characters/nayatrei.png" alt="">
-              <div class="tdb-who-info">
-                <span class="tdb-who-sub">캐릭터 변경</span>
-                <span id="tdb-who-name" class="tdb-who-name">나야트레이</span>
-              </div>
-              <span class="tdb-who-badge">변경 ▾</span>
-            </div>
-            <div class="tdb-cats-wrap">
-              <div id="tdb-cats" class="tdb-cats">
-                <button type="button" class="tdb-cat-btn active" data-cat="uniform" onclick="switchSimulatorCategory('uniform', this)">
-                  🎨 제복/염색 (74색)
-                </button>
-                <button type="button" class="tdb-cat-btn" data-cat="showHead" onclick="switchSimulatorCategory('showHead', this)">
-                  👑 투구/모자 (625)
-                </button>
-                <button type="button" class="tdb-cat-btn" data-cat="showFace" onclick="switchSimulatorCategory('showFace', this)">
-                  👓 머리/얼굴 (563)
-                </button>
-                <button type="button" class="tdb-cat-btn" data-cat="showArmor" onclick="switchSimulatorCategory('showArmor', this)">
-                  👗 몸/의상 (571)
-                </button>
-                <button type="button" class="tdb-cat-btn" data-cat="showFoot" onclick="switchSimulatorCategory('showFoot', this)">
-                  👣 다리/발자국 (496)
-                </button>
-                <button type="button" class="tdb-cat-btn" data-cat="showEffect" onclick="switchSimulatorCategory('showEffect', this)">
-                  🌀 효과/마법진 (537)
-                </button>
-                <button type="button" class="tdb-cat-btn" data-cat="showSubArms" onclick="switchSimulatorCategory('showSubArms', this)">
-                  🗡️ 무기 확장 (3)
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="tdb-filter-strip">
-            <div class="tdb-search-row">
-              <input type="search" id="tdb-search-input" class="calc-input tdb-search-input" placeholder="🔍 아이템 이름 또는 검색어 입력 (예: 토끼 모자, 리본, 러그, 발자국...)" oninput="onSimulatorSearchInput()">
-              <span id="tdb-item-count" class="tdb-count-label">공식 74종 컬러</span>
-            </div>
-            <div id="tdb-quick-filters" class="tdb-quick-filters"></div>
-          </div>
-
-          <div id="tdb-content-grid" class="tdb-content-grid"></div>
-        </div>
-
-        <!-- 2. RIGHT COLUMN: STAGE VIEWPORT, SLOTS, BUFFS, EXPORT -->
-        <div class="tdb-right">
-          <div class="tdb-stage-card">
-            <div class="tdb-stage-viewport" id="tdb-stage-viewport">
-              <div class="tdb-pedestal-light"></div>
-              <div id="tdb-standee-wrap" class="tdb-standee-wrap">
-                <img id="tdb-layer-foot" class="tdb-layer" style="display:none;" alt="" onerror="this.style.display='none';">
-                <img id="tdb-layer-back" class="tdb-layer" style="display:none;" alt="" onerror="this.style.display='none';">
-                <img id="tdb-layer-base" class="tdb-layer" src="assets/characters/nayatrei.png" alt="">
-                <img id="tdb-layer-1" class="tdb-layer" src="assets/uniform/naya/1-d.png" alt="">
-                <img id="tdb-layer-2" class="tdb-layer" src="assets/uniform/naya/2-d.png" alt="">
-                <img id="tdb-layer-3" class="tdb-layer" src="assets/uniform/naya/3-d.png" alt="">
-                <img id="tdb-layer-4" class="tdb-layer" src="assets/uniform/naya/4-d.png" alt="">
-                <img id="tdb-layer-costume" class="tdb-layer" style="display:none;" alt="" onerror="this.style.display='none';">
-                <img id="tdb-layer-face" class="tdb-layer" style="display:none;" alt="" onerror="this.style.display='none';">
-                <img id="tdb-layer-head" class="tdb-layer" style="display:none;" alt="" onerror="this.style.display='none';">
-                <img id="tdb-layer-weapon" class="tdb-layer" style="display:none;" alt="" onerror="this.style.display='none';">
-                <img id="tdb-layer-effect" class="tdb-layer" style="display:none;" alt="" onerror="this.style.display='none';">
-              </div>
-                <div class="tdb-ov tdb-ov-left">
-                  <span class="tdb-ov-title">동작</span>
-                  <div class="tdb-motion-col">
-                    <button type="button" class="tdb-motion-btn active" data-motion="stand" onclick="setSimulatorMotion('stand', this)">기본 대기</button>
-                    <button type="button" class="tdb-motion-btn" data-motion="walk" onclick="setSimulatorMotion('walk', this)">걷기 모션</button>
-                    <button type="button" class="tdb-motion-btn" data-motion="attack" onclick="setSimulatorMotion('attack', this)">공격 모션</button>
-                  </div>
-                </div>
-                <div class="tdb-ov tdb-ov-right">
-                  <span class="tdb-ov-title">확대</span>
-                  <div class="tdb-zoom-row">
-                    <button type="button" class="tdb-btn-circle" onclick="adjustSimulatorZoom(-0.25)" title="축소 (−)">−</button>
-                    <button type="button" class="tdb-btn-circle lbl" id="tdb-zoom-label" onclick="resetSimulatorZoom()" title="기본 배율 복원">2.0x</button>
-                    <button type="button" class="tdb-btn-circle" onclick="adjustSimulatorZoom(0.25)" title="확대 (+)">+</button>
-                  </div>
-                </div>
-                <button type="button" class="tdb-arrow ar-left" onclick="rotateSimulatorChar(-1)" title="좌측으로 회전 (◀)">◀</button>
-                <button type="button" class="tdb-arrow ar-right" onclick="rotateSimulatorChar(1)" title="우측으로 회전 (▶)">▶</button>
-              </div>
-              <div class="tdb-stage-footer">
-                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                  <span id="tdb-angle-badge" class="badge-pill cyan" style="font-size:0.75rem;">정면 (Isometric Front)</span>
-                  <span id="tdb-char-full-badge" style="font-size:0.78rem; color:#cbd5e1; font-weight:700;">나야트레이 (Nayatrei)</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="tdb-slots-card">
-              <div class="tdb-slots-header">
-                <span style="font-size:0.78rem; font-weight:800; color:#e2e8f0;">🎒 착용 슬롯 (더블클릭 또는 ✕로 탈의)</span>
-                <button type="button" class="btn-sm btn-outline" onclick="resetAllSimulatorEquip()" style="font-size:0.68rem; padding:2px 6px;">🔄 전체 탈의</button>
-              </div>
-              <div id="tdb-slots-grid" class="tdb-slots-grid"></div>
-            </div>
-
-            <div class="tdb-buff-card" id="tdb-buff-card">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span id="tdb-5set-title" class="tw-5set-indicator active" style="font-size:0.75rem; padding:2px 8px;">
-                  ⭐ 화려한 아바타 5세트 스탯 버프 ON
-                </span>
-                <span id="tdb-piece-counter" style="font-size:0.78rem; color:#38bdf8; font-weight:800;">
-                  착용 부위: 5 / 5
-                </span>
-              </div>
-              <div class="tdb-buff-stats-strip">
-                <span>모든 스탯 <b style="color:#38bdf8;">+10</b></span>
-                <span>이동속도 <b style="color:#6ee7b7;">+3</b></span>
-                <span>HP <b style="color:#fde68a;">+2,000</b></span>
-                <span>공식 계수 <b style="color:#e879f9;">+205%</b></span>
-              </div>
-            </div>
-
-            <div class="tdb-action-row">
-              <button type="button" class="btn-sm btn-primary-soft" onclick="downloadSimulatorStandeePNG()" style="flex:1; justify-content:center; padding:0.6rem; font-size:0.82rem; font-weight:800;">
-                📸 투명 PNG 저장
-              </button>
-              <button type="button" class="btn-sm btn-primary" onclick="saveSimulatorToProfile()" style="flex:1.2; justify-content:center; padding:0.6rem; font-size:0.82rem; font-weight:800;">
-                💾 내 프로필에 확정 착용
-              </button>
-            </div>
-          </div>
-        </div>
+      <!-- Avatar Simulator Host (Native Full Canvas Compositor) -->
+      <div id="avatarSimHost" class="avatar-sim-host" style="min-height:780px; width:100%; border-radius:12px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.5);"></div>
     </section>
   </div>
 
-  <!-- Character Picker Modal (18 Characters) -->
-  <div id="tdb-char-modal" class="modal-backdrop" onclick="if(event.target === this) closeCharacterPickerModal()">
-    <div class="modal-card" style="max-width:680px; width:92%;">
-      <div class="modal-header">
-        <h3 style="margin:0; font-size:1.1rem; color:#fde68a; display:flex; align-items:center; gap:0.4rem;">
-          <span>👤 캐릭터 선택</span>
-          <span class="badge-pill gold" style="font-size:0.7rem;">19인 플레이어블</span>
-        </h3>
-        <button type="button" class="modal-close-btn" onclick="closeCharacterPickerModal()">✕</button>
-      </div>
-      <div class="modal-body" style="padding:1rem;">
-        <div id="tdb-char-picker-grid" class="tdb-char-picker-grid">
-          <!-- 18 playable character cards -->
-        </div>
-      </div>
-    </div>
-  </div>
 
   <footer>
     테일즈 가이드 (Tales Guide) • 테일즈위버 종합 실전 컴패니언 • 2026년 11월 기준
@@ -6160,6 +6013,8 @@
 <script src="js/data/items_avatar_talesdb.js"></script>
 <script src="js/data/items_dye.js"></script>
 <script src="js/data.js"></script>
+<script src="js/tw_compositor.js"></script>
+<script src="js/tw_avatar_sim.js"></script>
 <script src="js/app.js"></script>
 
 

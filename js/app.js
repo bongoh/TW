@@ -7585,8 +7585,65 @@ var tdbSimState = {
   }
 };
 
+let avatarSimMounted = false;
 function initShowroom() {
-  initTalesDbSimulator();
+  const host = document.getElementById('avatarSimHost');
+  if (!host) return;
+  if (!avatarSimMounted && window.TWAvatarSim && typeof window.TWAvatarSim.mount === 'function') {
+    avatarSimMounted = true;
+    window.TWAvatarSim.mount(host, {
+      css: 'assets/avatar-sim/css/app.css',
+      data: 'assets/avatar-sim/',
+      tdb: 'assets/avatar/icons/',
+      art: 'assets/characters/',
+      embed: true,
+      allowMobile: true
+    });
+  }
+}
+
+async function downloadCurrentLookPNG() {
+  if (!window.TWAvatarSim || !window.TWAvatarSim.snapshot) return;
+  try {
+    const shot = await window.TWAvatarSim.snapshot({ bg: false });
+    if (shot && shot.big) {
+      const url = URL.createObjectURL(shot.big);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `talesweaver_${shot.name || 'avatar'}_look.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  } catch (e) {
+    console.error('Failed to take snapshot:', e);
+  }
+}
+
+function saveSimulatorToProfile() {
+  if (!window.TWAvatarSim || !window.TWAvatarSim.getLook) return;
+  const look = window.TWAvatarSim.getLook();
+  try {
+    localStorage.setItem('tw_saved_avatar_look', JSON.stringify(look));
+    if (typeof showToastNotification === 'function') {
+      showToastNotification('현재 아바타 & 제복 코디가 프로필에 저장되었습니다!');
+    } else {
+      alert('현재 코디가 저장되었습니다!');
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function resetAvatarSim() {
+  const host = document.getElementById('avatarSimHost');
+  if (host && host.shadowRoot) {
+    const unequipAllBtn = host.shadowRoot.querySelector('#btnResetEquip, [data-act="clear"], .own-clear, .btn.own-clear');
+    if (unequipAllBtn) {
+      unequipAllBtn.click();
+    } else {
+      window.location.reload();
+    }
+  }
 }
 
 function initTalesDbSimulator() {

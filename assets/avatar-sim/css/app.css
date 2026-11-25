@@ -1,0 +1,539 @@
+/* the simulator lives in a shadow root (app.js mount): :host is its box; visible once this file has loaded */
+:host {
+  /* 사이트(테일즈DB) 안에서는 사이트 테마 토큰을 따라 라이트 · 다크가 바뀐다. 단독 페이지에서는 괄호 안 기본값 */
+  --primary: var(--accent, #0f6b62); --primary-dark: var(--accent-strong, #0b544d); --primary-soft: var(--accent-soft, #e3f1ee);
+  --bg1: color-mix(in oklab, #eef6f3 var(--tint, 100%), var(--surface, #fff)); --bg2: color-mix(in oklab, #f7faf8 var(--tint, 100%), var(--surface, #fff));
+  --panel: var(--surface, #fff);
+  --line: color-mix(in oklab, #dfe6e3 var(--edge, 100%), var(--surface, #fff)); --line-strong: color-mix(in oklab, #c9d4cf var(--edge, 100%), var(--surface, #fff));
+  --text: var(--ink, #1f2a28); --muted: color-mix(in oklab, #6b7a76 var(--fgmix, 100%), #fff);
+  --icon: color-mix(in oklab, #f1f4f3 var(--tint, 100%), var(--surface, #fff)); --stage: #3b4442;
+  --radius: 12px; --shadow: 0 1px 2px rgba(20, 40, 36, .06), 0 6px 18px rgba(20, 40, 36, .06);
+}
+* { box-sizing: border-box; }
+:host { display: block; visibility: visible; font: 13px/1.45 "Pretendard", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif; color: var(--text); }
+.hidden { display: none !important; }
+.screen { padding: 14px 16px; min-height: 100vh; max-width: 1200px; margin: 0 auto; }   /* talesdb content width */
+h1 { font-size: 22px; margin: 6px 0 14px; letter-spacing: -.5px; }
+.muted { color: var(--muted); font-size: 12px; }
+.lbl { color: var(--muted); margin: 0 2px 0 6px; font-size: 12px; }
+.status { margin-top: 8px; color: var(--muted); min-height: 18px; font-size: 12px; }
+
+/* pill buttons: white with a soft border, teal when on */
+.btn { font: inherit; font-size: 13px; padding: 6px 14px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface, #fff); color: var(--text);
+       cursor: pointer; white-space: nowrap; transition: background .12s, color .12s, border-color .12s; }
+.btn:hover { background: var(--primary-soft); border-color: var(--primary); }
+.btn.on { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+/* 코디 갤러리 업로드: 카테고리(정사각형)와 달리 글자에 맞춘 직사각형. 다리 확장 오른쪽 빈자리를
+   채우고, 자리가 모자라면 다음 줄로 내려간다 */
+/* 카테고리 줄 오른쪽 빈자리에 서는 '코디 갤러리 업로드'. 정사각형 카테고리와 달리 글자에 맞춘 직사각형 */
+.share-box { flex: 1 1 112px; min-width: 112px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 8px; }
+/* [배경]: 카테고리 칸과 같은 크기, 입힌 배경(없으면 첫 배경)을 작은 그림으로. 목록은 잘라낸 맵 그림 카드 */
+.share-box { margin-left: -6px; gap: 6px; }   /* [배경] 이 카테고리 칸 바로 옆에 붙어 보이게: .who 의 틈(12px)을 카테고리 칸 틈(6px)과 같게 */
+.btn.bg-open { width: 62px; height: 62px; padding: 0 2px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; line-height: 1.1; box-shadow: var(--shadow); }
+.btn.bg-open .bgic { width: 30px; height: 30px; flex: none; border-radius: 6px; background: var(--stage) center / cover no-repeat; }
+.btn.bg-open.worn .bgic { box-shadow: 0 0 0 2px var(--primary); }
+.card .ic.bgthumb { left: 23px; top: 5px; width: 57px; height: 76px; background-size: cover; background-position: center; image-rendering: auto; box-shadow: 0 0 0 1px var(--line); }
+.card .ic.bgthumb.none { display: flex; align-items: center; justify-content: center; background: var(--panel); color: var(--muted); font-size: 12px; box-shadow: inset 0 0 0 1px var(--line); }
+.card .new.hid { background: #6b5fb0; }   /* 숨긴 아이템 (코드를 넣었을 때) */
+/* 한 줄로, 빈자리 너비만큼 넓게 (최대 260px). 창이 좁아 빈자리가 버튼 글자보다 좁으면 두 줄로 접는다 */
+.share-box { container-type: inline-size; }
+.btn.share { width: 100%; max-width: 260px; padding: 10px 14px; border-color: var(--primary); color: var(--primary);
+             font-weight: 700; white-space: nowrap; word-break: keep-all; line-height: 1.35; text-align: center; }
+@container (max-width: 160px) { .btn.share { white-space: normal; } }
+.btn.share:hover { background: var(--primary); color: #fff; }   /* 코디 갤러리에 올리기 (카테고리가 아니라 하는 일) */
+.btn.share:hover { background: var(--primary); color: #fff; }
+.btn.on:hover { background: var(--primary-dark); }
+.btn-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0; }
+.group { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+input[type=search] { font: inherit; padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: 999px; min-width: 220px; background: var(--surface, #fff); }
+input[type=search]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 107, 98, .15); }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+
+/* character picker */
+.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, 168px); gap: 10px; }
+.pick-card { width: 168px; height: 200px; border: 1px solid var(--line); background: var(--panel); border-radius: var(--radius); box-shadow: var(--shadow);
+             cursor: pointer; text-align: center; padding: 8px; transition: transform .12s, border-color .12s; }
+.pick-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+.pick-card img { width: 150px; height: 150px; object-fit: contain; display: block; margin: 0 auto 4px; }
+.pick-card .nm { font-weight: 700; }
+.pick-tf .tf-art { width: 150px; height: 150px; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; }
+.pick-tf .tf-art canvas, .who-card canvas { image-rendering: pixelated; }
+.pick-tf { background: linear-gradient(180deg, var(--surface, #fff), var(--primary-soft)); }
+
+/* simulator */
+#sim { display: flex; gap: 12px; align-items: flex-start; }
+.left { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; height: calc(100vh - 28px); }
+.right { flex: 0 0 auto; width: 536px; padding: 10px; }
+@media (max-width: 900px) { #sim { flex-direction: column; } .left { height: auto; } .left .grid { height: 60vh; } .right { width: 100%; } }
+.who { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 2px; }
+.who-card { width: 130px; height: 130px; border: 1px solid var(--line); background: var(--panel); border-radius: var(--radius); box-shadow: var(--shadow);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; position: relative; }
+.who-card img { width: 116px; height: 116px; object-fit: contain; }
+.who-card:hover { border-color: var(--primary); }
+.who-card .nm { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font-size: 11px; color: var(--muted); }
+.who-right { display: flex; flex-direction: column; gap: 6px; }
+/* category buttons as square cards next to the illustration */
+#cats { display: grid; grid-template-columns: repeat(5, 62px); gap: 6px; }
+#cats .btn { width: 62px; height: 62px; padding: 0 2px; border-radius: 10px; white-space: normal; line-height: 1.2; font-size: 12px; box-shadow: var(--shadow); }
+
+/* item list: scrolls, no paging */
+.grid { flex: 1 1 auto; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, 104px); gap: 6px; justify-content: space-between; align-content: start;
+        padding: 8px; background: color-mix(in srgb, var(--surface, #fff) 55%, transparent); border: 1px solid var(--line); border-radius: var(--radius); min-height: 200px; }
+.card { width: 104px; height: 118px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; cursor: pointer; position: relative; }
+.card:hover { border-color: var(--primary); }
+.card.on { background: var(--primary-soft); border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+.card .nm { position: absolute; left: 2px; right: 2px; top: 3px; height: 32px; line-height: 16px; font-size: 11px; text-align: center; overflow: hidden; padding: 0 2px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: keep-all; overflow-wrap: anywhere; }   /* up to two lines */
+.card .ic { position: absolute; left: 14px; top: 38px; width: 76px; height: 76px; border-radius: 6px; background: transparent no-repeat center; image-rendering: pixelated; }   /* 아이콘 뒤 네모는 두지 않는다 */
+.card .new { position: absolute; right: 3px; top: 3px; z-index: 1; padding: 0 4px; border-radius: 4px; background: #e5484d; color: #fff; font-size: 9px; font-weight: 700; line-height: 14px; letter-spacing: .3px; pointer-events: none; }   /* 최근 추가 (chars 'new') */
+.card .ic.sheet { background-repeat: no-repeat; }
+/* hair dyes: colour dots on both sides of the preview */
+.card .dye { position: absolute; width: 14px; height: 14px; padding: 0; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ink, rgba(0, 0, 0, .35)) 35%, transparent); cursor: pointer;
+             box-shadow: 0 0 0 1px rgba(255, 255, 255, .7) inset; z-index: 1; }
+.card .dye.l { left: 4px; } .card .dye.r { right: 4px; }
+.card .dye:hover { transform: scale(1.2); }
+.card .dye.on { outline: 2px solid var(--primary); outline-offset: 1px; }
+.grid .end { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 10px; font-size: 12px; }
+
+/* the stage: the canvas fills it; motion / hair buttons and the arrows float on top */
+.stage { position: relative; background: var(--stage); border-radius: var(--radius); width: 516px; height: 600px; }
+#view { border-radius: var(--radius); }   /* 무대가 더 이상 잘라내지 않는다 (염색 창을 무대 밖으로 끌 수 있게) */
+#view { background: var(--stage); image-rendering: pixelated; display: block; width: 516px; height: 600px; }
+.ov { position: absolute; top: 8px; display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.ov-left { left: 8px; }
+.ov-right { right: 8px; }
+.ov .btn { box-shadow: 0 1px 3px rgba(0, 0, 0, .3); }
+.ov-title { color: #e6ecea; font-weight: 700; font-size: 13px; padding: 4px 0 0; text-align: center; }
+.ov-col { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.ov-col .btn { text-align: center; }
+.ov .btn.off { background: var(--surface, #fff); color: var(--muted); border-color: var(--line-strong); text-decoration: line-through; }
+.arrow { position: absolute; font: inherit; width: 36px; height: 36px; border: 1px solid #5d6966; background: #4a5553; color: #fff; border-radius: 8px; cursor: pointer; }
+.arrow:hover { background: var(--primary); border-color: var(--primary); }
+.ar-up { top: 8px; left: 50%; transform: translateX(-50%); }
+.ar-down { bottom: 8px; left: 50%; transform: translateX(-50%); }
+.ar-left { left: 8px; top: 50%; transform: translateY(-50%); }
+.ar-right { right: 8px; top: 50%; transform: translateY(-50%); }
+#tick { flex: 1 1 200px; accent-color: var(--primary); }
+/* 무대 바로 아래: 재생 / 정지 · 틱 막대 · 지금 틱 */
+.anim-row { display: flex; align-items: center; gap: 8px; margin: 6px 0 2px; }
+.anim-row .btn { flex: none; padding: 4px 10px; font-size: 12px; }
+.anim-row #tickLabel { flex: none; min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* 입은 칸: 사이트 시뮬레이터 결과 칸과 같은 모양 (둥근 회색 칸, 위에 작은 회색 이름, 아래에 값). 한 줄 5칸.
+   위: 그리기 체크 + 칸 이름 / 아래: 그림(30px) + 입은 아이템 이름 (전체 이름은 마우스를 올리면). 입은 칸은 강조색 칸 */
+.slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 10px 0 0; }   /* 아래 여백 = 카드 안쪽 여백 (위와 같게) */
+/* 이름을 끝까지 보이게 (2026-11-19 사용자): 그림 아래에 이름을 두고 줄을 바꾼다. 칸 높이는 그 줄에서 가장 긴 이름에 맞춰 같이 늘어난다 */
+.slot { min-width: 0; min-height: 58px; box-sizing: border-box; padding: 56px 5px 5px; border: 1px solid var(--line); border-radius: 10px; position: relative;
+        background: color-mix(in srgb, var(--surface-2, #f4f7f6) 80%, transparent); }
+.slot input { position: absolute; left: 8px; top: 7px; width: 12px; height: 12px; margin: 0; accent-color: var(--primary); }
+.slot .lb { position: absolute; left: 24px; right: 6px; top: 5px; font-size: 11px; font-weight: 600; line-height: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
+.slot .ic { position: absolute; left: 50%; margin-left: -15px; top: 23px; width: 30px; height: 30px; border-radius: 6px; background: transparent no-repeat center; image-rendering: pixelated; cursor: pointer; }
+.slot .nm { font-size: 11.5px; font-weight: 800; line-height: 14px; text-align: center; word-break: keep-all; overflow-wrap: anywhere; color: var(--text); }
+.slot .ic.tdbbox::before { inset: 0; border-radius: 6px; }
+.slot .ic.tdbbox img.tdb { width: 28px; height: 28px; }
+.slot .ic.tdbbox span.tdb { flex: none; transform: scale(.52); }
+.slot.filled { border-color: var(--primary); background: color-mix(in srgb, var(--primary-soft) 70%, var(--panel)); }
+/* "clear all" cell at the end of the slot grid */
+/* 마지막 칸: 랜덤 입히기 · 전부 해제 (한 칸을 위아래 둘로, app.js buildSlots) */
+.slot-acts { grid-column: 5; min-width: 0; min-height: 58px; display: grid; grid-template-rows: 1fr 1fr; gap: 4px; }
+.slot-act { min-width: 0; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--surface-2, #f4f7f6) 80%, transparent); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 5px; color: var(--muted); font: inherit; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.slot-act .sym { width: 18px; height: 18px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 11px; line-height: 1; }
+.slot-act:hover { border-color: var(--primary); color: var(--text); }
+.slot-act:hover .sym { background: var(--primary); color: #fff; }
+.slot-act:disabled { opacity: .45; cursor: default; border-color: var(--line); color: var(--muted); }   /* 랜덤: 그림이 뜨는 동안 잠금 */
+.slot-act:disabled .sym { background: var(--primary-soft); color: var(--primary); }
+
+/* avatar part buttons: the 무형 avatar icons (무형 투구 / 가면 / 외투 / 장식 / 발자국 E, cut from game screenshots) above the label */
+#cats .btn:is([data-v="head"], [data-v="face"], [data-v="body"], [data-v="back"], [data-v="foot"], [data-v="costume"]) {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; line-height: 1.1; }
+#cats .btn:is([data-v="head"], [data-v="face"], [data-v="body"], [data-v="back"], [data-v="foot"], [data-v="costume"])::before {
+  content: ''; width: 30px; height: 30px; flex: none; background: center / contain no-repeat; }
+#cats .btn[data-v="head"]::before { background-image: url(../img/cat/head.png); }
+#cats .btn[data-v="face"]::before { background-image: url(../img/cat/face.png); }
+#cats .btn[data-v="body"]::before { background-image: url(../img/cat/body.png); }
+#cats .btn[data-v="back"]::before { background-image: url(../img/cat/back.png); }
+#cats .btn[data-v="foot"]::before { background-image: url(../img/cat/foot.png); }
+#cats .btn[data-v="costume"]::before { background-image: url(../img/cat/costume.png); }   /* cut from a game screenshot */
+/* 헤어 / 확장 무기 / 일반 무기 / 보조: the first entry of the list, drawn by the browser (app.js catIcons) */
+#cats .btn.live-ic { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; line-height: 1.1; }
+#cats .btn.live-ic .cic { width: 30px; height: 30px; flex: none; display: flex; align-items: center; justify-content: center; }
+#cats .btn.live-ic .cic canvas { image-rendering: pixelated; }
+
+/* list counters ("19개", "19개 전부 표시 / 아래로 내리면 더 보입니다") are not shown; scrolling still loads the next cards */
+#countLabel, .grid .end { display: none; }
+
+/* top-left block, arranged like the mock-up at the original sizes: the character card (illustration + bold name) as
+   tall as the buttons + search, 2 x 5 category buttons, the search box across the full width under them; the
+   전체 / 아바타 / 장비 chips are not shown */
+.who { align-items: stretch; gap: 12px; margin-bottom: 8px; }
+.who-card { height: auto; flex-direction: column; justify-content: center; gap: 2px; padding: 6px 4px; }
+.who-card img { width: 116px; height: 116px; }
+.who-card .nm { position: static; font-size: 13px; font-weight: 700; color: var(--ink, #555); }
+.who-right { gap: 6px; }
+.who-right .btn-row { flex-wrap: nowrap; }
+.who-right #search { flex: 1 1 auto; width: 100%; min-width: 0; }
+#kinds { display: none !important; }
+/* the item list ends where the preview panel ends: the list box takes no height of its own (contain: size) and fills
+   what the row leaves under the top block, so the left column is exactly as tall as the right panel */
+#sim { align-items: stretch; }
+.left { height: auto; }
+.left .grid { contain: size; }
+@media (max-width: 900px) { .left .grid { contain: none; } }
+/* compact height (the simulator goes into a TalesDB page, so it must not fill the window): the preview is shown at
+   480 px high keeping its 516:600 shape (the canvas keeps its pixel size, only its display size changes); the left
+   column follows the right panel's height and its list scrolls */
+@media (min-width: 901px) {
+  .right { display: flex; flex-direction: column; }
+  .right .stage { flex: none; height: 480px; width: auto; aspect-ratio: 516 / 600; margin: 0 auto; }
+  .right #view { width: 100%; height: 100%; }
+}
+.ov .btn:disabled { opacity: .35; cursor: not-allowed; }   /* 뒷머리 of a one-piece style */
+/* item cards: picture on top, the name under it in bold (the name above the picture read like a label of the card above) */
+.card .ic { top: 5px; }
+.card .nm { top: 84px; font-weight: 700; color: var(--text); }
+/* cards stand apart more: a stronger border and a light shadow */
+.card { border-color: var(--line-strong); box-shadow: 0 1px 3px rgba(0, 0, 0, .10); }
+.card:hover { box-shadow: 0 2px 6px rgba(15, 107, 98, .18); }
+#sim.screen { min-height: 0; }
+/* TalesDB avatar list icons (game inventory icons, 40 x 40 in a 55 x 55 sheet cell) centred in the icon box, on the same
+   tile as TalesDB's avatar list (--icon-tile-*: the site's theme tokens reach into the shadow root) */
+.ic.tdbbox { display: flex; align-items: center; justify-content: center; }
+.ic.tdbbox::before { content: ""; position: absolute; inset: 8px; border: 1px solid var(--icon-tile-line, var(--line-strong)); border-radius: 10px;
+                     background: var(--icon-tile-bg, var(--icon)); }
+.ic.tdbbox img.tdb { position: relative; width: 40px; height: 40px; image-rendering: pixelated; }
+.ic.tdbbox span.tdb { position: relative; display: block; width: 55px; height: 55px; background-repeat: no-repeat; }   /* one cell of icons/d/d<k> */
+/* character picker: a small window over the simulator */
+.pick-modal { position: fixed; inset: 0; z-index: 100; background: color-mix(in srgb, var(--ink, rgba(20, 35, 32, .45)) 45%, transparent); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.pick-box { background: var(--panel); border-radius: var(--radius); box-shadow: 0 10px 40px rgba(0, 0, 0, .25); padding: 12px 14px 8px; width: 100%; max-width: 552px; max-height: 90vh; overflow: auto; }
+.pick-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.pick-head h1 { font-size: 16px; margin: 0; }
+.pick-close { border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--muted); padding: 2px 6px; border-radius: 6px; }
+.pick-close:hover { background: var(--primary-soft); color: var(--text); }
+.pick-modal .pick-grid { grid-template-columns: repeat(auto-fill, 98px); gap: 8px; justify-content: center; }
+.pick-modal .pick-card { width: 98px; height: 112px; padding: 4px; }
+.pick-modal .pick-card img { width: 80px; height: 80px; margin-bottom: 2px; }
+.pick-modal .pick-card .nm { font-size: 12px; }
+.pick-modal .pick-tf .tf-art { width: 80px; height: 80px; margin-bottom: 2px; }   /* the simulator is as tall as its content (the right panel), not the window */
+/* the transform cloak screen is as tall as the character screen: the top block keeps its height without the category
+   buttons, and the preview grows by the height the equip slots take on the other screen (480 + 132 px) */
+.who-card { min-height: 168px; }
+@media (min-width: 901px) {
+  #sim.tf .right .stage { height: 612px; width: 516px; aspect-ratio: auto; }
+  #sim.tf .right #view { object-fit: contain; }
+}
+#sim.tf .who-right { justify-content: flex-end; }   /* no category buttons: the search box sits on the list's edge */
+/* motion / hair buttons on the preview: smaller so the motion column ends above the ◀ arrow */
+.ov, .ov-col { gap: 4px; }
+.ov .btn { font-size: 12px; padding: 3px 10px; min-width: 56px; }
+.ov-title { font-size: 12px; padding-top: 2px; }
+/* clicking / dragging over the lists and buttons must not select their text (the search box stays editable) */
+#sim, #pick { -webkit-user-select: none; user-select: none; }
+#sim input, #pick input { -webkit-user-select: text; user-select: text; }
+#sim img, #pick img, #sim canvas { -webkit-user-drag: none; }
+
+/* cloak screen: a cloak animation can hold 20+ motions - two narrow columns instead of one tall one */
+#motions.many { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+#motions.many .btn { min-width: 0; padding: 3px 6px; font-size: 11px; white-space: nowrap; }
+
+/* 확장 의상 염색 (DB 0351): per-part colour pickers, bottom right of the stage; closed = just the 염색 button */
+.ov-dye { position: absolute; z-index: 60; right: 8px; bottom: 48px; display: flex; flex-direction: column; gap: 4px; align-items: stretch; background: color-mix(in srgb, var(--ink, rgba(28, 38, 36, .88)) 88%, transparent); border-radius: 8px; padding: 6px; }
+.ov-dye .row { display: flex; align-items: center; gap: 6px; color: #e6ecea; font-size: 12px; white-space: nowrap; }
+/* at most 190 px wide (a bit under 2/3 of the widest outfit, 수려한 한복): a long part list ends in … and shows whole on hover (title) */
+.ov-dye { max-width: 190px; }
+.ov-dye .row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ov-dye .row input, .ov-dye .row .x { flex: none; }
+.ov-dye input[type=color] { width: 26px; height: 20px; padding: 0; border: 1px solid #5d6966; border-radius: 4px; background: none; cursor: pointer; }
+.ov-dye input[type=color].unset { opacity: .45; }
+.ov-dye .x { font: inherit; font-size: 12px; width: 18px; height: 18px; line-height: 1; border: none; border-radius: 50%; background: #4a5553; color: #fff; cursor: pointer; padding: 0; }
+.ov-dye .x:hover { background: var(--primary); }
+.ov-dye.closed { background: none; padding: 0; }
+.ov-dye.closed .row, .ov-dye.closed .foot { display: none; }
+.ov-dye .btn { font-size: 12px; padding: 3px 10px; }
+
+/* inside TalesDB (mount opts.embed): no padding of its own, TalesDB's font stack, and nothing sized by the viewport */
+:host(.embed) { font-family: "IBM Plex Sans KR", "Noto Sans KR", "Malgun Gothic", sans-serif; }
+:host(.embed) .screen { padding: 0; max-width: none; min-height: 0; }
+:host(.embed) .pick-box { max-height: min(640px, 90vh); }
+:host(.embed) .my-open { display: none; }   /* 사이트 안에서는 시뮬레이터 위 줄의 [내 코디] 가 연다 */
+
+/* 보유 아바타 (app.js ownOpen): [배경] 아래의 칸 단추, 넓은 창 하나. 묶음(상자) 줄은 접혀 있고 누르면 펼친다 */
+.btn.own-open .ownic { min-width: 30px; height: 24px; padding: 0 4px; box-sizing: border-box; flex: none; border-radius: 6px; background: var(--primary-soft); color: var(--primary);
+                       display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; line-height: 1; }
+.btn.own-open.worn .ownic { background: var(--primary); color: #fff; }   /* 랜덤이 보유한 것만 돌릴 때 */
+.btn.own-open { white-space: normal; word-break: keep-all; }
+.slot-act.own { border-color: var(--primary); color: var(--primary); }
+.own-box { max-width: 900px; }
+:host(.embed) .own-box { max-height: 92vh; }
+.own-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 14px; margin: 0 0 8px; font-size: 13px; }
+.own-top .own-rand span { font-weight: 700; }
+.own-top .muted { font-size: 12px; }
+.own-filt { margin-bottom: 8px; }
+.own-filt .filt-opts { gap: 4px 6px; }
+.own-filt input[type="search"] { font: inherit; font-size: 12px; padding: 3px 10px; border: 1px solid var(--line-strong); border-radius: 999px; width: 220px; max-width: 100%; background: var(--surface, #fff); color: var(--text); }
+.own-filt input[type="search"]:focus { outline: none; border-color: var(--primary); }
+.own-filt .filt-end { gap: 12px; }
+.own-tab { font: inherit; font-size: 12px; line-height: 18px; padding: 2px 10px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface, #fff); color: var(--text); cursor: pointer; white-space: nowrap; }
+.own-tab em { font-style: normal; font-size: 11px; color: var(--muted); margin-left: 5px; }
+.own-tab:hover { border-color: var(--primary); background: var(--primary-soft); }
+.own-tab.on { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 700; }
+.own-tab.on em { color: inherit; opacity: .85; }
+.own-tab.zero { opacity: .5; }
+.own-list { height: min(430px, 46vh); overflow: auto; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--panel); }
+.own-list .grid-empty, .own-list .grid-wait { padding: 40px 10px; text-align: center; color: var(--muted); font-size: 13px; }
+.own-sec { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+.own-sec input { flex: none; margin: 0; width: 14px; height: 14px; accent-color: var(--primary); cursor: pointer; }
+.own-sec-t { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 7px 0; border: 0; background: none; font: inherit; font-size: 12.5px; color: var(--text); cursor: pointer; text-align: left; }
+.own-sec-t .tw { flex: none; width: 10px; color: var(--muted); transition: transform .12s; }
+.own-sec.open .own-sec-t .tw { transform: rotate(90deg); }
+.own-sec-t b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.own-sec-t em { margin-left: auto; flex: none; font-style: normal; font-size: 11px; color: var(--muted); }
+.own-sec.has .own-sec-t b { color: var(--primary); font-weight: 700; }
+.own-sec.has .own-sec-t em { color: var(--primary); font-weight: 700; }
+.own-sec-t:hover b { text-decoration: underline; }
+.own-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px; padding: 8px 10px 10px; border-bottom: 1px solid var(--line); }
+.own-it { display: flex; align-items: center; gap: 6px; min-width: 0; padding: 3px 6px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; font-size: 12px; line-height: 1.25; }
+.own-it input { flex: none; margin: 0; width: 13px; height: 13px; accent-color: var(--primary); cursor: pointer; }
+.own-it:hover { border-color: var(--primary); }
+.own-it.on { border-color: var(--primary); background: color-mix(in srgb, var(--primary-soft) 70%, var(--panel)); font-weight: 700; }
+.own-it.hid .own-nm { color: color-mix(in oklab, #6b5fb0 var(--fgmix, 100%), #fff); }
+.own-ic { flex: none; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; overflow: hidden; image-rendering: pixelated; }
+.own-ic span.tdb { flex: none; display: block; width: 55px; height: 55px; background-repeat: no-repeat; transform: scale(.52); }
+.own-ic img.tdb { width: 28px; height: 28px; }
+.own-ic .sh { display: block; width: 30px; height: 30px; background-repeat: no-repeat; }
+.own-nm { flex: 1 1 auto; min-width: 0; word-break: keep-all; overflow-wrap: anywhere; }
+.own-it em { flex: none; font-style: normal; font-size: 10.5px; font-weight: 400; color: var(--muted); }
+.own-io { flex-wrap: wrap; }
+.own-io .own-clear { margin-left: auto; }
+.own-paste-acts { display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 600px) {
+  .own-items { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .own-filt input[type="search"] { width: 100%; }
+  .own-list { height: 44vh; }
+  /* 좁은 화면: 부위 · 획득처 줄은 한 줄로 두고 옆으로 민다 (목록 자리를 남기려고) */
+  #ownSlots, #ownGroups { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .own-tab { flex: none; }
+  .own-filt .filt-end { margin-left: 0; gap: 10px; white-space: nowrap; }
+}
+
+/* 내 코디: 캐릭터 선택 창과 같은 작은 창 */
+.my-box { max-width: 560px; }
+.my-row { display: flex; gap: 6px; align-items: stretch; margin: 6px 0; }
+.my-row input, .my-row textarea { flex: 1 1 auto; font: inherit; padding: 6px 10px; border: 1px solid var(--line-strong); border-radius: 8px; min-width: 0; }
+.my-row textarea { resize: vertical; font-size: 12px; word-break: break-all; }
+.my-row input:focus, .my-row textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 107, 98, .15); }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 700; }
+.btn.primary:hover { background: var(--primary-dark); }
+.my-list { display: flex; flex-direction: column; gap: 6px; max-height: 340px; overflow: auto; margin: 8px 0; }
+.my-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; }
+.my-info { display: flex; flex-direction: column; min-width: 0; }
+.my-info b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.my-info .muted { font-size: 12px; }
+.my-acts { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+.my-acts .btn { padding: 4px 10px; font-size: 12px; }
+.my-acts .btn:disabled { opacity: .45; cursor: not-allowed; }
+.my-empty { text-align: center; padding: 18px 0; }
+.my-note { font-size: 12px; margin: 6px 0 0; }
+@media (max-width: 900px) { :host(.embed) .left .grid { height: 520px; } }
+/* phones / tablets: a notice instead of the simulator */
+.mobile-block { display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; text-align: center; padding: 48px 16px; color: var(--muted); font-size: 14px; }
+.mobile-block b { color: var(--text); font-size: 15px; }
+.pick-tf .tf-art { display: flex; align-items: center; justify-content: center; }
+.pick-tf .tf-art img { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; margin: 0; }
+/* the stage is as wide as the panel (516 px) while the picture keeps its 480 px high 516:600 shape in the middle: the
+   ◀ ▶ arrows sit in the side margins, and the dye panel stays inside them (it used to cover the ▶ arrow) */
+@media (min-width: 901px) {
+  .right .stage { width: 100%; aspect-ratio: auto; }
+  .right #view { width: auto; height: 100%; aspect-ratio: 516 / 600; margin: 0 auto; }
+  #sim.tf .right #view { width: 100%; aspect-ratio: auto; }
+  .ar-left { left: 6px; }
+  .ar-right { right: 6px; }
+  .ov-dye { right: 50px; max-height: calc(100% - 96px); overflow-y: auto; }
+}
+/* the outfit's 머리 dye while a hair style is worn (not applied) */
+.ov-dye .row.off { opacity: .4; }
+/* 염색 window: a title bar (drag to move it around the stage) with × at its right end; closed = just the 염색 button */
+.ov-dye .bar { display: flex; align-items: center; gap: 6px; padding: 0 0 2px 4px; color: #e6ecea; font-size: 12px; font-weight: 700;
+               cursor: move; -webkit-user-select: none; user-select: none; touch-action: none; }
+.ov-dye .bar span { flex: 1; }
+.ov-dye .bar .close { font: inherit; font-size: 14px; width: 20px; height: 20px; line-height: 1; border: none; border-radius: 4px; background: none;
+                      color: #e6ecea; cursor: pointer; padding: 0; }
+.ov-dye .bar .close:hover { background: #4a5553; }
+.ov-dye.closed .bar, .ov-dye:not(.closed) .head { display: none; }
+/* weapon types of 확장 무기 / 일반 무기 (app.js partChips): one row between the search box and the list, not scrolled with it */
+.parts { flex: none; margin: 0 0 8px; }
+.parts .btn { font-size: 12px; padding: 3px 12px; }
+/* the closed 염색 window (just its button) sits in the stage's bottom right corner; opened, it keeps its own place */
+.ov-dye.closed { right: 8px; bottom: 8px; }
+/* 확장 의상 / 기본 의상 염색: the part's colour swatch (opens the picker below) */
+.ov-dye .sw { flex: none; width: 26px; height: 20px; padding: 0; border: 1px solid #5d6966; border-radius: 4px; cursor: pointer; }
+.ov-dye .sw.unset { opacity: .45; }
+/* colour picker (app.js colorPicker): square + hue bar + number fields (RGB / HSB / HSL / HEX) + the game colours; fixed over the page */
+.cpick { position: fixed; z-index: 200; width: 216px; padding: 8px; background: var(--surface, #fff); border: 1px solid var(--line-strong); border-radius: 10px;
+         box-shadow: 0 8px 28px rgba(0, 0, 0, .25); display: flex; flex-direction: column; gap: 8px; -webkit-user-select: none; user-select: none; }
+.cpick .sv { position: relative; width: 200px; height: 132px; border-radius: 6px; overflow: hidden; cursor: crosshair; touch-action: none; }
+.cpick .sv canvas { display: block; width: 200px; height: 132px; }
+.cpick .sv i { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border: 2px solid var(--surface, #fff); border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, .6); pointer-events: none; }
+.cpick .mid { display: flex; align-items: center; gap: 8px; }
+.cpick .eye { flex: none; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.cpick .eye:hover { background: var(--primary-soft); }
+.cpick .now { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line-strong); }
+.cpick .hue { position: relative; flex: 1; height: 12px; border-radius: 6px; cursor: pointer; touch-action: none;
+              background: linear-gradient(90deg, #f00, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00); }
+.cpick .hue i { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border: 2px solid var(--surface, #fff); border-radius: 50%; box-shadow: 0 0 0 1px rgba(0, 0, 0, .6); pointer-events: none; }
+.cpick .rgb .fields { display: flex; gap: 6px; }
+/* 입력 방식 (RGB / HSB / HSL / HEX): 라디오처럼 하나만 켜진 단추 줄 */
+.cpick .modes { display: flex; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+.cpick .modes button { flex: 1; padding: 3px 0; border: 0; border-left: 1px solid var(--line-strong); background: var(--surface, #fff); color: var(--muted); font: inherit; font-size: 11px; cursor: pointer; }
+.cpick .modes button:first-child { border-left: 0; }
+.cpick .modes button:hover { background: var(--primary-soft); color: var(--text); }
+.cpick .modes button.on { background: var(--primary); color: #fff; }
+.cpick .rgb label.hex input { letter-spacing: .5px; text-transform: uppercase; }
+.cpick .rgb label { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; color: var(--muted); }
+.cpick .rgb input { width: 100%; padding: 4px 2px; text-align: center; font: inherit; font-size: 13px; color: var(--text); border: 1px solid var(--line-strong); border-radius: 6px; -webkit-user-select: text; user-select: text; }
+/* 넣은 색이 옷에 그려지는 명암 띠 (app.js colorPicker opt.shades): 칸을 누르면 그 칸을 지금 색으로 맞춘다 */
+/* the picker's presets (기본 의상 염색: the part's game colours, app.js basePanel): 5 boxes a row under R G B */
+.cpick .pre { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.cpick .pre .p { height: 22px; padding: 0; border: 1px solid var(--line-strong); border-radius: 5px; cursor: pointer; }
+.cpick .pre .p:hover { box-shadow: 0 0 0 1px var(--text); }
+.cpick .pre .p.on { box-shadow: 0 0 0 2px var(--primary); border-color: var(--surface, #fff); }
+
+/* 색상 찾기 (app.js findPanel): 염색 창 바로 아래에 뜨는 창 (끌어서 어디로든 옮긴다). 부위마다 '넣을 색' 단추가 한 줄씩 */
+.find-dye { top: calc(100% - 44px); bottom: auto; max-width: 222px; }   /* right 는 .ov-dye 를 따른다 (좁은 화면에서 같이 움직이게) */
+.find-dye .sw { flex: none; width: 26px; height: 20px; padding: 0; border: 1px solid #5d6966; border-radius: 4px; cursor: pointer; }
+.find-dye .row > b { flex: none; font-weight: 400; color: var(--muted, #aab4b2); }
+.find-dye .ap { display: flex; align-items: center; gap: 5px; flex: none; font-size: 11px; padding: 3px 8px; }
+.find-dye .ap i { width: 12px; height: 12px; border-radius: 3px; border: 1px solid color-mix(in srgb, var(--ink, rgba(0, 0, 0, .35)) 35%, transparent); }
+.find-dye .ap.bad { color: #ffb4a8; }
+.find-dye .ap em { font-style: normal; color: var(--muted, #9fb0ac); }
+.find-dye .look { flex: none; width: 14px; height: 14px; border-radius: 3px; border: 1px solid #5d6966; }   /* 넣었을 때 보이는 색 */
+.find-dye .row.sub { margin-top: -2px; }
+.find-dye .row.sub > span { font-size: 11px; color: var(--muted, #8d999a); }
+.find-dye .hint { margin: 2px 0 0; max-width: 212px; font-size: 11px; line-height: 1.4; color: #ffb4a8; text-align: center; white-space: normal; }
+
+/* 꾸미기 (컬러렌즈 / 립): the 염색 window's look, in the bottom-left corner */
+.face-dye, .face-dye.closed { left: 8px; right: auto; bottom: 8px; }
+.face-dye:not(.closed) { max-width: 230px; }
+.face-dye.closed .fname, .face-dye.closed .fdots { display: none; }
+.face-dye .fchoice { flex-wrap: wrap; gap: 3px; }
+.face-dye .fchoice b { width: 20px; font-size: 12px; }
+.face-dye .fchoice .btn { padding: 2px 6px; min-width: 22px; }
+.face-dye .fchoice .btn.on { background: var(--primary); color: #fff; }
+.face-dye .fname { padding-left: 26px; color: #b9c6c3; font-size: 11px; }
+.face-dye .fdots { gap: 5px; padding-left: 26px; flex-wrap: wrap; }
+.face-dye .fdots:empty { display: none; }
+.face-dye .fdot { width: 16px; height: 16px; padding: 0; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ink, rgba(0, 0, 0, .4)) 40%, transparent); cursor: pointer; }
+.face-dye .fdot:hover { transform: scale(1.2); }
+.face-dye .fdot.on { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+/* 검색 자동완성: under the search box */
+.suggest { position: fixed; z-index: 50; background: var(--surface, #fff); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, .12);
+  padding: 4px; max-height: 340px; overflow-y: auto; }
+.suggest .sug { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.suggest .sug span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.suggest .sug em { flex: none; font-style: normal; font-size: 11px; color: var(--muted, #6b7774); }
+.suggest .sug:hover, .suggest .sug.on { background: rgba(15, 107, 98, .1); }
+
+/* 확대 (stage zoom): − 배율 + under the 헤어 toggles; the picture is dragged to move it */
+.ov-zoom { display: flex; gap: 3px; }
+.ov-zoom .btn { flex: 1; padding: 3px 0; min-width: 24px; text-align: center; }
+.ov-zoom .btn.lbl { flex: 1.4; font-size: 12px; }
+#view { cursor: grab; }
+#view.drag { cursor: grabbing; }
+/* 휴대폰: 무대(516×600)를 화면 폭에 맞춰 줄인다. 캔버스 해상도는 그대로라 그림은 같고, 오른쪽 위 조작(앞머리·확대)도 화면 안에 든다 */
+@media (max-width: 600px) {
+  .stage { width: 100%; height: auto; aspect-ratio: 516 / 600; }
+  #view { width: 100%; height: 100%; }
+}
+
+/* 조건 판 (다나와식, app.js filtRender): 왼쪽 이름 칸 + 체크 칸, 줄마다 선. 고른 획득처 묶음의 세부(회차 · 상자 번호 · 세트 이름)는
+   그 아래 줄에 펼친다. 개수는 지금 목록(부위 · 검색) 안에서 */
+.filt { flex: none; margin: 0 0 8px; border: 1px solid var(--line-strong); border-radius: 10px; background: var(--panel); font-size: 12px; overflow: hidden; }
+.filt-row { display: flex; align-items: stretch; border-top: 1px solid var(--line); }
+.filt-row:first-child { border-top: 0; }
+.filt-lbl { flex: 0 0 92px; display: flex; align-items: center; padding: 6px 10px; background: var(--bg2); border-right: 1px solid var(--line); color: var(--muted); font-weight: 700; word-break: keep-all; }
+.filt-sub .filt-lbl { font-weight: 600; font-size: 11px; padding-left: 16px; }
+.filt-sub .filt-lbl::before { content: "└"; margin-right: 4px; opacity: .6; }
+.filt-sub .filt-opts { background: color-mix(in srgb, var(--primary-soft) 45%, var(--panel)); }
+/* 세부가 많은 묶음(아바타 세트 · 이벤트)은 세 줄까지만 보이고 안에서 내린다 (목록 자리를 너무 먹지 않게).
+   높이 = 세 줄(20px × 3) + 줄 사이(4px × 2) + 위아래 여백(6px × 2) = 80px. 68px 일 때는 여백이 높이에 들어가(border-box) 두 줄 반만 보여
+   줄이 반쯤 잘렸다 (2026-11-25 사용자: "스크롤 좀 수정해야할 것 같은데"). 줄 높이 · 줄 사이 · 여백을 바꾸면 이 값도 같이 바꾼다.
+   내릴 때는 줄 단위로 멈추게 하고(scroll-snap), 가로 스크롤은 생기지 않게 한다 */
+.filt-sub .filt-opts { max-height: 80px; overflow-x: hidden; overflow-y: auto; align-content: flex-start; scrollbar-width: thin; scroll-snap-type: y mandatory; }
+.filt-sub .filt-chk { scroll-snap-align: start; scroll-margin-top: 6px; }
+.filt-opts { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 6px 10px; }
+.filt-chk { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap; color: var(--text); line-height: 20px; }
+.filt-chk input { margin: 0; width: 13px; height: 13px; accent-color: var(--primary); cursor: pointer; }
+.filt-chk em { font-style: normal; font-size: 11px; color: var(--muted); }
+.filt-chk:hover span { color: var(--primary); }
+.filt-chk.on span { color: var(--primary); font-weight: 700; }
+.filt-chk.zero { opacity: .45; }
+.filt-chk.f-new span { color: color-mix(in oklab, #c2373c var(--fgmix, 100%), #fff); font-weight: 700; }   /* 카드의 NEW 표시와 같은 색 */
+.filt-chk.f-hidden span { color: color-mix(in oklab, #6b5fb0 var(--fgmix, 100%), #fff); font-weight: 700; }
+.filt-tabs { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; overflow: hidden; }
+.filt-tab { font: inherit; font-size: 12px; padding: 2px 12px; border: 0; background: transparent; color: var(--text); cursor: pointer; line-height: 20px; }
+.filt-tab + .filt-tab { border-left: 1px solid var(--line-strong); }
+.filt-tab:hover { background: var(--primary-soft); }
+.filt-tab.on { background: var(--primary); color: #fff; font-weight: 700; }
+.filt-end { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; }
+.filt-count { color: var(--muted); }
+.filt-reset { font: inherit; font-size: 12px; padding: 0; border: 0; background: none; color: var(--primary); cursor: pointer; text-decoration: underline; }
+.grid .grid-empty { grid-column: 1 / -1; padding: 40px 10px; text-align: center; color: var(--muted); font-size: 13px; }
+@media (max-width: 600px) {
+  .filt-lbl { flex-basis: 72px; padding: 6px 8px; }
+  .filt-opts { gap: 4px 10px; padding: 6px 8px; }
+}
+
+/* 아이템 목록: 세 줄씩 쪽으로 (app.js appendCards). 목록 상자는 늘 세 줄 높이 (마지막 쪽이 짧아도), 아래에 쪽 넘김 */
+.left .grid, :host(.embed) .left .grid { flex: none; contain: none; height: auto; overflow: hidden; grid-auto-rows: 118px;
+  min-height: calc(3 * 118px + 2 * 6px + 18px); }
+@media (max-width: 900px) { .left .grid, :host(.embed) .left .grid { height: auto; } }
+.pager { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; margin: 8px 0 0; }
+.pager .pg { font: inherit; font-size: 12px; min-width: 30px; height: 28px; padding: 0 8px; border: 1px solid var(--line-strong); border-radius: 8px;
+  background: var(--surface, #fff); color: var(--text); cursor: pointer; font-variant-numeric: tabular-nums; }
+.pager .pg:hover:not(:disabled) { border-color: var(--primary); background: var(--primary-soft); }
+.pager .pg.on { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 700; }
+.pager .pg:disabled { opacity: .35; cursor: default; }
+.pager .pg-step { font-size: 15px; line-height: 1; }
+.pager .pg-gap { color: var(--muted); padding: 0 2px; }
+
+/* 오른쪽 카드(미리보기 · 입은 칸)는 내용 높이만큼: 왼쪽 목록이 더 길어도 아래에 빈자리를 늘이지 않는다 */
+.right { align-self: flex-start; }
+
+/* ── 휴대폰 (600px 이하): 한 열로 쌓되 칸마다 폭을 꽉 채워 쓴다 ──
+   위: [캐릭터(작게, 눌러서 바꾸기)] [배경] 한 줄 → 카테고리 5칸 → 검색. 목록은 3칸씩(3줄 = 9개).
+   미리보기의 동작 · 헤어 단추를 작게 해 ◀ ▶ 화살표와 겹치지 않게. 입은 칸은 그림 + 칸 이름만 (이름은 꾹 누르면) */
+@media (max-width: 600px) {
+  .who { gap: 8px; align-items: center; }
+  .who-card { order: 0; width: auto; height: 62px; min-height: 0; flex: 1 1 auto; flex-direction: row; justify-content: flex-start; gap: 8px; padding: 4px 12px 4px 6px; }
+  .who-card img { width: 52px; height: 52px; }
+  .who-card .nm { font-size: 14px; }
+  .who-card::after { content: "바꾸기 ›"; margin-left: auto; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .share-box { order: 1; flex: 0 0 62px; min-width: 0; margin-left: 0; container-type: normal; }   /* 크기 격리(inline-size)면 폭이 0 이 되어 단추가 밖으로 밀렸다 */
+  .who-right { order: 2; flex: 1 1 100%; min-width: 0; }
+  #cats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  #cats .btn { width: auto; }
+
+  .filt-lbl { flex-basis: 54px; padding: 6px 8px; font-size: 11px; }
+  .filt-opts { gap: 4px 10px; padding: 6px 8px; }
+
+  .left .grid, :host(.embed) .left .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); justify-content: stretch; }
+  .card { width: auto; min-width: 0; }
+  .card .ic { left: 50% !important; transform: translateX(-50%); }
+
+  .ov .btn { font-size: 11px; padding: 2px 8px; }
+  .ov-col .btn { min-width: 48px; }
+  .ov-zoom .btn { min-width: 22px; padding: 2px 0; }
+  .ov-col, .ov { gap: 3px; }
+  .ov-title { font-size: 11px; }
+  .ar-left, .ar-right { top: 62%; }
+
+  .slot .lb { left: 3px; right: 3px; top: auto; bottom: 3px; text-align: center; font-size: 10px; }
+  .slot { height: 58px; padding: 0; }
+  .slot .ic { top: 5px; }
+  .slot .nm { display: none; }
+  .slot input { left: 3px; top: 3px; }
+  .slot-act { gap: 3px; font-size: 10px; }
+  .slot-act .sym { width: 14px; height: 14px; font-size: 9px; }
+}
